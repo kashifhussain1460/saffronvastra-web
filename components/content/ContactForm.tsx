@@ -7,7 +7,7 @@ import { CheckCircle2 } from "lucide-react";
 const INQUIRY_LABELS: Record<string, string> = {
   sizing: "Custom Made-to-Order Sizing & Tailoring",
   tracking: "Order Production Status & Tracking",
-  bridal: "Bespoke Bridal & Heirloom Commission",
+  bridal: "Custom Bridal & Special Orders",
   care: "Garment Care, Silk Velvet & Storage",
   press: "Press, Editorial & Collaborations",
   other: "General Assistance",
@@ -119,9 +119,9 @@ export default function ContactForm() {
     return (
       <div role="status" className="border border-line rounded-2xl p-6 md:p-10 text-center space-y-4">
         <CheckCircle2 aria-hidden="true" className="w-12 h-12 mx-auto text-success" strokeWidth={1.5} />
-        <h3 className="text-2xl font-medium text-ink">Inquiry Received with Gratitude</h3>
+        <h3 className="text-2xl font-medium text-ink">Message Received</h3>
         <p className="text-sm md:text-base text-ink-secondary max-w-md mx-auto leading-[26px]">
-          Thank you for reaching out to {BRAND.name}. Your message has been routed to our Jaipur atelier concierge. We look forward to assisting you.
+          Thank you for reaching out to {BRAND.name}. Your message has been sent to our customer support team. We will get back to you shortly.
         </p>
         <button
           type="button"
@@ -265,7 +265,7 @@ export default function ContactForm() {
         disabled={loading}
         className="w-full sm:w-auto inline-flex items-center justify-center h-12 px-7 rounded-full bg-primary text-on-primary text-sm md:text-base font-semibold hover:bg-primary-hover transition-colors disabled:opacity-70"
       >
-        {loading ? "Submitting Message..." : "Send Concierge Message"}
+        {loading ? "Sending Message..." : "Send Message"}
       </button>
     </form>
   );

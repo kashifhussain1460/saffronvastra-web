@@ -169,7 +169,7 @@ export default function AccountDashboardPage() {
           const meData = await meRes.json();
           if (meData.data) {
             setUserProfile({
-              fullName: meData.data.fullName || "Atelier Patron",
+              fullName: meData.data.fullName || "Valued Customer",
               email: meData.data.email || "",
               phone: meData.data.phone || "",
               tier: meData.data.tier || "Circle Member",
@@ -195,7 +195,7 @@ export default function AccountDashboardPage() {
     phone: string;
     tier: string;
   }>({
-    fullName: "Atelier Patron",
+    fullName: "Valued Customer",
     email: "",
     phone: "",
     tier: "Circle Member",
@@ -348,7 +348,7 @@ export default function AccountDashboardPage() {
           <>
             <div>
               <h2 className={sectionTitle}>
-                Welcome back{firstName && userProfile.fullName !== "Atelier Patron" ? `, ${firstName}` : ""}!
+                Welcome back{firstName && userProfile.fullName !== "Valued Customer" ? `, ${firstName}` : ""}!
               </h2>
               <p className="mt-2 text-base text-ink-secondary leading-relaxed">
                 Here you can manage your orders, addresses, profile and more.
@@ -416,9 +416,9 @@ export default function AccountDashboardPage() {
               ) : orders.length === 0 ? (
                 <div className="rounded-2xl border border-line p-8 text-center space-y-3">
                   <Package className="w-10 h-10 mx-auto text-ink-muted" strokeWidth={1.25} aria-hidden="true" />
-                  <p className="font-heading text-xl font-medium text-ink">No Bespoke Orders Yet</p>
+                  <p className="font-heading text-xl font-medium text-ink">No Orders Yet</p>
                   <p className="text-base text-ink-secondary max-w-sm mx-auto">
-                    Your bespoke commissions and purchases will be showcased here once placed.
+                    Your orders and purchases will be shown here once placed.
                   </p>
                   <div className="pt-2">
                     <Link href="/collections" className={btnPrimary}>
@@ -458,7 +458,7 @@ export default function AccountDashboardPage() {
                   <Heart className="w-10 h-10 mx-auto text-ink-muted" strokeWidth={1.25} aria-hidden="true" />
                   <p className="font-heading text-xl font-medium text-ink">Your Wishlist is Empty</p>
                   <p className="text-base text-ink-secondary max-w-sm mx-auto">
-                    Save pieces you adore to curate your royal bespoke wardrobe.
+                    Save pieces you love to your wishlist.
                   </p>
                   <div className="pt-2">
                     <Link href="/collections" className={btnPrimary}>
@@ -512,7 +512,7 @@ export default function AccountDashboardPage() {
               <div>
                 <h2 className={sectionTitle}>Saved Delivery Addresses</h2>
                 <p className="mt-1 text-base text-ink-secondary">
-                  Manage your atelier shipping destinations and billing addresses.
+                  Manage your saved shipping and billing addresses.
                 </p>
               </div>
               <button
@@ -589,7 +589,7 @@ export default function AccountDashboardPage() {
                 <MapPin className="w-10 h-10 mx-auto text-ink-muted" strokeWidth={1.25} aria-hidden="true" />
                 <p className="font-heading text-xl font-medium text-ink">No Saved Delivery Addresses</p>
                 <p className="text-base text-ink-secondary max-w-sm mx-auto">
-                  Add a shipping address for expedited atelier checkout and bespoke delivery.
+                  Add a shipping address for faster and easier checkout.
                 </p>
               </div>
             ) : (

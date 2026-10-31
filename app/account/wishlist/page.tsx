@@ -111,8 +111,7 @@ export default function WishlistPage() {
             </div>
             <h2 className="text-2xl md:text-[28px] font-medium text-ink mb-2">Your Wishlist is Empty</h2>
             <p className="text-base text-ink-secondary mb-8 leading-relaxed">
-              Explore our luxury embroidered jackets, handworked velvet kimonos, and timeless co-ord sets to curate your
-              bespoke collection.
+              Explore our embroidered jackets, handworked kimonos, and unique pieces to save your favorite styles.
             </p>
             <Link
               href="/collections"

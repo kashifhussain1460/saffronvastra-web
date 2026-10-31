@@ -4,14 +4,14 @@ import Link from "next/link";
 import PolicyLayout, { PolicySection, policyList, policyLink, policyNote } from "@/components/content/PolicyLayout";
 
 export const metadata = {
-  title: `Returns & Atelier Alterations Policy | ${BRAND.name}`,
+  title: `Returns & Free Alterations Policy | ${BRAND.name}`,
   description:
-    `Learn about our bespoke alterations policy, store credit guidelines, and made-to-order craft commitments at ${BRAND.name}.`,
+    `Learn about our size alterations policy, store credit guidelines, and made-to-order craft commitments at ${BRAND.name}.`,
 };
 
 const sections = [
   { id: "made-to-order", label: "1. The Made-to-Order Principle" },
-  { id: "alterations", label: "2. Complimentary Atelier Alterations" },
+  { id: "alterations", label: "2. Free Size Alterations" },
   { id: "exchanges", label: "3. Exchanges & Digital Store Credit" },
   { id: "damaged-items", label: "4. Damaged or Defective Items" },
   { id: "how-to", label: "5. How to Initiate an Alteration or Return" },
@@ -22,9 +22,9 @@ const strong = "text-ink font-medium";
 export default function ReturnsPolicyPage() {
   return (
     <PolicyLayout
-      title="Returns & Atelier Alterations"
+      title="Returns & Size Alterations"
       crumb="Returns & Alterations"
-      intro="Our priority is ensuring your bespoke garment fits you like second skin. We offer complimentary atelier adjustments on all made-to-order creations."
+      intro="Our priority is ensuring your garment fits you comfortably. We offer free size adjustments on all made-to-order pieces."
       sections={sections}
       summary={{
         title: "Alteration Guarantee",
@@ -39,7 +39,7 @@ export default function ReturnsPolicyPage() {
             href="/contact"
             className="flex items-center justify-center text-center min-h-12 px-6 rounded-full bg-primary text-on-primary text-sm font-semibold hover:bg-primary-hover transition-colors"
           >
-            Request Alteration via Concierge
+            Request Alteration via Support
           </Link>
         ),
       }}
@@ -75,7 +75,7 @@ export default function ReturnsPolicyPage() {
           <li>You may request an exchange for <strong className={strong}>Digital Store Credit</strong> with a validity of 12 months.</li>
           <li>The request must be logged within <strong className={strong}>7 calendar days</strong> of parcel receipt.</li>
           <li>Items must be in pristine condition: unworn, unwashed, unaltered, free of perfumes or marks, with all original tags and security ribbons intact.</li>
-          <li>Bespoke bridal wear with custom structural modifications requested by the client is final sale and eligible for alterations only.</li>
+          <li>Custom bridal wear with personal modifications requested by the customer is final sale and eligible for alterations only.</li>
         </ul>
       </PolicySection>
 
@@ -84,14 +84,14 @@ export default function ReturnsPolicyPage() {
           Every order undergoes a rigorous 14-point inspection prior to dispatch. However, in the improbable event that a garment arrives damaged or flawed:
         </p>
         <p>
-          Please contact our concierge within <strong className={strong}>48 hours</strong> of delivery with photographs of the parcel and defective area. Upon verification, we will provide an expedited recreation of your garment with priority atelier queue, or a full refund to your original payment method.
+          Please contact our customer support team within <strong className={strong}>48 hours</strong> of delivery with photographs of the parcel and defective area. Upon verification, we will provide an expedited recreation of your garment, or a full refund to your original payment method.
         </p>
       </PolicySection>
 
       <PolicySection id="how-to" title={sections[4].label}>
         <p>
           <strong className={strong}>Step 1:</strong> Navigate to your{" "}
-          <Link href="/account/orders" className={`${policyLink} font-medium`}>Account Orders Dashboard</Link> and select the relevant order, or message our WhatsApp concierge (
+          <Link href="/account/orders" className={`${policyLink} font-medium`}>Account Orders Dashboard</Link> and select the relevant order, or message our WhatsApp support (
           <a href="https://wa.me/919829014820" className={`${policyLink} font-medium`}>+91 98290 14820</a>).
         </p>
         <p><strong className={strong}>Step 2:</strong> State your alteration notes or fit feedback. Our master tailor will review your notes and confirm pickup.</p>

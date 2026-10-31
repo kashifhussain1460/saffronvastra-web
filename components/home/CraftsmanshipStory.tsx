@@ -36,7 +36,7 @@ export default function CraftsmanshipStory() {
                 </div>
                 <div>
                   <p className="font-serif font-bold text-sm text-ink leading-tight">
-                    Artisanal Suzani Stitchwork
+                    Suzani Stitchwork
                   </p>
                   <p className="text-[11px] text-ink-secondary mt-0.5">
                     Distinctive needlework translated for modern styling.

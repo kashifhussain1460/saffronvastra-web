@@ -695,7 +695,7 @@ export default function OrderDetailPage({ params }: { params?: Promise<{ id: str
                   {order.recipient.phone && <p className="text-ink-secondary">Phone: {order.recipient.phone}</p>}
                 </div>
                 <p className="text-sm text-ink-secondary">
-                  Need a different delivery address? Address changes are handled by our concierge team.
+                  Need a different delivery address? Address changes are handled by our customer support team.
                 </p>
               </div>
             )}
@@ -792,7 +792,7 @@ export default function OrderDetailPage({ params }: { params?: Promise<{ id: str
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
             <div>
               <p className="font-heading text-xl font-semibold tracking-wide text-ink">{BRAND_NAME_UPPER}</p>
-              <p className="text-xs text-ink-muted tracking-widest uppercase mt-0.5">Bespoke Luxury &amp; Atelier Handcraft</p>
+              <p className="text-xs text-ink-muted tracking-widest uppercase mt-0.5">Handcrafted Clothing &amp; Traditional Embroidery</p>
               <p className="text-sm text-ink-muted mt-2">Plot 42, Hawa Mahal Heritage Enclave, Jaipur, Rajasthan 302002</p>
               <p className="text-sm text-ink-muted font-mono">GSTIN: 08AAECS9281M1ZK</p>
             </div>
@@ -893,7 +893,7 @@ export default function OrderDetailPage({ params }: { params?: Promise<{ id: str
         <div className="space-y-4">
           {order.shipments.length === 0 ? (
             <p className="text-base text-ink-secondary">
-              Your order has not shipped yet. Courier and tracking details will appear here once the atelier dispatches it.
+              Your order has not shipped yet. Courier and tracking details will appear here once your package is dispatched.
             </p>
           ) : (
             order.shipments.map((sh) => (
@@ -934,7 +934,7 @@ export default function OrderDetailPage({ params }: { params?: Promise<{ id: str
           setShowSupportModal(false);
           setSupportSubmitted(false);
         }}
-        title={supportSubmitted ? "Inquiry Received" : "Jaipur Concierge Support"}
+        title={supportSubmitted ? "Message Received" : "Customer Support"}
       >
         {supportSubmitted ? (
           <div className="text-center py-2 space-y-4">
@@ -942,8 +942,8 @@ export default function OrderDetailPage({ params }: { params?: Promise<{ id: str
               <CheckCircle className="w-6 h-6" aria-hidden="true" />
             </div>
             <p role="status" className="text-base text-ink-secondary leading-relaxed">
-              Thank you, {order.recipient.name}. A senior stylist from our Jaipur Atelier will connect with you via email and phone within 2
-              business hours.
+              Thank you, {order.recipient.name}. A representative from our customer support team will connect with you via email or phone within 2 business hours.
+
             </p>
             <button
               type="button"
@@ -980,7 +980,7 @@ export default function OrderDetailPage({ params }: { params?: Promise<{ id: str
                   <option>Exchange / Size alteration request</option>
                   <option>Garment embroidery care consultation</option>
                   <option>Invoice or payment inquiry</option>
-                  <option>Other bespoke inquiry</option>
+                  <option>Other inquiry</option>
                 </select>
               </div>
 
@@ -1008,7 +1008,7 @@ export default function OrderDetailPage({ params }: { params?: Promise<{ id: str
               </div>
 
               <button type="submit" disabled={supportSending} className={`${btnPrimary} w-full`}>
-                {supportSending ? "Sending..." : "Send to Atelier Concierge"}
+                {supportSending ? "Sending..." : "Send Message to Support"}
               </button>
             </form>
           </div>

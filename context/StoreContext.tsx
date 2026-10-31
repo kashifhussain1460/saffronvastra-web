@@ -89,7 +89,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           const profile: UserProfile = {
             id: rawUser.id,
             email: rawUser.email,
-            fullName: rawUser.fullName || "Atelier Patron",
+            fullName: rawUser.fullName || "Valued Customer",
             phone: rawUser.phone || "",
             roles: Array.isArray(rawUser.roles) ? rawUser.roles : ["CUSTOMER"],
             tier: rawUser.tier || "Circle Member",

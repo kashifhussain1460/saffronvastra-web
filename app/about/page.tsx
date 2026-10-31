@@ -7,7 +7,7 @@ import PageTitle from "@/components/checkout/PageTitle";
 import Tabs from "@/components/content/Tabs";
 
 export const metadata = {
-  title: `Our Story & Atelier Craftsmanship | ${BRAND.name}`,
+  title: `Our Story & Jaipur Craftsmanship | ${BRAND.name}`,
   description:
     `Discover the heritage, master artisans, and made-to-order slow fashion philosophy behind ${BRAND.name} in Jaipur, India.`,
 };
@@ -21,12 +21,12 @@ const pillars = [
   {
     icon: Sparkles,
     title: "Generational Heritage Embroidery",
-    desc: "Our Jaipur atelier specializes in authentic Zari, Aari, and Marodi needlework. Each bespoke piece requires between 20 to 45 hours of dedicated handcraft by master karigars.",
+    desc: "Our Jaipur workshop specializes in authentic Zari, Aari, and Marodi needlework. Each handcrafted piece requires between 20 to 45 hours of dedicated handcraft by master artisans.",
   },
   {
     icon: HeartHandshake,
     title: "Dignified Artisan Collective",
-    desc: "We work directly with third-generation master craftspeople in Rajasthan, guaranteeing fair living wages, safe and sunlit atelier environments, and health security for their families.",
+    desc: "We work directly with third-generation master craftspeople in Rajasthan, guaranteeing fair wages, safe workshop environments, and long-term security for their families.",
   },
   {
     icon: Leaf,
@@ -53,8 +53,8 @@ const steps = [
   },
   {
     number: "04",
-    title: "Bespoke Cut & Silk Lining",
-    desc: "The embroidered panels are cut to your custom measurements and lined with breathable pure silk crepe, tailored to feel as heavenly inside as it looks outside.",
+    title: "Custom Cut & Silk Lining",
+    desc: "The embroidered panels are cut to your selected measurements and lined with breathable pure silk crepe, tailored to feel comfortable and luxurious inside and out.",
   },
   {
     number: "05",
@@ -88,7 +88,7 @@ const btnOutline =
 export default function AboutPage() {
   return (
     <div className="bg-canvas text-ink">
-      <PageTitle title="About Our Atelier" crumbs={[{ label: "Home", href: "/" }, { label: "Our Story" }]} />
+      <PageTitle title="About Our Workshop & Craft" crumbs={[{ label: "Home", href: "/" }, { label: "Our Story" }]} />
 
       {/* Story: image + tabs */}
       <section className="pt-10 md:pt-20">
@@ -105,7 +105,7 @@ export default function AboutPage() {
               />
             </div>
             <figcaption className="mt-3 text-sm text-ink-muted">
-              Jaipur Atelier: Master Karigar Salim Khan drafting Zardozi vines on midnight silk velvet.
+              Jaipur Workshop: Master Artisan drafting hand embroidery patterns on velvet.
             </figcaption>
           </figure>
 
@@ -120,10 +120,10 @@ export default function AboutPage() {
                   content: (
                     <>
                       <p>
-                        {BRAND.name} was founded to honor the sacred, slow craft of generational Indian needlework. We construct each bespoke jacket, kimono, and ensemble entirely made-to-order in Jaipur, Rajasthan.
+                        {BRAND.name} was founded to honor the rich tradition of Indian hand embroidery. We craft each jacket, kimono, and piece made-to-order in Jaipur, Rajasthan.
                       </p>
                       <p>
-                        For centuries, the royal ateliers of Rajasthan nurtured artisans who transformed silk, gold wire, and pearls into wearable poems. As modern fast fashion accelerated, these painstaking arts began to disappear under the weight of mechanized mass production.
+                        For centuries, the royal workshops of Rajasthan nurtured artisans who transformed silk, fabrics, and fine thread into wearable art. We are committed to preserving these time-honored skills with contemporary styling.
                       </p>
                     </>
                   ),
@@ -133,16 +133,16 @@ export default function AboutPage() {
                   label: "Rooted in Rajasthan",
                   content: (
                     <p>
-                      {BRAND.name} was born from an unwavering rebellion against the ephemeral. We chose not to participate in seasonal markdowns, overstuffed warehouses, or disposable garments. Instead, we established a quiet, dignified atelier in the historic heart of Jaipur where patience is celebrated as the greatest luxury.
+                      {BRAND.name} believes in thoughtful, conscious fashion. We choose not to overproduce or hold excess warehouse stock. Instead, our Jaipur workshop creates pieces with patience, pride, and quality that lasts.
                     </p>
                   ),
                 },
                 {
                   id: "commission",
-                  label: "Your Commission",
+                  label: "Your Order",
                   content: (
                     <p>
-                      When you order a piece from {BRAND.name}, you are not merely purchasing clothing. You are directly commissioning an artisan to dedicate days of skilled needlework to your name, creating an heirloom intended to be cherished for decades.
+                      When you order from {BRAND.name}, you are directly supporting skilled local artisans who spend days carefully handcrafting your clothing. Each piece is made to be worn, loved, and kept for years.
                     </p>
                   ),
                 },
@@ -153,7 +153,7 @@ export default function AboutPage() {
                 Explore The Collections
               </Link>
               <Link href="/contact" className={btnOutline}>
-                Speak to Atelier Concierge
+                Contact Customer Support
               </Link>
             </div>
           </div>
@@ -187,9 +187,9 @@ export default function AboutPage() {
       <section className="pb-10 md:pb-20">
         <div className={container}>
           <div className="text-center max-w-3xl mx-auto mb-8 md:mb-12">
-            <h2 className={sectionHeading}>The Journey of a Bespoke Creation</h2>
+            <h2 className={sectionHeading}>How Your Garment Is Made</h2>
             <p className="mt-3 text-base leading-[26px] text-ink-secondary">
-              From the moment your commission is confirmed, here is how master artisans bring your garment into existence over 5 to 7 days.
+              From the moment your order is placed, here is how our master artisans craft your garment step by step over 5 to 7 days.
             </p>
           </div>
           <ol className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-[30px]">
@@ -210,7 +210,7 @@ export default function AboutPage() {
           <div className="min-w-0 space-y-5">
             <h2 className={sectionHeading}>Hands That Breathe Soul Into Silk</h2>
             <p className="text-base leading-[26px] text-ink-secondary">
-              Our atelier family includes over forty master artisans, pattern drafters, and hand-finishers in Jaipur. Many learned their craft at the knees of their grandparents, inheriting instinctive mastery over gold thread tension, knotting, and botanical shading.
+              Our workshop team includes over forty master artisans, pattern makers, and tailors in Jaipur. Many learned their craft at the knees of their grandparents, inheriting instinctive mastery over needlework, tension, knotting, and botanical shading.
             </p>
             <blockquote className="border-l-2 border-ink pl-4 py-1">
               <p className="text-lg leading-7 text-ink">

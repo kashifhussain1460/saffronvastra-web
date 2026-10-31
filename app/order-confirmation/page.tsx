@@ -235,7 +235,7 @@ function OrderConfirmationContent() {
               <p className="text-sm tracking-[0.18em] uppercase text-highlight font-semibold">Order confirmed</p>
               <h1 id="oc-title" className="mt-1 text-3xl md:text-[40px] leading-tight font-medium">Thank you for your order</h1>
               <p className="mt-2 text-base text-on-inverse-muted max-w-xl">
-                Your made-to-order garments are now being prepared by master artisans at our Jaipur ateliers.
+                Your made-to-order garments are now being prepared by skilled artisans at our Jaipur workshop.
               </p>
             </div>
             <div className="flex flex-row md:flex-col gap-3 shrink-0">
@@ -399,7 +399,7 @@ function OrderConfirmationContent() {
                 <span className="w-9 h-9 rounded-xl bg-surface grid place-items-center" aria-hidden="true"><LifeBuoy className="w-4 h-4" /></span> Need help?
               </h2>
               <p className="mt-2 text-base text-ink-secondary leading-relaxed">
-                Questions about sizing adjustments or delivery? Our concierge team is here for you.
+                Questions about sizing adjustments or delivery? Our customer support team is here for you.
               </p>
               <Link href="/contact" className="inline-flex items-center gap-1.5 mt-3 min-h-9 text-base font-semibold text-ink border-b border-ink hover:text-primary-hover hover:border-primary-hover transition-colors">
                 Contact support

@@ -56,9 +56,9 @@ export const COLLECTIONS: Record<string, CollectionConfig> = {
       href: "/about",
     },
     bottomBanner: {
-      title: "Bespoke Pieces for a Slower, Richer Life",
+      title: "Handcrafted Pieces Made to Last",
       description:
-        "Handcrafted in small batches, designed to be lived in, loved and passed on.",
+        "Handcrafted in small batches, designed to be worn, loved, and passed on.",
       cta: "Explore More",
       href: "/collections",
     },
@@ -73,7 +73,7 @@ export const COLLECTIONS: Record<string, CollectionConfig> = {
       "Graceful silhouettes meeting intricate zardozi and thread embroidery. Light layers designed for day-to-night elegance.",
     heroImage: "/images/categories/kimonos.jpg",
     traditionCallout: {
-      title: "Artisanal Elegance",
+      title: "Elegance",
       description: "Fluid wraps and kimono robes hand-stitched with mindful precision.",
     },
     valueProps: [
@@ -91,9 +91,9 @@ export const COLLECTIONS: Record<string, CollectionConfig> = {
       href: "/about",
     },
     bottomBanner: {
-      title: "Handcrafted For The Modern Connoisseur",
+      title: "Handcrafted For Everyday Elegance",
       description:
-        "Slow luxury tailored specifically to your measurements with conscious care.",
+        "Custom tailored to your measurements with conscious care and premium fabrics.",
       cta: "Discover More",
       href: "/collections",
     },

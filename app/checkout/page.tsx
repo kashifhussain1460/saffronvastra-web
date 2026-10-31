@@ -347,7 +347,7 @@ export default function CheckoutPage() {
         return;
       } else {
         const errData = await res.json().catch(() => null);
-        const errMsg = errData?.message || "Failed to process bespoke purchase. Please check your details.";
+        const errMsg = errData?.message || "Failed to process your order. Please check your details.";
         setErrors({ general: errMsg });
         setIsSubmitting(false);
         submitLock.current = false;
@@ -358,7 +358,7 @@ export default function CheckoutPage() {
       console.error("[Checkout] Order processing connection failure:", err);
       setErrors({
         general:
-          "Unable to securely establish a connection with the Jaipur atelier processing server. Your payment has not been processed. Please verify your connection or try again shortly.",
+          "Unable to establish a secure connection to process your payment. Your payment has not been processed. Please check your connection or try again shortly.",
       });
       setIsSubmitting(false);
         submitLock.current = false;
@@ -402,8 +402,8 @@ export default function CheckoutPage() {
     },
     {
       id: "express" as const,
-      title: "Priority Atelier Dispatch (Jaipur Rush Craft)",
-      text: "Priority needlework queue & air express dispatch within 3–5 business days.",
+      title: "Express Delivery (Fast Workshop Processing)",
+      text: "Priority stitching & express courier delivery within 3–5 business days.",
       price: inr(shippingRules.flatFee),
     },
   ];
@@ -498,7 +498,7 @@ export default function CheckoutPage() {
                     onChange={handleInputChange}
                     className="mt-0.5 w-4 h-4 accent-primary"
                   />
-                  Send dispatch notifications and artisan atelier updates via WhatsApp &amp; SMS.
+                  Send dispatch notifications and order tracking updates via WhatsApp &amp; SMS.
                 </label>
               </section>
 
@@ -571,7 +571,7 @@ export default function CheckoutPage() {
                 </label>
                 <div className="mt-5">
                   <label htmlFor="bespokeNotes" className="block text-sm font-medium text-ink mb-1.5">
-                    Bespoke sizing &amp; customization <span className="text-ink-muted font-normal">(Optional)</span>
+                    Custom sizing &amp; special instructions <span className="text-ink-muted font-normal">(Optional)</span>
                   </label>
                   <textarea
                     id="bespokeNotes"
@@ -583,8 +583,8 @@ export default function CheckoutPage() {
                     className="w-full bg-surface border-2 border-line rounded-lg px-4 py-3 text-base text-ink placeholder:text-ink-muted focus:outline-none focus:border-ink transition-colors"
                   />
                   <p className="mt-1.5 text-sm text-ink-muted">
-                    As all {BRAND.name} garments are handcrafted in Jaipur upon order, we provide complimentary sleeve,
-                    shoulder, or length custom adjustments before needlework begins.
+                    As all {BRAND.name} garments are made to order in Jaipur, we provide free custom adjustments,
+                    including sleeve, shoulder, or length sizing before stitching begins.
                   </p>
                 </div>
               </section>
@@ -656,7 +656,7 @@ export default function CheckoutPage() {
                   )}
                 </button>
                 <p className="text-center text-sm text-ink-muted mt-3">
-                  By clicking Place Order, you confirm your bespoke garment request and agree to our{" "}
+                  By clicking Place Order, you confirm your order request and agree to our{" "}
                   <Link href="/policies/terms" className="underline hover:text-primary-hover">
                     Terms
                   </Link>{" "}

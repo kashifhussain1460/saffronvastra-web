@@ -193,15 +193,15 @@ export default function Footer() {
             />
           </Link>
           <p className="mt-3 text-xs sm:text-sm uppercase tracking-[0.2em] text-ink-muted font-medium max-w-md">
-            Haute Couture &amp; Traditional Embroidery
+            Handcrafted Clothing &amp; Traditional Embroidery
           </p>
         </div>
 
         {/* Footer Navigation Columns */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-0 md:gap-x-8 md:gap-y-10 lg:gap-x-8 pt-10 md:pt-12">
-          {/* Atelier & Contact */}
+          {/* Studio & Contact */}
           <div className="md:order-1 lg:order-none lg:col-span-4 pb-6 md:pb-0">
-            <h3 className="mb-4 text-base font-semibold text-ink">Jaipur Atelier &amp; Concierge</h3>
+            <h3 className="mb-4 text-base font-semibold text-ink">Jaipur Studio &amp; Customer Support</h3>
             {store.address && <p className="max-w-xs text-base leading-relaxed text-ink-secondary">{store.address}</p>}
             <Link
               href="/contact"

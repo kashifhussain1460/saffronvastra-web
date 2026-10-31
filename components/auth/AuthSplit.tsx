@@ -36,7 +36,7 @@ export default function AuthSplit({
         
         {/* Left Section: 68-70% Editorial Fashion Photography & Brand Storytelling (Desktop only: hidden on mobile & tablet) */}
         <section
-          aria-label="Atelier Heritage & Craftsmanship"
+          aria-label="Heritage & Craftsmanship"
           className="hidden lg:flex relative lg:min-h-full flex-col justify-between p-10 lg:p-12 xl:p-16 overflow-hidden text-white"
         >
           {/* Full Coverage Background Editorial Fashion Photograph */}

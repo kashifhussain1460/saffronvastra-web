@@ -35,7 +35,7 @@ const NAV = [
 const QUICK_LINKS = [
   { label: "All Collections", href: "/collections" },
   { label: "Search Archive", href: "/search" },
-  { label: "Bespoke Size Guide", href: "/size-guide" },
+  { label: "Size & Measurement Guide", href: "/size-guide" },
   { label: "Order & Milestone Tracking", href: "/track-order" },
   { label: "Frequently Asked Questions", href: "/faqs" },
 ];
@@ -263,7 +263,7 @@ export default function Header({ onOpenMenu }: HeaderProps) {
                                   {cat.name}
                                 </Link>
                                 <span className="text-[11px] uppercase tracking-wider text-ink-muted font-sans font-semibold">
-                                  Atelier Embroidery
+                                  Hand Embroidery
                                 </span>
                               </div>
                             </div>
@@ -308,7 +308,7 @@ export default function Header({ onOpenMenu }: HeaderProps) {
                         <div className="col-span-3">
                           <div className="pb-3 mb-4 border-b border-line">
                             <h4 className="font-serif text-lg font-medium text-ink leading-tight">
-                              Curations & Atelier
+                              Featured Collections
                             </h4>
                             <span className="text-[11px] uppercase tracking-wider text-ink-muted font-sans font-semibold">
                               Direct Services
@@ -359,7 +359,7 @@ export default function Header({ onOpenMenu }: HeaderProps) {
                             100% Handcrafted Authenticity
                           </span>
                           <span className="hidden sm:inline text-line">•</span>
-                          <span className="hidden sm:inline">Complimentary Atelier Milestone Tracking</span>
+                          <span className="hidden sm:inline">Free Live Order Tracking</span>
                           <span className="hidden sm:inline text-line">•</span>
                           <span className="hidden sm:inline">Custom Made-to-Order Sizing</span>
                         </div>
@@ -367,7 +367,7 @@ export default function Header({ onOpenMenu }: HeaderProps) {
                           href="/collections"
                           className="font-semibold text-ink hover:text-primary transition-colors flex items-center gap-1"
                         >
-                          <span>View Full Atelier Catalog</span>
+                          <span>View All Collections</span>
                           <ArrowRight className="w-3.5 h-3.5" />
                         </Link>
                       </div>
@@ -402,7 +402,7 @@ export default function Header({ onOpenMenu }: HeaderProps) {
               className={ICON_BTN}
               aria-expanded={accountOpen}
               aria-haspopup="true"
-              aria-label={isAuthenticated ? `Account menu for ${user?.fullName || "patron"}` : "Guest account menu"}
+              aria-label={isAuthenticated ? `Account menu for ${user?.fullName || "customer"}` : "Guest account menu"}
             >
               <User className="w-5 h-5 stroke-[1.75]" />
             </button>
@@ -416,7 +416,7 @@ export default function Header({ onOpenMenu }: HeaderProps) {
                   <>
                     <div className="px-4 py-3 border-b border-line mb-1">
                       <p className="text-xs uppercase tracking-wider text-ink-muted font-semibold">
-                        Atelier Patron
+                        My Account
                       </p>
                       <p className="text-sm font-semibold text-ink truncate mt-0.5">
                         {user?.fullName || "Valued Customer"}
@@ -426,7 +426,7 @@ export default function Header({ onOpenMenu }: HeaderProps) {
 
                     <div className="space-y-0.5">
                       {[
-                        { href: "/account", label: "My Profile & Atelier Info", Icon: User },
+                        { href: "/account", label: "My Profile & Details", Icon: User },
                         { href: "/account/orders", label: "Orders & Milestones", Icon: Package },
                         { href: "/account/wishlist", label: `Curated Wishlist (${wishlist.length})`, Icon: Heart },
                       ].map(({ href, label, Icon }) => (
@@ -492,7 +492,7 @@ export default function Header({ onOpenMenu }: HeaderProps) {
                     </Link>
 
                     <div className="mt-3 text-center text-xs text-ink-secondary">
-                      New patron?{" "}
+                      New customer?{" "}
                       <Link
                         href="/auth/register"
                         role="menuitem"

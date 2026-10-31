@@ -6,7 +6,7 @@ import { ArrowRight } from "lucide-react";
 export default function NotFound() {
   const quickLinks = [
     { title: "Shop the collection", desc: "Hand-embroidered velvet and cotton jackets, made to order", href: "/collections" },
-    { title: "The Journal", desc: "Stories from the Jaipur atelier and the people behind each piece", href: "/journal" },
+    { title: "The Journal", desc: "Stories from our Jaipur workshop and the people behind each piece", href: "/journal" },
     { title: "Need help?", desc: "Write to us and we will help you find what you were looking for", href: "/contact" },
   ];
 
@@ -16,7 +16,7 @@ export default function NotFound() {
         <div className="lg:col-span-6 relative aspect-[4/3] md:aspect-square lg:aspect-[679/600] rounded-2xl overflow-hidden bg-surface-muted">
           <Image
             src="/images/editorial/artisan_embroidery.jpg"
-            alt="An artisan embroidering silk velvet in our Jaipur atelier"
+            alt="An artisan embroidering silk velvet in our Jaipur workshop"
             fill
             sizes="(min-width: 1024px) 680px, (min-width: 768px) 50vw, 100vw"
             className="object-cover"
@@ -29,9 +29,9 @@ export default function NotFound() {
             Oops!
           </p>
           <p className="mt-4 md:mt-6 text-sm font-medium text-ink-muted">Error 404 &bull; Page not found</p>
-          <h1 className="mt-1 text-[30px] leading-9 lg:text-[44px] lg:leading-[50px] font-medium text-ink">The Piece Has Wandered.</h1>
+          <h1 className="mt-1 text-[30px] leading-9 lg:text-[44px] lg:leading-[50px] font-medium text-ink">Page Not Found</h1>
           <p className="mt-2 text-base md:text-lg leading-7 text-ink-secondary">
-            The bespoke creation or editorial story you are seeking might have been archived, renamed, or is currently on the loom. Allow us to guide you back to our atelier.
+            The page or product you are looking for may have been moved, renamed, or is currently unavailable. Allow us to help you find what you need.
           </p>
           <div className="mt-6 md:mt-8 flex flex-wrap justify-center md:justify-start gap-3">
             <Link

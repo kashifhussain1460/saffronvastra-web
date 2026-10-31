@@ -5,9 +5,9 @@ import { Scissors, Sparkles, MessageSquare, ShieldCheck } from "lucide-react";
 import PageTitle from "@/components/checkout/PageTitle";
 
 export const metadata = {
-  title: `Atelier Size Guide & Measuring Guide | ${BRAND.name}`,
+  title: `Size Guide & Measuring Guide | ${BRAND.name}`,
   description:
-    `Size charts in inches and centimeters, bespoke custom measurement guidance, and fit recommendations for ${BRAND.name}.`,
+    `Size charts in inches and centimeters, custom measurement guidance, and fit recommendations for ${BRAND.name}.`,
 };
 
 export default function SizeGuidePage() {
@@ -23,11 +23,11 @@ export default function SizeGuidePage() {
   return (
     <div className="bg-canvas min-h-screen text-ink">
       <PageTitle
-        title="Atelier Sizing & Measurement Guide"
+        title="Size & Measurement Guide"
         crumbs={[{ label: "Home", href: "/" }, { label: "Size Guide" }]}
       >
         <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-ink-secondary">
-          Every garment is tailored individually in Jaipur. Select your standard size below or submit your exact custom measurements for bespoke atelier tailoring.
+          Every garment is individually tailored in Jaipur. Select your standard size below or submit your custom measurements during checkout.
         </p>
       </PageTitle>
 
@@ -120,7 +120,7 @@ export default function SizeGuidePage() {
                 <span>Complimentary Service</span>
               </div>
               <h4 className="text-2xl font-medium text-on-primary">
-                Bespoke Custom Fit
+                Custom Tailored Fit
               </h4>
               <p className="text-sm text-on-inverse-muted leading-relaxed">
                 Do your proportions fall between sizes or do you prefer extra sleeve length? Enter your exact bust, waist, and hip dimensions in the order notes during checkout, and our master tailors will draft your pattern from scratch at zero additional charge.
@@ -145,7 +145,7 @@ export default function SizeGuidePage() {
                 <span>7-Day Fit Guarantee</span>
               </div>
               <p className="text-sm text-ink-secondary leading-relaxed">
-                If your finished made-to-order garment requires minor adjustments upon arrival, we offer one round of complimentary atelier alterations with free doorstep pickup across India.
+                If your finished made-to-order garment requires minor adjustments upon arrival, we offer one round of free alterations with free doorstep pickup across India.
               </p>
               <Link
                 href="/policies/returns"

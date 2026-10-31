@@ -6,9 +6,9 @@ import JournalCard, { type JournalSummary } from "@/components/content/JournalCa
 
 export const metadata = {
   alternates: { canonical: "/journal" },
-  title: "The Saffron Journal | Wear Stories & Atelier Notes",
+  title: "The Saffron Journal | Stories & Craft Notes",
   description:
-    "Stories of Rajasthani craftsmanship, silk velvet styling, generational embroidery arts, and behind-the-seams atelier chronicles.",
+    "Stories of Rajasthani craftsmanship, styling, generational embroidery arts, and behind-the-scenes craft chronicles.",
 };
 
 export const dynamic = "force-dynamic";

@@ -19,8 +19,8 @@ const ATELIER_PILLARS = [
   },
   {
     icon: Truck,
-    label: "Direct Atelier Dispatch",
-    detail: "Doorstep tracking with milestones",
+    label: "Direct Workshop Dispatch",
+    detail: "Doorstep delivery with live tracking",
   },
   {
     icon: ShieldCheck,
@@ -218,7 +218,7 @@ export default function HeroBanners() {
             {/* Atelier Crest Pill */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/20 backdrop-blur-md border border-primary/40 text-accent-cream text-xs uppercase tracking-[0.22em] font-semibold mb-6">
               <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-              <span>Artisanal Suzani Needlework</span>
+              <span>Suzani Needlework</span>
             </div>
 
             {/* Main Editorial Headline */}

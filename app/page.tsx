@@ -41,14 +41,14 @@ export default function HomePage() {
       {/* 6. Editorial Fashion Journal Stories */}
       <JournalTeaser />
 
-      {/* 7. Subtle Atelier Announcement Marquee */}
+      {/* 7. Subtle Workshop Announcement Marquee */}
       <AnnouncementMarquee />
 
       {/* 8. Newsletter Subscription */}
       <NewsletterBanner
         source="home"
         title="Join the Saffron Circle"
-        description="Receive private invitations to new Suzani releases, bespoke sizing previews, and updates on our jacket and kimono collections."
+        description="Receive updates on new Suzani releases, custom sizing options, and news on our jacket and kimono collections."
         className="mt-0 border-t border-line bg-[#FAF8F5]"
       />
     </div>

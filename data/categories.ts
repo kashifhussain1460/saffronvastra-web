@@ -40,6 +40,6 @@ export const CATEGORIES: Category[] = [
     name: "New Arrivals",
     productCount: 10,
     image: "/images/categories/new_arrivals.jpg",
-    description: `The latest handcrafted releases from the ${BRAND.name} atelier.`,
+    description: `The latest handcrafted releases from the ${BRAND.name} collection.`,
   },
 ];

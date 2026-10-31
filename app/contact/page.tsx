@@ -17,9 +17,9 @@ export default function ContactPage() {
 
   return (
     <div className="bg-canvas text-ink">
-      <PageTitle title="Contact Us" crumbs={[{ label: "Home", href: "/" }, { label: "Atelier Concierge & Contact" }]}>
+      <PageTitle title="Contact Us" crumbs={[{ label: "Home", href: "/" }, { label: "Contact & Support" }]}>
         <p className="mt-3 text-sm md:text-base text-ink-secondary max-w-2xl mx-auto">
-          Our atelier concierge team in Jaipur is available to assist with custom sizing, order updates, private commissions, and garment care inquiries.
+          Our customer support team in Jaipur is available to assist with custom sizing, order updates, delivery questions, and styling advice.
         </p>
       </PageTitle>
 
@@ -27,9 +27,9 @@ export default function ContactPage() {
         <div className="max-w-[1320px] mx-auto px-4 lg:px-[15px] grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-[60px]">
           {/* Form */}
           <div className="lg:col-span-8 min-w-0">
-            <h2 className="text-2xl leading-[34px] md:text-[30px] md:leading-[42px] font-medium text-ink">At Your Bespoke Service</h2>
+            <h2 className="text-2xl leading-[34px] md:text-[30px] md:leading-[42px] font-medium text-ink">How Can We Help You?</h2>
             <p className="mt-2 mb-6 text-base leading-[26px] text-ink-muted">
-              Please complete the details below. Our client advisor will reply within 24 business hours.
+              Please complete the details below. Our support team will reply within 24 business hours.
             </p>
             <ContactForm />
           </div>
@@ -61,15 +61,15 @@ export default function ContactPage() {
                 <dt className={infoLabel}>Email:</dt>
                 <dd className={infoText}>
                   <p>
-                    Client Concierge:{" "}
+                    Customer Support:{" "}
                     <a href={`mailto:${storeInfo.supportEmail}`} className={`${infoLink} break-all`}>
                       {storeInfo.supportEmail}
                     </a>
                   </p>
                   <p>
                     Press &amp; Collaborations:{" "}
-                    <a href={`mailto:atelier@${BRAND.domain}`} className={`${infoLink} break-all`}>
-                      atelier@{BRAND.domain}
+                    <a href={`mailto:contact@${BRAND.domain}`} className={`${infoLink} break-all`}>
+                      contact@{BRAND.domain}
                     </a>
                   </p>
                 </dd>
@@ -81,22 +81,22 @@ export default function ContactPage() {
               </div>
 
               <div>
-                <dt className={infoLabel}>Atelier Hours (IST):</dt>
+                <dt className={infoLabel}>Studio Hours (IST):</dt>
                 <dd className={infoText}>
                   <p>Monday to Saturday: 10:00 AM – 7:00 PM IST</p>
-                  <p>Sunday: Reserved for Private Commissions</p>
+                  <p>Sunday: Closed</p>
                 </dd>
               </div>
             </dl>
 
             {/* Private fitting salon */}
             <div className="mt-8 rounded-2xl bg-surface-muted p-6 space-y-3">
-              <h3 className="text-xl leading-7 font-medium text-ink">Book a Bespoke Consultation</h3>
+              <h3 className="text-xl leading-7 font-medium text-ink">Book a Studio Visit</h3>
               <p className="text-sm md:text-base leading-[26px] text-ink-secondary">
-                Visiting Jaipur? Schedule a private appointment at our historic atelier salon for custom body measurements, velvet swatch viewings, and personal styling with our master tailor.
+                Visiting Jaipur? Schedule an appointment at our Jaipur studio to see our fabrics, view embroidery swatches, and discuss custom sizing in person.
               </p>
               <a
-                href="https://wa.me/919829014820?text=Hello%20Saffron%20Threads,%20I%20would%20like%20to%20request%20a%20private%20atelier%20consultation."
+                href="https://wa.me/919829014820?text=Hello%20Saffron%20Vastra,%20I%20would%20like%20to%20request%20a%20studio%20visit."
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center justify-center gap-2 h-12 px-7 rounded-full bg-primary text-on-primary text-sm md:text-base font-semibold hover:bg-primary-hover transition-colors"

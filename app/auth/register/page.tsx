@@ -388,7 +388,7 @@ export default function RegisterPage() {
     <Suspense
       fallback={
         <div className="min-h-[60vh] bg-surface flex items-center justify-center">
-          <h1 className="sr-only">Register Atelier Account</h1>
+          <h1 className="sr-only">Create an Account</h1>
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
       }

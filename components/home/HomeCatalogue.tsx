@@ -84,7 +84,7 @@ export default function HomeCatalogue() {
         // Second shelf: new arrivals, featured, or next tranche of pieces
         let secondProducts: Product[] = [];
         let secondTitle = "Featured Suzani Pieces";
-        let secondSubtitle = "Handcrafted selections from our atelier.";
+        let secondSubtitle = "Handcrafted selections from our Jaipur workshop.";
 
         if (newArrivals.length > 0) {
           secondProducts = newArrivals;

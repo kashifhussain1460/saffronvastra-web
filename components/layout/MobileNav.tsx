@@ -183,7 +183,7 @@ export default function MobileNav({ isOpen, onClose, initialSection = null }: Mo
                   onClick={onClose}
                   className="flex items-center justify-between min-h-10 px-3 rounded-lg text-sm font-semibold text-primary bg-primary/10 hover:bg-primary/15 transition-colors"
                 >
-                  <span>Browse Full Atelier Archive</span>
+                  <span>View All Collections</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
@@ -240,7 +240,7 @@ export default function MobileNav({ isOpen, onClose, initialSection = null }: Mo
                 onClick={onClose}
                 className="inline-flex items-center gap-2 text-ink-secondary hover:text-primary min-h-9"
               >
-                <Package className="w-4 h-4 text-primary" /> Track Orders & Milestones
+                <Package className="w-4 h-4 text-primary" /> Track Orders
               </Link>
               {isAdmin && (
                 <div>
@@ -274,7 +274,7 @@ export default function MobileNav({ isOpen, onClose, initialSection = null }: Mo
                 onClick={onClose}
                 className="inline-flex items-center text-xs text-ink-secondary hover:text-primary min-h-8"
               >
-                New patron? <span className="ml-1 font-semibold text-primary underline">Create an account</span>
+                New customer? <span className="ml-1 font-semibold text-primary underline">Create an account</span>
               </Link>
               <div>
                 <Link
@@ -289,9 +289,9 @@ export default function MobileNav({ isOpen, onClose, initialSection = null }: Mo
           )}
         </div>
 
-        {/* Need Help / Concierge Block */}
+        {/* Need Help / Support Block */}
         <div className="mt-6 pt-5 border-t border-line">
-          <p className="font-serif text-base font-medium text-ink">Atelier Concierge</p>
+          <p className="font-serif text-base font-medium text-ink">Customer Support</p>
           {store.address && (
             <p className="mt-2 text-xs text-ink-secondary leading-relaxed">{store.address}</p>
           )}

@@ -40,7 +40,7 @@ export default function ShippingPolicyPage() {
           <div className="space-y-2">
             <p className="text-sm text-ink-secondary">Have an urgent wedding date or international travel schedule?</p>
             <Link href="/contact" className="inline-flex items-center min-h-11 text-sm font-semibold text-ink underline underline-offset-4 hover:text-primary-hover">
-              Contact Atelier Concierge
+              Contact Customer Support
             </Link>
           </div>
         ),
@@ -48,9 +48,9 @@ export default function ShippingPolicyPage() {
       links={{
         title: "Explore Other Policies",
         items: [
-          { href: "/policies/returns", label: "Returns & Atelier Alterations" },
+          { href: "/policies/returns", label: "Returns & Size Alterations" },
           { href: "/policies/privacy", label: "Privacy & Data Protection" },
-          { href: "/policies/terms", label: "Terms & Bespoke Agreement" },
+          { href: "/policies/terms", label: "Terms of Service" },
         ],
       }}
     >
@@ -60,7 +60,7 @@ export default function ShippingPolicyPage() {
         </p>
         <div className={policyNote}>
           <p><strong className={strong}>Standard Tailoring Lead Time:</strong> 5 to 7 business days from date of payment confirmation.</p>
-          <p><strong className={strong}>Urgent Commissions:</strong> If you require delivery by a specific event or wedding date, please notify our atelier concierge prior to or immediately following order placement.</p>
+          <p><strong className={strong}>Urgent Orders:</strong> If you require delivery by a specific event or wedding date, please notify our customer support team prior to or immediately following order placement.</p>
         </div>
       </PolicySection>
 
@@ -125,7 +125,7 @@ export default function ShippingPolicyPage() {
 
       <PolicySection id="packaging" title={sections[4].label}>
         <p>
-          Each bespoke piece is folded into an unbleached, breathable organic cotton muslin storage bag and encased in our rigid botanical monogram keepsake box. A signed certificate of authenticity and handwritten artisan note accompany every shipment.
+          Each handcrafted piece is folded into an unbleached, breathable organic cotton muslin storage bag and encased in our rigid botanical monogram keepsake box. A signed certificate of authenticity and handwritten artisan note accompany every shipment.
         </p>
       </PolicySection>
 

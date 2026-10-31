@@ -11,7 +11,7 @@ export interface SiteSettings {
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   store: {
     name: `${BRAND.name}`,
-    supportEmail: `concierge@${BRAND.domain}`,
+    supportEmail: `support@${BRAND.domain}`,
     supportPhone: "+91 (0141) 287-4390",
     address: "14 Heritage Haveli Marg, C-Scheme, Jaipur, Rajasthan 302001, India",
   },

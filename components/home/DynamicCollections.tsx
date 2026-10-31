@@ -53,7 +53,7 @@ export default function DynamicCollections() {
     return {
       ...def,
       image: match.image || def.image,
-      badge: match.count && match.count > 0 ? `${match.count} Creations` : def.badge,
+      badge: match.count && match.count > 0 ? `${match.count} Designs` : def.badge,
     };
   });
 
@@ -69,7 +69,7 @@ export default function DynamicCollections() {
         <div className="text-center max-w-2xl mx-auto mb-14 lg:mb-20">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs uppercase tracking-[0.22em] font-semibold mb-3">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Artisanal Suzani Stitchwork</span>
+            <span>Suzani Stitchwork</span>
           </div>
 
           <h2

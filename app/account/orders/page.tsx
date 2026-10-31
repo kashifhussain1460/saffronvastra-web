@@ -58,7 +58,7 @@ function mapHistoryOrder(so: any): HistoryOrder {
     hasInlineStepper: so.status === "Processing" || so.status === "Ready to Ship",
     stepperData: {
       orderPlacedDate: shortDate(so.createdAt, false),
-      processingDate: "Jaipur Atelier",
+      processingDate: "Jaipur Workshop",
       currentStep: currentIndex >= 0 ? currentIndex + 1 : Math.max(lastDone + 1, 1),
     },
     items: (so.items || []).map((it: any) => ({
@@ -190,11 +190,11 @@ export default function OrderHistoryPage() {
           <div className="rounded-2xl border border-line p-10 text-center space-y-4">
             <Package className="w-10 h-10 mx-auto text-ink-muted" strokeWidth={1.25} aria-hidden="true" />
             <h3 className="font-heading text-xl font-medium text-ink">
-              {orders.length === 0 ? "No Bespoke Orders Yet" : "No Orders Found"}
+              {orders.length === 0 ? "No Orders Yet" : "No Orders Found"}
             </h3>
             <p className="text-base text-ink-secondary max-w-md mx-auto">
               {orders.length === 0
-                ? "You have not placed any bespoke atelier orders yet. Discover our curated collections crafted with rare heritage textiles and gold zardozi."
+                ? "You have not placed any orders yet. Discover our handcrafted collections made with rich embroidery and quality fabrics."
                 : searchQuery
                 ? `No orders matching "${searchQuery}". Try a different search term.`
                 : `You have no ${filterStatus.toLowerCase()} orders at this time.`}

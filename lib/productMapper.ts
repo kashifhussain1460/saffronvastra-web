@@ -55,7 +55,7 @@ export function mapBackendProductToFrontend(raw: any): Product {
   return {
     id: raw.id || "prod-1",
     slug: raw.slug || "maroon-velvet-embroidered-jacket",
-    title: raw.title || "Handcrafted Atelier Ensemble",
+    title: raw.title || "Handcrafted Suzani Jacket",
     subtitle: raw.shortDescription || undefined,
     createdAt: raw.createdAt || undefined,
     price,
@@ -66,7 +66,7 @@ export function mapBackendProductToFrontend(raw: any): Product {
       raw.embroidery ? `Intricate ${raw.embroidery} needlework` : "Intricate hand embroidery by master artisans",
       "Relaxed contemporary silhouette with structured tailoring",
       "Full sleeves with handcrafted cuffs and satin lining",
-      "Exclusively made-to-order in Jaipur atelier",
+      "Exclusively made to order in our Jaipur workshop",
     ],
     fabricCare:
       typeof raw.careInstructions === "string" && raw.careInstructions.trim()
@@ -77,7 +77,7 @@ export function mapBackendProductToFrontend(raw: any): Product {
             "Avoid direct sunlight and high humidity",
             "Do not iron directly on embroidery; use light steam",
           ],
-    shippingInfo: "Complimentary worldwide express shipping on bespoke orders. Handcrafted delivery within 5-7 business days.",
+    shippingInfo: "Free worldwide express shipping on all orders. Handcrafted delivery within 5-7 business days.",
     leadTime: raw.leadTimeDays ? `${raw.leadTimeDays} business days` : "5-7 business days",
     category: raw.category?.slug || "jackets",
     collection: raw.collections?.[0]?.collection?.slug || "velvet-collection",

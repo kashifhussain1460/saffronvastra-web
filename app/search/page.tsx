@@ -86,10 +86,9 @@ function SearchContent() {
       <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-surface-muted text-ink">
         <Search className="h-7 w-7 stroke-[1.5]" aria-hidden="true" />
       </div>
-      <h2 className="mt-5 text-2xl font-medium text-ink sm:text-3xl">No Bespoke Pieces Found</h2>
+      <h2 className="mt-5 text-2xl font-medium text-ink sm:text-3xl">No Products Found</h2>
       <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ink-secondary sm:text-base">
-        We couldn&rsquo;t locate any garments matching &ldquo;{activeQuery}&rdquo;. Explore our bestselling heritage velvet jackets and
-        artisanal kimonos below.
+        We couldn&rsquo;t locate any items matching &ldquo;{activeQuery}&rdquo;. Explore our bestselling jackets and kimonos below.
       </p>
       <button
         type="button"

@@ -86,7 +86,7 @@ function ResetPasswordContent() {
           <h2 className="font-heading text-2xl md:text-[30px] md:leading-[42px] font-medium text-ink">Password Updated</h2>
 
           <p className="text-base text-ink-secondary leading-relaxed">
-            Your bespoke account credentials have been securely updated. You can now sign in using your new password.
+            Your account password has been securely updated. You can now sign in using your new password.
           </p>
 
           <div className="pt-4">
@@ -130,7 +130,7 @@ function ResetPasswordContent() {
               Set New Password
             </h1>
             <p className="mt-2 text-xs sm:text-sm text-stone-500 leading-relaxed font-sans">
-              Please choose a strong, unique password with at least 8 characters to safeguard your bespoke commissions.
+              Please choose a strong, unique password with at least 8 characters to safeguard your account.
             </p>
           </div>
 
