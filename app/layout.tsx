@@ -10,12 +10,11 @@ import AnnouncementBar from "@/components/layout/AnnouncementBar";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
-// Single unified font family for the entire website: Kumbh Sans
+// Single unified font family for the entire website: Kumbh Sans (Variable font)
 const kumbh = Kumbh_Sans({
   subsets: ["latin"],
   variable: "--font-body",
   display: "swap",
-  weight: ["300", "400", "500", "600", "700", "800"],
 });
 
 import StorefrontShell from "@/components/layout/StorefrontShell";
