@@ -178,28 +178,38 @@ export default function Footer() {
 
   return (
     <footer className="bg-canvas text-ink border-t border-line pb-[var(--bottom-nav-h,0px)]">
-      <div className="mx-auto max-w-[1320px] px-[15px] pt-10 pb-6 md:pt-16 md:pb-12 lg:pt-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-0 md:gap-x-8 md:gap-y-10 lg:gap-x-8">
-          {/* Brand + contact */}
+      <div className="mx-auto max-w-[1320px] px-[15px] pt-10 pb-6 md:pt-16 md:pb-12 lg:pt-16">
+        
+        {/* Prominent Center-Aligned Brand Header / Visual Anchor */}
+        <div className="flex flex-col items-center justify-center text-center pb-10 md:pb-12 border-b border-line">
+          <Link href="/" aria-label="SaffronVastra home" className="inline-flex items-center justify-center group transition-opacity hover:opacity-85">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={encodeURI("/SaffronVastra Botanical Monogram Logo (1).png")}
+              alt="SaffronVastra"
+              width={1086}
+              height={362}
+              className="h-auto w-[220px] sm:w-[260px] md:w-[290px] lg:w-[320px] mix-blend-multiply transition-transform duration-300 group-hover:scale-[1.01]"
+            />
+          </Link>
+          <p className="mt-3 text-xs sm:text-sm uppercase tracking-[0.2em] text-ink-muted font-medium max-w-md">
+            Haute Couture &amp; Traditional Embroidery
+          </p>
+        </div>
+
+        {/* Footer Navigation Columns */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-0 md:gap-x-8 md:gap-y-10 lg:gap-x-8 pt-10 md:pt-12">
+          {/* Atelier & Contact */}
           <div className="md:order-1 lg:order-none lg:col-span-4 pb-6 md:pb-0">
-            <Link href="/" aria-label="SaffronVastra home" className="inline-block">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={encodeURI("/SaffronVastra Botanical Monogram Logo (1).png")}
-                alt="SaffronVastra"
-                width={1086}
-                height={362}
-                className="h-auto w-[200px] md:w-[240px] mix-blend-multiply"
-              />
-            </Link>
-            {store.address && <p className="mt-5 max-w-xs text-base leading-relaxed text-ink-secondary">{store.address}</p>}
+            <h3 className="mb-4 text-base font-semibold text-ink">Jaipur Atelier &amp; Concierge</h3>
+            {store.address && <p className="max-w-xs text-base leading-relaxed text-ink-secondary">{store.address}</p>}
             <Link
               href="/contact"
-              className="mt-2 inline-flex items-center gap-1.5 min-h-11 md:min-h-0 text-xs font-semibold uppercase tracking-[0.1em] text-ink hover:text-primary-hover transition-colors"
+              className="mt-3 inline-flex items-center gap-1.5 min-h-11 md:min-h-0 text-xs font-semibold uppercase tracking-[0.1em] text-ink hover:text-primary-hover transition-colors"
             >
               Get Direction <ArrowUpRight aria-hidden="true" className="w-4 h-4" />
             </Link>
-            <ul className="mt-3 space-y-2 text-base text-ink-secondary">
+            <ul className="mt-4 space-y-2.5 text-base text-ink-secondary">
               {store.supportEmail && (
                 <li>
                   <a href={`mailto:${store.supportEmail}`} className="inline-flex items-center gap-3 min-h-10 md:min-h-0 break-all hover:text-primary-hover transition-colors">

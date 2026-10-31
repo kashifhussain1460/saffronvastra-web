@@ -4,27 +4,24 @@ import Link from "next/link";
 import Carousel from "./Carousel";
 import { CONTAINER } from "./SectionHeading";
 
-// Modave paired collection banners ("Capsule Collection" / "New Arrival"): two rounded 3:2 image
-// cards with centred text and an underlined link; one per view on phones. Existing shop copy.
 const BANNERS = [
   {
-    title: "Shop by Collection",
-    text: "Thoughtfully curated pieces for every mood, season, and moment.",
-    cta: "View All",
-    href: "/collections",
-    img: "/images/hero/velvet_hero_model.jpg",
-    alt: "Model in a maroon embroidered velvet jacket",
-    // the photo has a decorative arch cut into its top-left corner; zoom past it
-    crop: "origin-bottom-right scale-[1.18] group-hover:scale-[1.24]",
+    title: "Suzani Jackets",
+    text: "Expressive traditional needlework tailored into statement jacket silhouettes.",
+    cta: "Explore Jackets",
+    href: "/collections?category=suzani-jackets",
+    img: "/images/categories/suzani-jackets.jpg",
+    alt: "Saffron Vastra Suzani embroidered jacket",
+    crop: "object-center scale-[1.05] group-hover:scale-[1.10]",
   },
   {
-    title: "Premium Fabrics",
-    text: "Luxurious fabrics chosen for comfort, drape, and enduring life.",
-    cta: "Our Story",
-    href: "/about",
-    img: "/images/editorial/notifications_right_embroidery.jpg",
-    alt: "Close-up of floral embroidery on deep red velvet",
-    crop: "origin-bottom-right scale-[1.2] group-hover:scale-[1.26]",
+    title: "Suzani Kimonos",
+    text: "Graceful wrap silhouettes featuring intricate floral and medallion embroidery.",
+    cta: "Discover Kimonos",
+    href: "/collections?category=suzani-kimonos",
+    img: "/images/categories/suzani-kimonos.jpg",
+    alt: "Saffron Vastra Suzani embroidered kimono",
+    crop: "object-center scale-[1.05] group-hover:scale-[1.10]",
   },
 ];
 
@@ -47,15 +44,15 @@ export default function PromoBanners() {
                 sizes="(max-width: 768px) 100vw, 50vw"
                 className={`object-cover transition-transform duration-1000 ease-out ${b.crop}`}
               />
-              <div aria-hidden="true" className="absolute inset-0 bg-inverse/35" />
+              <div aria-hidden="true" className="absolute inset-0 bg-inverse/45" />
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-[15px] text-center xl:gap-3">
-                <h2 className="text-[28px] font-medium leading-9 text-on-inverse md:text-[30px] md:leading-[38px] xl:text-[40px] xl:leading-[48px]">
+                <h2 className="text-[28px] font-medium leading-9 text-on-inverse md:text-[30px] md:leading-[38px] xl:text-[40px] xl:leading-[48px] font-heading font-serif">
                   {b.title}
                 </h2>
-                <p className="text-base leading-[26px] text-on-inverse">{b.text}</p>
+                <p className="text-base leading-[26px] text-on-inverse font-sans max-w-md">{b.text}</p>
                 <Link
                   href={b.href}
-                  className="mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-on-inverse xl:text-base"
+                  className="mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-on-inverse xl:text-base font-sans"
                 >
                   <span className="border-b border-on-inverse pb-0.5 transition-colors group-hover:border-transparent">
                     {b.cta}

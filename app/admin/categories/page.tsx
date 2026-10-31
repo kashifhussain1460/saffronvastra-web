@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/adminApi";
 
-type CategoryStatus = "Active" | "Draft" | "Archived";
+type CategoryStatus = "Active" | "Draft" | "Archived" | "Inactive";
 
 interface CategoryItem {
   id: string;
@@ -56,6 +56,8 @@ const statusClass = (status: CategoryStatus) =>
     ? "bg-success-bg text-success border-success-line"
     : status === "Draft"
     ? "bg-warning-bg text-warning border-warning-line"
+    : status === "Inactive"
+    ? "bg-amber-50 text-amber-700 border-amber-200"
     : "bg-surface-muted text-ink-muted border-line";
 
 export default function AdminCategoriesPage() {
@@ -408,6 +410,7 @@ export default function AdminCategoriesPage() {
                     >
                       <option value="all">Status: All</option>
                       <option value="Active">Active</option>
+                      <option value="Inactive">Inactive</option>
                       <option value="Draft">Draft</option>
                       <option value="Archived">Archived</option>
                     </select>
@@ -806,6 +809,7 @@ export default function AdminCategoriesPage() {
                   {(
                     [
                       ["Active", "Visible on the website."],
+                      ["Inactive", "Not available for sale; preserved for future activation."],
                       ["Draft", "Hidden from the website while you prepare it."],
                       ["Archived", "Hidden from the website; kept for reference."],
                     ] as Array<[CategoryStatus, string]>

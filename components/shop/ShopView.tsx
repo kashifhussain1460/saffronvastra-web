@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { SlidersHorizontal, CheckCircle2, Circle } from "lucide-react";
 import ProductCard from "@/components/ui/ProductCard";
+import { ProductGridSkeleton } from "@/components/ui/Skeleton";
 import ProductListItem from "./ProductListItem";
 import FilterPanel from "./FilterSidebar";
 import SortDropdown from "./SortDropdown";
@@ -194,15 +195,7 @@ export default function ShopView({
               <p role="status" className="sr-only">
                 {loadingText}
               </p>
-              <div aria-hidden="true" className={`grid gap-x-[15px] gap-y-[30px] xl:gap-x-[30px] xl:gap-y-10 ${GRID_CLASS["4"]}`}>
-                {Array.from({ length: 8 }, (_, i) => (
-                  <div key={i}>
-                    <div className="aspect-[3/4] w-full animate-pulse rounded-lg bg-surface-muted" />
-                    <div className="mt-4 h-4 w-3/4 animate-pulse rounded bg-surface-muted" />
-                    <div className="mt-2 h-4 w-1/3 animate-pulse rounded bg-surface-muted" />
-                  </div>
-                ))}
-              </div>
+              <ProductGridSkeleton count={perPage || 8} columns={wanted === "list" ? "4" : wanted} />
             </div>
           ) : loadState === "error" ? (
             <div role="alert" className="rounded-lg border border-line px-6 py-16 text-center">

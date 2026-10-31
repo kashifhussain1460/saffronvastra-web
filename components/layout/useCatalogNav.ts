@@ -4,21 +4,39 @@ import { useEffect, useState } from "react";
 import type { Product } from "@/types";
 import { mapBackendProductToFrontend } from "@/lib/productMapper";
 
-export interface NavCategory {
+export interface NavSubcategory {
+  id: string;
   name: string;
   slug: string;
   count?: number;
+  image?: string | null;
+  shortDescription?: string | null;
 }
+
+export interface NavCategory {
+  id: string;
+  name: string;
+  slug: string;
+  count?: number;
+  image?: string | null;
+  bannerImage?: string | null;
+  shortDescription?: string | null;
+  subcategories: NavSubcategory[];
+}
+
 export interface NavCollection {
   title: string;
   slug: string;
+  bannerImage?: string | null;
 }
+
 export interface CatalogNav {
   categories: NavCategory[];
+  allFlatCategories: NavSubcategory[];
   collections: NavCollection[];
 }
 
-// One request per page load, shared by the header mega menu, the mobile menu and the footer.
+// Single memoized promise per page session, shared by the header mega menu, mobile navigation, and footer.
 let navPromise: Promise<CatalogNav> | null = null;
 
 function loadNav(): Promise<CatalogNav> {
@@ -27,19 +45,57 @@ function loadNav(): Promise<CatalogNav> {
       fetch(url)
         .then((res) => (res.ok ? res.json() : null))
         .catch(() => null);
-    navPromise = Promise.all([json("/api/v1/categories"), json("/api/v1/collections")]).then(([cats, cols]) => ({
-      categories: Array.isArray(cats?.data)
-        ? cats.data
-            .filter((c: { parentId?: string | null; status?: string }) => !c.parentId && (!c.status || c.status === "Active"))
-            .map((c: { name: string; slug: string; productsCount?: number }) => ({ name: c.name, slug: c.slug, count: c.productsCount }))
-        : [],
-      collections: Array.isArray(cols?.data)
+
+    navPromise = Promise.all([json("/api/v1/categories"), json("/api/v1/collections")]).then(([cats, cols]) => {
+      const rawCats: any[] = Array.isArray(cats?.data) ? cats.data : [];
+      const activeCats = rawCats.filter((c) => !c.status || c.status === "Active");
+
+      const mainCats = activeCats.filter((c) => !c.parentId);
+
+      const categories: NavCategory[] = mainCats.map((main) => {
+        const children = activeCats.filter((child) => child.parentId === main.id);
+        return {
+          id: main.id,
+          name: main.name,
+          slug: main.slug,
+          count: main.productsCount ?? 0,
+          image: main.image || null,
+          bannerImage: main.bannerImage || null,
+          shortDescription: main.shortDescription || null,
+          subcategories: children.map((ch) => ({
+            id: ch.id,
+            name: ch.name,
+            slug: ch.slug,
+            count: ch.productsCount ?? 0,
+            image: ch.image || null,
+            shortDescription: ch.shortDescription || null,
+          })),
+        };
+      });
+
+      const allFlatCategories: NavSubcategory[] = activeCats.map((c) => ({
+        id: c.id,
+        name: c.name,
+        slug: c.slug,
+        count: c.productsCount ?? 0,
+        image: c.image || null,
+        shortDescription: c.shortDescription || null,
+      }));
+
+      const collections: NavCollection[] = Array.isArray(cols?.data)
         ? cols.data
-            .filter((c: { status?: string }) => !c.status || c.status === "Active")
-            .map((c: { title: string; slug: string }) => ({ title: c.title, slug: c.slug }))
-        : [],
-    }));
-    // a failed load may be retried on the next mount
+            .filter((c: any) => !c.status || c.status === "Active")
+            .map((c: any) => ({
+              title: c.title,
+              slug: c.slug,
+              bannerImage: c.bannerImage || null,
+            }))
+        : [];
+
+      return { categories, allFlatCategories, collections };
+    });
+
+    // If load failed with zero items, permit a retry on subsequent mount
     navPromise.then((r) => {
       if (r.categories.length === 0 && r.collections.length === 0) navPromise = null;
     });
@@ -49,7 +105,7 @@ function loadNav(): Promise<CatalogNav> {
 
 /** Real categories and collections from the API (empty lists until loaded or if the API is down). */
 export function useCatalogNav(enabled = true): CatalogNav {
-  const [nav, setNav] = useState<CatalogNav>({ categories: [], collections: [] });
+  const [nav, setNav] = useState<CatalogNav>({ categories: [], allFlatCategories: [], collections: [] });
   useEffect(() => {
     if (!enabled) return;
     let cancelled = false;
@@ -65,7 +121,7 @@ export function useCatalogNav(enabled = true): CatalogNav {
 
 let featuredPromise: Promise<Product[]> | null = null;
 
-/** A few featured products from the live catalogue (mega menu and search suggestions). */
+/** Featured products from the live catalogue for mega menu and suggestions. */
 export function useFeaturedProducts(enabled: boolean, limit = 4): Product[] {
   const [items, setItems] = useState<Product[]>([]);
   useEffect(() => {

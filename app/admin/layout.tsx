@@ -151,7 +151,15 @@ export default function AdminLayout({
 
   const navItems = [
     { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-    { label: "Products", href: "/admin/products", icon: Package },
+    {
+      label: "Products",
+      href: "/admin/products",
+      icon: Package,
+      children: [
+        { label: "All Products", href: "/admin/products" },
+        { label: "Etsy CSV Import", href: "/admin/products/etsy-import" },
+      ],
+    },
     { label: "Categories", href: "/admin/categories", icon: Layers },
     { label: "Collections", href: "/admin/collections", icon: BookOpen },
     { label: "Orders", href: "/admin/orders", icon: ShoppingBag },
@@ -198,35 +206,59 @@ export default function AdminLayout({
                 : pathname?.startsWith(item.href);
 
             return (
-              <Link
-                key={item.label}
-                href={item.href}
-                className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all ${
-                  isActive
-                    ? "bg-secondary text-on-primary shadow-md font-semibold"
-                    : "text-on-inverse-muted hover:text-on-primary hover:bg-on-inverse/5"
-                }`}
-              >
-                <Icon className={`w-4 h-4 ${isActive ? "text-on-inverse-muted" : "text-on-inverse-muted"}`} />
-                <span>{item.label}</span>
-                {item.href === "/admin/returns" && returnsOpen > 0 && (
-                  <span
-                    data-testid="returns-badge"
-                    aria-label={`${returnsOpen} requests waiting for review`}
-                    className="ml-auto text-[10px] font-semibold bg-primary text-on-primary rounded-full px-1.5 py-0.5 leading-none"
-                  >
-                    {returnsOpen}
-                  </span>
+              <div key={item.label} className="space-y-0.5">
+                <Link
+                  href={item.href}
+                  className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all ${
+                    isActive
+                      ? "bg-secondary text-on-primary shadow-md font-semibold"
+                      : "text-on-inverse-muted hover:text-on-primary hover:bg-on-inverse/5"
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 ${isActive ? "text-on-inverse-muted" : "text-on-inverse-muted"}`} />
+                  <span>{item.label}</span>
+                  {item.href === "/admin/returns" && returnsOpen > 0 && (
+                    <span
+                      data-testid="returns-badge"
+                      aria-label={`${returnsOpen} requests waiting for review`}
+                      className="ml-auto text-[10px] font-semibold bg-primary text-on-primary rounded-full px-1.5 py-0.5 leading-none"
+                    >
+                      {returnsOpen}
+                    </span>
+                  )}
+                  {item.href === "/admin/inbox" && inboxNew > 0 && (
+                    <span
+                      aria-label={`${inboxNew} new messages`}
+                      className="ml-auto text-[10px] font-semibold bg-primary text-on-primary rounded-full px-1.5 py-0.5 leading-none"
+                    >
+                      {inboxNew}
+                    </span>
+                  )}
+                </Link>
+                {item.children && isActive && (
+                  <div className="ml-7 pl-2.5 border-l border-inverse-line/60 space-y-1 my-1">
+                    {item.children.map((child) => {
+                      const isChildActive =
+                        child.href === "/admin/products"
+                          ? pathname === "/admin/products" || pathname === "/admin/products/new"
+                          : pathname?.startsWith(child.href);
+                      return (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          className={`block px-2.5 py-1.5 rounded-md text-[11px] transition-colors ${
+                            isChildActive
+                              ? "text-highlight font-semibold bg-on-inverse/10"
+                              : "text-on-inverse-muted hover:text-on-primary hover:bg-on-inverse/5"
+                          }`}
+                        >
+                          {child.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
                 )}
-                {item.href === "/admin/inbox" && inboxNew > 0 && (
-                  <span
-                    aria-label={`${inboxNew} new messages`}
-                    className="ml-auto text-[10px] font-semibold bg-primary text-on-primary rounded-full px-1.5 py-0.5 leading-none"
-                  >
-                    {inboxNew}
-                  </span>
-                )}
-              </Link>
+              </div>
             );
           })}
         </nav>
@@ -336,34 +368,59 @@ export default function AdminLayout({
                     : pathname?.startsWith(item.href);
 
                 return (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs ${
-                      isActive ? "bg-secondary text-on-primary font-medium" : "text-on-primary"
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    <span>{item.label}</span>
-                {item.href === "/admin/returns" && returnsOpen > 0 && (
-                  <span
-                    data-testid="returns-badge"
-                    aria-label={`${returnsOpen} requests waiting for review`}
-                    className="ml-auto text-[10px] font-semibold bg-primary text-on-primary rounded-full px-1.5 py-0.5 leading-none"
-                  >
-                    {returnsOpen}
-                  </span>
-                )}
-                {item.href === "/admin/inbox" && inboxNew > 0 && (
-                  <span
-                    aria-label={`${inboxNew} new messages`}
-                    className="ml-auto text-[10px] font-semibold bg-primary text-on-primary rounded-full px-1.5 py-0.5 leading-none"
-                  >
-                    {inboxNew}
-                  </span>
-                )}
-                  </Link>
+                  <div key={item.label} className="space-y-0.5">
+                    <Link
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs ${
+                        isActive ? "bg-secondary text-on-primary font-medium" : "text-on-primary"
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span>{item.label}</span>
+                      {item.href === "/admin/returns" && returnsOpen > 0 && (
+                        <span
+                          data-testid="returns-badge"
+                          aria-label={`${returnsOpen} requests waiting for review`}
+                          className="ml-auto text-[10px] font-semibold bg-primary text-on-primary rounded-full px-1.5 py-0.5 leading-none"
+                        >
+                          {returnsOpen}
+                        </span>
+                      )}
+                      {item.href === "/admin/inbox" && inboxNew > 0 && (
+                        <span
+                          aria-label={`${inboxNew} new messages`}
+                          className="ml-auto text-[10px] font-semibold bg-primary text-on-primary rounded-full px-1.5 py-0.5 leading-none"
+                        >
+                          {inboxNew}
+                        </span>
+                      )}
+                    </Link>
+                    {item.children && isActive && (
+                      <div className="ml-6 pl-2.5 border-l border-inverse-line/60 space-y-1 my-1">
+                        {item.children.map((child) => {
+                          const isChildActive =
+                            child.href === "/admin/products"
+                              ? pathname === "/admin/products" || pathname === "/admin/products/new"
+                              : pathname?.startsWith(child.href);
+                          return (
+                            <Link
+                              key={child.href}
+                              href={child.href}
+                              onClick={() => setMobileMenuOpen(false)}
+                              className={`block px-2.5 py-1.5 rounded-md text-[11px] transition-colors ${
+                                isChildActive
+                                  ? "text-highlight font-semibold bg-on-inverse/10"
+                                  : "text-on-inverse-muted hover:text-on-primary"
+                              }`}
+                            >
+                              {child.label}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </nav>

@@ -58,6 +58,12 @@
   --color-info: 36 91 145;
   --color-info-bg: 232 240 248;
   --color-info-line: 169 196 224;
+
+  /* Single unified font family: Kumbh Sans across the entire website */
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-body);
+  --font-heading: var(--font-body);
+  --font-accent: var(--font-body);
 }
 
 @layer base {
@@ -69,15 +75,21 @@
   body {
     background-color: rgb(var(--color-canvas));
     color: rgb(var(--color-ink));
-    font-family: var(--font-body), system-ui, -apple-system, sans-serif;
+    font-family: var(--font-body), "Kumbh Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  h1, h2, h3, h4, .font-editorial {
-    font-family: var(--font-body), system-ui, sans-serif;
+  /* Universal typography: All headings, titles, and editorial text use the unified font family */
+  h1, h2, h3, h4, h5, h6, .font-editorial, .font-serif, .font-heading {
+    font-family: var(--font-body), "Kumbh Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-weight: 500;
-    letter-spacing: 0;
+    letter-spacing: -0.01em;
+  }
+
+  /* Universal inputs, buttons, and form controls share the same font family */
+  input, button, select, textarea {
+    font-family: inherit;
   }
 
   ::selection {
@@ -109,4 +121,38 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgb(var(--color-accent));
+}
+
+/* Luxury E-Commerce Shimmer Effect for Skeletons */
+@keyframes luxuryShimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background-color: #f2efe9;
+}
+
+.skeleton-shimmer::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: luxuryShimmer 1.8s infinite ease-in-out;
+  content: "";
+  pointer-events: none;
 }

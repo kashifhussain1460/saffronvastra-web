@@ -1,7 +1,7 @@
 import { BRAND } from "@/lib/brand";
 import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/site";
-import { Kumbh_Sans, Instrument_Sans } from "next/font/google";
+import { Kumbh_Sans } from "next/font/google";
 import "./globals.css";
 import { StoreProvider } from "@/context/StoreContext";
 import { SettingsProvider } from "@/context/SettingsContext";
@@ -10,19 +10,12 @@ import AnnouncementBar from "@/components/layout/AnnouncementBar";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
-// Typography follows the Modave reference: Kumbh Sans for headings and body, Instrument Sans for small UI accents.
+// Single unified font family for the entire website: Kumbh Sans
 const kumbh = Kumbh_Sans({
   subsets: ["latin"],
   variable: "--font-body",
   display: "swap",
-  weight: ["300", "400", "500", "600", "700"],
-});
-
-const instrument = Instrument_Sans({
-  subsets: ["latin"],
-  variable: "--font-accent",
-  display: "swap",
-  weight: ["400", "500", "600", "700"],
+  weight: ["300", "400", "500", "600", "700", "800"],
 });
 
 import StorefrontShell from "@/components/layout/StorefrontShell";
@@ -53,7 +46,7 @@ export default async function RootLayout({
 }>) {
   const settings = await fetchSiteSettings();
   return (
-    <html lang="en" className={`${kumbh.variable} ${instrument.variable}`}>
+    <html lang="en" className={kumbh.variable}>
       <body className="min-h-screen flex flex-col bg-canvas text-ink selection:bg-surface-muted selection:text-secondary">
         <SettingsProvider settings={settings}>
           <StoreProvider>

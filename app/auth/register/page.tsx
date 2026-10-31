@@ -141,8 +141,14 @@ function RegisterForm() {
         cta: "Sign In",
       }}
     >
-      <h2 className="font-heading text-2xl md:text-[30px] md:leading-[42px] font-medium text-ink">Create Your Account</h2>
-      <p className="mt-2 text-base text-ink-secondary">Fields marked * are required.</p>
+      <div className="mb-6 text-center sm:text-left">
+        <h1 className="font-heading text-2xl sm:text-[30px] md:text-[32px] font-medium text-stone-900 tracking-tight leading-tight">
+          Create Your Account
+        </h1>
+        <p className="mt-2 text-xs sm:text-sm text-stone-500 leading-relaxed font-sans">
+          Fields marked <span className="text-secondary">*</span> are required.
+        </p>
+      </div>
 
       {/* Form-level error (network, server) */}
       {error && (

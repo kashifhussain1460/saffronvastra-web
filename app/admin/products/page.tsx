@@ -22,6 +22,7 @@ import {
   Layers,
   Sparkles,
   Download,
+  Upload,
   IndianRupee,
   Check,
   X,
@@ -283,6 +284,14 @@ export default function AdminProductsPage() {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
+          <Link
+            href="/admin/products/etsy-import"
+            className="inline-flex items-center gap-2 px-3.5 py-2 bg-surface border border-line rounded-md text-xs font-semibold text-ink hover:bg-ink/5 transition-colors shadow-2xs"
+          >
+            <Upload className="w-3.5 h-3.5 text-accent" />
+            <span>Etsy CSV Import</span>
+          </Link>
+
           <button
             onClick={() => showNotification("Product CSV catalog exported")}
             className="inline-flex items-center gap-2 px-3.5 py-2 bg-surface border border-line rounded-md text-xs font-semibold text-ink hover:bg-ink/5 transition-colors shadow-2xs"

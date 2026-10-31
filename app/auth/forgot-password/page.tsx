@@ -93,10 +93,14 @@ export default function ForgotPasswordPage() {
       ) : (
         /* FORM STATE */
         <div>
-          <h2 className="font-heading text-2xl md:text-[30px] md:leading-[42px] font-medium text-ink">Reset Password</h2>
-          <p className="mt-2 text-base text-ink-secondary leading-relaxed">
-            Enter your registered email address and we will send you a secure link to choose a new password.
-          </p>
+          <div className="mb-6 text-center sm:text-left">
+            <h1 className="font-heading text-2xl sm:text-[30px] md:text-[32px] font-medium text-stone-900 tracking-tight leading-tight">
+              Reset Password
+            </h1>
+            <p className="mt-2 text-xs sm:text-sm text-stone-500 leading-relaxed font-sans">
+              Enter your registered email address and we will send you a secure link to choose a new password.
+            </p>
+          </div>
 
           {error && (
             <div role="alert" className="mt-6 rounded-lg border border-error-line bg-error-bg px-4 py-3 text-sm text-error">

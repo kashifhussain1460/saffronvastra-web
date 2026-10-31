@@ -7,6 +7,7 @@ import ProductCard from "@/components/ui/ProductCard";
 import ShopPageTitle from "@/components/shop/ShopPageTitle";
 import ShopView from "@/components/shop/ShopView";
 import { ShopProduct, toShopProduct } from "@/components/shop/shopData";
+import { CatalogPageSkeleton } from "@/components/ui/Skeleton";
 
 const POPULAR = ["Velvet Jackets", "Handworked Kimonos", "Co-ord Sets", "Ivory", "Maroon", "Zari Embroidery", "Festive"];
 
@@ -195,15 +196,7 @@ function SearchContent() {
 
 export default function SearchPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-screen items-center justify-center bg-canvas py-20">
-          <p role="status" className="text-base text-ink-secondary">
-            Searching the catalogue...
-          </p>
-        </div>
-      }
-    >
+    <Suspense fallback={<CatalogPageSkeleton title="Search Results" />}>
       <SearchContent />
     </Suspense>
   );

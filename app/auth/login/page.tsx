@@ -1,10 +1,9 @@
 "use client";
 
-import { BRAND } from "@/lib/brand";
 import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import AuthSplit from "@/components/auth/AuthSplit";
 import { btnPrimary, inputClass, labelClass } from "@/components/auth/ui";
 
@@ -94,9 +93,13 @@ function LoginForm() {
       } else {
         const errData = await res.json().catch(() => null);
         if (errData?.code === "EMAIL_NOT_VERIFIED") {
-          // the password was right but the address is not confirmed yet: offer a new link
+          // Address not confirmed yet: offer new link
           setLoading(false);
-          router.push(`/auth/verify-email/sent?email=${encodeURIComponent(loginEmail.toLowerCase())}${redirectQuery ? `&redirect=${encodeURIComponent(redirectQuery)}` : ""}`);
+          router.push(
+            `/auth/verify-email/sent?email=${encodeURIComponent(loginEmail.toLowerCase())}${
+              redirectQuery ? `&redirect=${encodeURIComponent(redirectQuery)}` : ""
+            }`
+          );
           return;
         }
         setError(errData?.message || "Invalid credentials. Please verify your email and password.");
@@ -113,24 +116,35 @@ function LoginForm() {
   return (
     <AuthSplit
       title="Sign In"
-      crumbs={[{ label: "Home", href: "/" }, { label: "Account", href: "/account" }, { label: "Sign In" }]}
+      crumbs={[
+      
+      ]}
       aside={{
         heading: "New Customer",
-        text: `New to ${BRAND.name}? Create an account to follow your orders, keep a wishlist and check out faster with saved addresses.`,
+        text: "Create an account to follow your orders, keep a wishlist and check out faster with saved addresses.",
         href: redirectQuery ? `/auth/register?redirect=${encodeURIComponent(redirectQuery)}` : "/auth/register",
         cta: "Create an Account",
       }}
     >
-      <h2 className="font-heading text-2xl md:text-[30px] md:leading-[42px] font-medium text-ink">Welcome Back</h2>
-      <p className="mt-2 text-base text-ink-secondary">Sign in to view your orders, wishlist and saved addresses.</p>
+      <div className="mb-6 sm:mb-7 text-center sm:text-left">
+        <h1 className="font-heading text-[28px] sm:text-[34px] lg:text-[36px] font-medium text-stone-900 tracking-tight leading-tight">
+          Welcome Back
+        </h1>
+        <p className="mt-2 text-xs sm:text-sm text-stone-500 leading-relaxed font-sans">
+          Sign in to view your orders, wishlist and saved addresses.
+        </p>
+      </div>
 
       {error && (
-        <div role="alert" className="mt-6 rounded-lg border border-error-line bg-error-bg px-4 py-3 text-sm text-error">
+        <div
+          role="alert"
+          className="mb-5 rounded-lg border border-red-200 bg-red-50/90 px-4 py-3 text-xs sm:text-sm text-red-700 font-sans"
+        >
           {error}
         </div>
       )}
 
-      <form onSubmit={handlePasswordLogin} className="mt-7 space-y-5" noValidate>
+      <form onSubmit={handlePasswordLogin} className="space-y-4" noValidate>
         <div>
           <label htmlFor="login-email" className={labelClass}>
             Email Address
@@ -160,36 +174,46 @@ function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••••••"
-              className={`${inputClass()} pr-12`}
+              className={`${inputClass()} pr-11`}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-1 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center text-ink-muted hover:text-ink"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-700 transition-colors cursor-pointer"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
-              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex justify-end pt-0.5">
           <Link
             href="/auth/forgot-password"
-            className="text-base font-semibold text-ink underline underline-offset-2 hover:text-primary-hover transition-colors"
+            className="text-xs font-semibold text-stone-800 underline underline-offset-4 decoration-stone-300 hover:decoration-stone-800 hover:text-stone-950 transition-colors font-sans"
           >
             Forgot Your Password?
           </Link>
         </div>
 
-        <button type="submit" disabled={loading} className={btnPrimary}>
+        <button
+          type="submit"
+          disabled={loading}
+          className={`${btnPrimary} mt-2`}
+        >
           {loading ? (
             <>
-              <span className="w-4 h-4 border-2 border-on-primary border-t-transparent rounded-full animate-spin" aria-hidden="true" />
-              Authenticating...
+              <span
+                className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+                aria-hidden="true"
+              />
+              <span>Authenticating...</span>
             </>
           ) : (
-            "Sign In"
+            <>
+              <span>Sign In</span>
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+            </>
           )}
         </button>
       </form>
@@ -201,9 +225,9 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-[60vh] bg-surface flex items-center justify-center">
-          <h1 className="sr-only">Sign In to {BRAND.name}</h1>
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="min-h-screen bg-[#FAF9F5] flex items-center justify-center">
+          <h1 className="sr-only">Sign In to Saffron Vastra</h1>
+          <div className="w-8 h-8 border-2 border-stone-800 border-t-transparent rounded-full animate-spin" />
         </div>
       }
     >

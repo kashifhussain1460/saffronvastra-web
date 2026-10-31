@@ -9,6 +9,7 @@ import { useStore } from "@/context/StoreContext";
 import PriceTag from "@/components/ui/PriceTag";
 import PageTitle from "@/components/checkout/PageTitle";
 import { Heart, X, Check, ArrowUpRight, ChevronLeft, ChevronDown } from "lucide-react";
+import { ProductGridSkeleton } from "@/components/ui/Skeleton";
 
 export default function WishlistPage() {
   const { wishlist, toggleWishlist, addToCart, openCart } = useStore();
@@ -100,9 +101,9 @@ export default function WishlistPage() {
         )}
 
         {savedStatus === "loading" ? (
-          <p role="status" className="text-base text-ink-secondary py-10 text-center">
-            Loading your saved items...
-          </p>
+          <div className="py-6">
+            <ProductGridSkeleton count={4} columns="4" />
+          </div>
         ) : wishlistProducts.length === 0 ? (
           <div className="max-w-md mx-auto text-center py-6 md:py-10">
             <div className="w-24 h-24 mx-auto rounded-full bg-surface-muted grid place-items-center mb-6">

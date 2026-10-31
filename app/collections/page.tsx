@@ -101,15 +101,11 @@ function CollectionsContent() {
   );
 }
 
+import { CatalogPageSkeleton } from "@/components/ui/Skeleton";
+
 export default function CollectionsPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-screen items-center justify-center bg-canvas">
-          <h1 className="text-2xl font-medium text-ink">Loading Collections...</h1>
-        </div>
-      }
-    >
+    <Suspense fallback={<CatalogPageSkeleton title="Collections" />}>
       <CollectionsContent />
     </Suspense>
   );

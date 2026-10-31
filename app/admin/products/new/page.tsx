@@ -467,13 +467,33 @@ function AdminNewProductWizard() {
     setFocusKeywords(focusKeywords.filter((k) => k !== kw));
   };
 
+  const addKeywordsFromString = (input: string) => {
+    const rawTokens = input.split(",").map((t) => t.trim()).filter(Boolean);
+    if (rawTokens.length === 0) return;
+    const next = [...focusKeywords];
+    for (const token of rawTokens) {
+      if (!next.includes(token) && token.length <= 50) {
+        next.push(token);
+      }
+    }
+    setFocusKeywords(next);
+  };
+
   const handleAddKeyword = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && keywordInput.trim()) {
       e.preventDefault();
-      if (!focusKeywords.includes(keywordInput.trim())) {
-        setFocusKeywords([...focusKeywords, keywordInput.trim()]);
-      }
+      addKeywordsFromString(keywordInput);
       setKeywordInput("");
+    }
+  };
+
+  const handleKeywordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (val.includes(",")) {
+      addKeywordsFromString(val);
+      setKeywordInput("");
+    } else {
+      setKeywordInput(val);
     }
   };
 
@@ -1985,11 +2005,16 @@ function AdminNewProductWizard() {
                 />
               </div>
 
-              {/* Focus Keywords */}
+              {/* Focus Keywords & Tags */}
               <div>
-                <label className="font-semibold text-ink block mb-1">
-                  Focus Keywords (Optional)
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="font-semibold text-ink block">
+                    Product Tags & Focus Keywords (Optional)
+                  </label>
+                  <span className="text-[10px] text-ink-muted">
+                    {focusKeywords.length} tags added
+                  </span>
+                </div>
                 <div className="flex flex-wrap items-center gap-2 p-2 bg-canvas border border-line rounded-md min-h-[44px]">
                   {focusKeywords.map((kw) => (
                     <span
@@ -2009,12 +2034,15 @@ function AdminNewProductWizard() {
                   <input
                     type="text"
                     value={keywordInput}
-                    onChange={(e) => setKeywordInput(e.target.value)}
+                    onChange={handleKeywordChange}
                     onKeyDown={handleAddKeyword}
-                    placeholder="Type keyword and press Enter..."
-                    className="flex-1 bg-transparent border-none text-xs focus:outline-none min-w-[140px] px-2 py-0.5"
+                    placeholder="Type tag and press Enter or comma..."
+                    className="flex-1 bg-transparent border-none text-xs focus:outline-none min-w-[150px] px-2 py-0.5"
                   />
                 </div>
+                <p className="text-[10px] text-ink-muted mt-1">
+                  Separate tags with commas or press Enter. You can add more than 15 tags.
+                </p>
               </div>
             </div>
 

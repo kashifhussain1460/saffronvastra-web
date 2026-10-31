@@ -84,7 +84,7 @@ export default function ProductGallery({ images, alts = [], title, badge, discou
           {images.map((src, i) => (
             <div
               key={`${src}-${i}`}
-              className="relative w-full shrink-0 snap-start aspect-[3/4]"
+              className="relative w-full shrink-0 snap-start aspect-[3/4] bg-surface-muted overflow-hidden rounded-xl"
               role="group"
               aria-roledescription="slide"
               aria-label={`${i + 1} of ${count}`}

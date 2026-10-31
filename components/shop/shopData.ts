@@ -16,6 +16,8 @@ export interface ShopProduct extends Product {
   /** Collections the product is known to belong to (filled in by the page when it has that data). */
   collectionSlugs: string[];
   categoryName?: string;
+  parentCategorySlug?: string;
+  parentCategoryName?: string;
   secondImage?: string;
 }
 
@@ -41,6 +43,8 @@ export function toShopProduct(raw: any): ShopProduct {
       ? raw.collections.map((c: any) => c?.collection?.slug).filter(Boolean)
       : [],
     categoryName: raw?.category?.name || undefined,
+    parentCategorySlug: raw?.category?.parent?.slug || undefined,
+    parentCategoryName: raw?.category?.parent?.name || undefined,
     secondImage: p.images.length > 1 ? p.images[1] : undefined,
   };
 }
@@ -191,9 +195,14 @@ export const isOnSale = (p: Product) => !!p.compareAtPrice && p.compareAtPrice >
 function matches(p: ShopProduct, f: ShopFilters, skip?: ListFacet): boolean {
   for (const facet of LIST_FACETS) {
     if (facet === skip || f[facet].length === 0) continue;
+    if (facet === "category") {
+      // "new-arrivals" is an old category link; it means the New Arrival flag.
+      if (f.category.includes("new-arrivals") && p.badges?.includes("NEW")) continue;
+      const cats = [p.category, p.parentCategorySlug].filter(Boolean) as string[];
+      if (!cats.some((c) => f.category.includes(c))) return false;
+      continue;
+    }
     const vals = facetValues(p, facet);
-    // "new-arrivals" is an old category link; it means the New Arrival flag.
-    if (facet === "category" && f.category.includes("new-arrivals") && p.badges?.includes("NEW")) continue;
     if (!vals.some((v) => f[facet].includes(v))) return false;
   }
   if (f.sale && !isOnSale(p)) return false;

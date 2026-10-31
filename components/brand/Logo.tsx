@@ -10,6 +10,8 @@ const ASSETS = {
   mark: { src: "/images/brand/saffronvastra-mark.png", width: 512, height: 512 },
   // the floral SV monogram used in the header
   header: { src: "/images/brand/saffronvastra-header.png", width: 480, height: 375 },
+  // Elegant Botanical SV Monogram Logo used on authentication pages
+  auth: { src: "/Elegant Botanical SV Monogram Logo.png", width: 1536, height: 1024 },
 } as const;
 
 const HEIGHTS = {
@@ -17,6 +19,7 @@ const HEIGHTS = {
   wordmark: { sm: "h-[22px]", md: "h-6", lg: "h-7" },
   mark: { sm: "h-8", md: "h-10", lg: "h-12" },
   header: { sm: "h-9", md: "h-11", lg: "h-14" },
+  auth: { sm: "h-16", md: "h-20", lg: "h-24" },
 } as const;
 
 interface LogoProps {
@@ -41,7 +44,7 @@ export default function Logo({ variant = "dark", kind = "wordmark", className = 
         width={asset.width}
         height={asset.height}
         priority={priority}
-        className={`${HEIGHTS[kind][size]} w-auto select-none ${variant === "light" ? "invert" : ""}`}
+        className={`${HEIGHTS[kind][size]} w-auto object-contain select-none ${kind === "auth" ? "mix-blend-multiply" : ""} ${variant === "light" ? "invert" : ""}`}
       />
     </Link>
   );

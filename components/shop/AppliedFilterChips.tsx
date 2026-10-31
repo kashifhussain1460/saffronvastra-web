@@ -24,7 +24,7 @@ export function buildChips(
       const opt = options[facet].find((o) => o.value === v);
       chips.push({
         key: `${facet}:${v}`,
-        label: facet === "size" ? `Size ${v}` : opt?.label || v.replace(/-/g, " "),
+        label: facet === "size" ? `Size ${v}` : opt?.label || v.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
         hex: facet === "colour" ? opt?.hex : undefined,
         remove: () => on.toggle(facet, v),
       });

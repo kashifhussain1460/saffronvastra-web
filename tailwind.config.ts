@@ -36,11 +36,11 @@ const config: Config = {
         info: { DEFAULT: token("info"), bg: token("info-bg"), line: token("info-line") },
       },
       fontFamily: {
-        // font-serif is kept as an alias so existing heading classes follow the Modave heading font
-        serif: ["var(--font-body)", "Kumbh Sans", "system-ui", "sans-serif"],
-        heading: ["var(--font-body)", "Kumbh Sans", "system-ui", "sans-serif"],
-        sans: ["var(--font-body)", "Kumbh Sans", "system-ui", "sans-serif"],
-        accent: ["var(--font-accent)", "Instrument Sans", "system-ui", "sans-serif"],
+        sans: ["var(--font-body)", "Kumbh Sans", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
+        body: ["var(--font-body)", "Kumbh Sans", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
+        serif: ["var(--font-body)", "Kumbh Sans", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
+        heading: ["var(--font-body)", "Kumbh Sans", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
+        accent: ["var(--font-body)", "Kumbh Sans", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
       },
       borderRadius: {
         arch: "140px 140px 0 0",
