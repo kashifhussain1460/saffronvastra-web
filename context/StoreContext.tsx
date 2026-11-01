@@ -585,8 +585,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       : Math.min(appliedPromo.discountValue, cartTotal)
     : 0;
 
+  const deliveryDisabled = siteSettings.shipping.deliveryChargesEnabled === false || siteSettings.shipping.flatFee === 0;
   const freeShippingThreshold = siteSettings.shipping.freeShippingThreshold;
-  const shippingFee = cartTotal >= freeShippingThreshold || cartTotal === 0 ? 0 : siteSettings.shipping.flatFee;
+  const shippingFee = deliveryDisabled || cartTotal >= freeShippingThreshold || cartTotal === 0 ? 0 : siteSettings.shipping.flatFee;
   const finalTotal = Math.max(0, cartTotal - promoDiscount + shippingFee);
 
   return (

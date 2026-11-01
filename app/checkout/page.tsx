@@ -67,6 +67,7 @@ export default function CheckoutPage() {
     total: number;
     codEnabled: boolean;
     onlineEnabled: boolean;
+    deliveryChargesEnabled?: boolean;
   } | null>(null);
   // Payment method. Cash on Delivery is the default; the quote says which methods the shop currently offers.
   const [paymentMethod, setPaymentMethod] = useState<PaymentChoice>("COD");
@@ -104,6 +105,7 @@ export default function CheckoutPage() {
               total: data.data.totalMinor / 100,
               codEnabled: data.data.codEnabled !== false,
               onlineEnabled: data.data.onlineEnabled === true,
+              deliveryChargesEnabled: data.data.deliveryChargesEnabled,
             });
           }
         }
@@ -131,7 +133,20 @@ export default function CheckoutPage() {
     else if (paymentMethod === "CASHFREE" && !liveQuote.onlineEnabled && liveQuote.codEnabled) setPaymentMethod("COD");
   }, [liveQuote, paymentMethod]);
 
-  const shippingCost = liveQuote !== null ? liveQuote.shipping : shippingMethod === "express" ? shippingRules.flatFee : cartTotal >= shippingRules.freeShippingThreshold ? 0 : shippingRules.flatFee;
+  const isDeliveryDisabled =
+    shippingRules.deliveryChargesEnabled === false ||
+    shippingRules.flatFee === 0 ||
+    (liveQuote !== null && liveQuote.deliveryChargesEnabled === false);
+
+  const shippingCost = isDeliveryDisabled
+    ? 0
+    : liveQuote !== null
+    ? liveQuote.shipping
+    : shippingMethod === "express"
+    ? shippingRules.flatFee
+    : cartTotal >= shippingRules.freeShippingThreshold
+    ? 0
+    : shippingRules.flatFee;
   const effectivePromoDiscount = liveQuote !== null ? liveQuote.discount : promoDiscount;
   const finalTotal = liveQuote !== null ? liveQuote.total : Math.max(0, cartTotal - promoDiscount + shippingCost);
 
@@ -506,13 +521,13 @@ export default function CheckoutPage() {
       id: "standard" as const,
       title: "Made-to-Order Delivery",
       text: "Handcrafted & delivered in 5–7 business days with tracked courier.",
-      price: cartTotal >= shippingRules.freeShippingThreshold ? "Free" : inr(shippingRules.flatFee),
+      price: isDeliveryDisabled || cartTotal >= shippingRules.freeShippingThreshold ? "Free" : inr(shippingRules.flatFee),
     },
     {
       id: "express" as const,
       title: "Express Delivery (Fast Workshop Processing)",
       text: "Priority stitching & express courier delivery within 3–5 business days.",
-      price: inr(shippingRules.flatFee),
+      price: isDeliveryDisabled ? "Free" : inr(shippingRules.flatFee),
     },
   ];
 
@@ -898,7 +913,7 @@ export default function CheckoutPage() {
               </div>
               <div className="flex justify-between items-center py-2.5">
                 <dt className="font-semibold text-ink">Shipping</dt>
-                <dd className="text-ink">{shippingCost === 0 ? "Free" : inr(shippingCost)}</dd>
+                <dd className="text-ink">{shippingCost === 0 ? <span className="text-success font-semibold">Free</span> : inr(shippingCost)}</dd>
               </div>
               {codFee > 0 && (
                 <div className="flex justify-between items-center py-2.5">
