@@ -3,10 +3,10 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Menu, Search, Heart, ShoppingBag } from "lucide-react";
+import { LayoutGrid, Menu, Search, User, ShoppingBag } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 
-// Modave mobile toolbar (below lg): Shop, Categories, Search, Wishlist, Cart.
+// Mobile toolbar (below lg): Shop, Categories, Search, Account, Cart.
 // While visible it publishes --bottom-nav-h (70px + safe-area inset) on :root so pages with their own
 // fixed bottom bars (e.g. the cart's sticky checkout bar) can sit above it with `bottom: var(--bottom-nav-h, 0px)`.
 const HIDDEN_ON = ["/checkout", "/order-confirmation", "/auth"];
@@ -18,11 +18,11 @@ const BADGE =
 
 export default function BottomNav({ onOpenCategories }: { onOpenCategories?: () => void }) {
   const pathname = usePathname() || "/";
-  const { openSearch, openCart, cartCount, wishlist } = useStore();
+  const { openSearch, openCart, cartCount } = useStore();
   if (HIDDEN_ON.some((p) => pathname === p || pathname.startsWith(`${p}/`))) return null;
 
   const shopActive = pathname.startsWith("/collections") || pathname.startsWith("/products");
-  const wishActive = pathname.startsWith("/account/wishlist");
+  const accountActive = pathname.startsWith("/account");
 
   return (
     <>
@@ -51,14 +51,9 @@ export default function BottomNav({ onOpenCategories }: { onOpenCategories?: () 
             </button>
           </li>
           <li>
-            <Link href="/account/wishlist" aria-current={wishActive ? "page" : undefined} className={`${ITEM} ${wishActive ? "text-secondary" : "text-ink"}`}>
-              <Heart className="w-5 h-5 stroke-[1.5]" aria-hidden="true" />
-              <span className={LABEL}>Wishlist</span>
-              {wishlist.length > 0 && (
-                <span className={BADGE} aria-hidden="true">
-                  {wishlist.length}
-                </span>
-              )}
+            <Link href="/account" aria-current={accountActive ? "page" : undefined} className={`${ITEM} ${accountActive ? "text-secondary" : "text-ink"}`}>
+              <User className="w-5 h-5 stroke-[1.5]" aria-hidden="true" />
+              <span className={LABEL}>Account</span>
             </Link>
           </li>
           <li>

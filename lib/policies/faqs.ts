@@ -7,7 +7,7 @@ export const FAQ_MARKDOWN = `# Frequently Asked Questions (FAQs)
 
 Welcome to Saffron Vastra! We're here to make your shopping experience simple, transparent and enjoyable. Find answers to common questions about our products, sizes, orders, payments, shipping, returns and customer support.
 
-If you need further assistance, please contact us at **support@saffronvastra.com** or call **+91 86198 76160**.
+If you need further assistance, please contact us at **support@saffronvastra.com** or call **+91 82093 43979**.
 
 ## 1. About Saffron Vastra and Our Products
 
@@ -272,14 +272,14 @@ Where required, submit your request through the marketplace's official process. 
 If your question is not answered here, our team can assist you.
 
 **Email:** support@saffronvastra.com
-**Phone:** +91 86198 76160
-**WhatsApp:** Contact us through the official WhatsApp channel displayed on our website, if available.
+**Phone:** +91 82093 43979
+**WhatsApp:** Contact us at +91 82093 43979 through the official WhatsApp channel displayed on our website.
 **Contact Form:** Available through our website, where enabled.
 
-**Customer Support Hours:** 10:00 AM–7:00 PM. Please confirm the applicable days of operation before relying on this schedule.
+**Customer Support Hours:** 10:00 AM–7:00 PM IST (Monday to Saturday).
 
-**Business Name:** Saffron Threads, operating as Saffron Vastra
-**Business Address:** 125, Abdul Hamid Nagar, Panch Batti, M. I. Road, Jaipur, Rajasthan, India
+**Business Name:** Saffron Vastra
+**Business Address:** 125, Abdul Hameed Nagar, Panch Batti, M.I. Road, Jaipur, Rajasthan 302001, India
 
 Thank you for choosing Saffron Vastra. We appreciate your trust and look forward to providing you with a pleasant shopping experience.
 `;

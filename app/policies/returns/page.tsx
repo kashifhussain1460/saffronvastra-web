@@ -4,17 +4,17 @@ import Link from "next/link";
 import PolicyLayout, { PolicySection, policyList, policyLink, policyNote } from "@/components/content/PolicyLayout";
 
 export const metadata = {
-  title: `Returns & Free Alterations Policy | ${BRAND.name}`,
+  title: `Returns, Exchanges & Cancellation Policy | ${BRAND.displayName}`,
   description:
-    `Learn about our size alterations policy, store credit guidelines, and made-to-order craft commitments at ${BRAND.name}.`,
+    `Seven-day exchange policy, damaged item resolutions, and 24-hour cancellation terms at ${BRAND.displayName}.`,
 };
 
 const sections = [
-  { id: "made-to-order", label: "1. The Made-to-Order Principle" },
-  { id: "alterations", label: "2. Free Size Alterations" },
-  { id: "exchanges", label: "3. Exchanges & Digital Store Credit" },
-  { id: "damaged-items", label: "4. Damaged or Defective Items" },
-  { id: "how-to", label: "5. How to Initiate an Alteration or Return" },
+  { id: "returns-exchanges", label: "1. 7-Day Standard Returns (Exchange Only)" },
+  { id: "damaged-incorrect", label: "2. Damaged or Incorrect Products (Replacement or Refund)" },
+  { id: "cancellations", label: "3. Order Cancellation Window (Within 24 Hours)" },
+  { id: "eligibility", label: "4. Return Eligibility & Inspection Criteria" },
+  { id: "how-to", label: "5. How to Report an Exchange, Defect or Cancellation" },
 ];
 
 const strong = "text-ink font-medium";
@@ -22,80 +22,92 @@ const strong = "text-ink font-medium";
 export default function ReturnsPolicyPage() {
   return (
     <PolicyLayout
-      title="Returns & Size Alterations"
-      crumb="Returns & Alterations"
-      intro="Our priority is ensuring your garment fits you comfortably. We offer free size adjustments on all made-to-order pieces."
+      title="Returns, Exchanges & Cancellations"
+      crumb="Returns & Exchanges"
+      intro={`At ${BRAND.displayName}, each garment is handcrafted with meticulous care. We offer 7-day exchanges, comprehensive support for damaged or incorrect items, and a 24-hour order cancellation window.`}
       sections={sections}
       summary={{
-        title: "Alteration Guarantee",
+        title: "Policy Summary",
         items: [
-          "7-Day window to report fit adjustments.",
-          "Complimentary master tailor adjustments.",
-          "Free doorstep reverse pickup across India.",
-          "12-Month valid digital store credit for exchanges.",
+          "7-Day Return Eligibility: begins from the date of delivery",
+          "Exchange Only: standard returns are resolved via size or product exchange",
+          "No Change-of-Mind Cash Refunds: standard returns eligible for exchange",
+          "Damaged/Incorrect: free replacement or full refund to original payment method",
+          "Cancellation: eligible within 24 hours of placing order (prior to dispatch)",
         ],
         footer: (
           <Link
             href="/contact"
             className="flex items-center justify-center text-center min-h-12 px-6 rounded-full bg-primary text-on-primary text-sm font-semibold hover:bg-primary-hover transition-colors"
           >
-            Request Alteration via Support
+            Contact Customer Support
           </Link>
         ),
       }}
       links={{
-        title: "Helpful Resources",
+        title: "Helpful Information",
         items: [
-          { href: "/faqs", label: "Sizing & Fit Guide FAQs" },
-          { href: "/policies/shipping", label: "Shipping & Delivery Terms" },
+          { href: "/order-cancellation", label: "Order Cancellation Guidelines" },
+          { href: "/payment-methods", label: "Supported Payment Methods" },
+          { href: "/policies/shipping", label: "Shipping & Fulfillment Terms" },
+          { href: "/size-guide", label: "Unisex Sizing Guide" },
         ],
       }}
     >
-      <PolicySection id="made-to-order" title={sections[0].label}>
+      <PolicySection id="returns-exchanges" title={sections[0].label}>
         <p>
-          Each {BRAND.name} creation is handcrafted specifically for your order—cut, tailored, and hand-embroidered by master artisans in Jaipur. Because of this personalized craftsmanship and our zero-waste philosophy, we do not accept standard commercial returns or cash refunds for buyer&apos;s remorse.
+          We want you to feel confident and comfortable in every garment you receive. Customers are eligible to request an exchange within <strong className={strong}>7 calendar days from the date of delivery</strong>.
         </p>
-        <p>
-          However, your satisfaction with the quality and fit of our work is sacred to us. We provide full fit guarantees through our dedicated alteration and exchange program.
-        </p>
-      </PolicySection>
-
-      <PolicySection id="alterations" title={sections[1].label}>
-        <p>If your garment requires slight fit refinements—such as sleeve shortening, waist tapering, or bust adjustments:</p>
         <div className={policyNote}>
-          <p><strong className={strong}>One Round of Complimentary Adjustments:</strong> We provide one complimentary alteration within <strong className={strong}>7 days</strong> of delivery.</p>
-          <p><strong className={strong}>Domestic Pickup:</strong> For clients within India, our courier will collect the garment from your doorstep at zero cost to you.</p>
-          <p><strong className={strong}>Alteration Timeline:</strong> Our master tailors will refine the piece and re-dispatch it within 4 to 6 business days.</p>
+          <p><strong className={strong}>Exchange Only:</strong> Eligible standard returns are handled through exchange for an alternative size or product. We do not provide automatic monetary or cash refunds for ordinary change-of-mind returns.</p>
+          <p><strong className={strong}>Reverse Pickup:</strong> We arrange doorstep reverse pickup across serviceable Indian PIN codes for approved exchange requests.</p>
         </div>
       </PolicySection>
 
-      <PolicySection id="exchanges" title={sections[2].label}>
-        <p>If an unworn garment cannot be tailored to your satisfaction or you wish to select another silhouette or colorway:</p>
+      <PolicySection id="damaged-incorrect" title={sections[1].label}>
+        <p>
+          If you receive a product that is damaged during transit, defective, or different from what you ordered:
+        </p>
         <ul className={policyList}>
-          <li>You may request an exchange for <strong className={strong}>Digital Store Credit</strong> with a validity of 12 months.</li>
-          <li>The request must be logged within <strong className={strong}>7 calendar days</strong> of parcel receipt.</li>
-          <li>Items must be in pristine condition: unworn, unwashed, unaltered, free of perfumes or marks, with all original tags and security ribbons intact.</li>
-          <li>Custom bridal wear with personal modifications requested by the customer is final sale and eligible for alterations only.</li>
+          <li><strong className={strong}>Free Resolution:</strong> You will receive a completely free resolution at zero additional cost.</li>
+          <li><strong className={strong}>Replacement or Refund:</strong> Eligible cases will be resolved promptly through a free replacement garment or a full refund.</li>
+          <li><strong className={strong}>Refund Method:</strong> All monetary refunds for verified damaged or incorrect items are processed directly back to your original payment method (bank account, card, or UPI) within 5–7 business days.</li>
+          <li><strong className={strong}>Reporting Deadline:</strong> Please notify customer support within 48 to 72 hours of receiving the parcel, including clear photos or videos of the issue.</li>
         </ul>
       </PolicySection>
 
-      <PolicySection id="damaged-items" title={sections[3].label}>
+      <PolicySection id="cancellations" title={sections[2].label}>
         <p>
-          Every order undergoes a rigorous 14-point inspection prior to dispatch. However, in the improbable event that a garment arrives damaged or flawed:
+          We understand that circumstances may change after an order is placed:
         </p>
-        <p>
-          Please contact our customer support team within <strong className={strong}>48 hours</strong> of delivery with photographs of the parcel and defective area. Upon verification, we will provide an expedited recreation of your garment, or a full refund to your original payment method.
-        </p>
+        <ul className={policyList}>
+          <li><strong className={strong}>24-Hour Window:</strong> You can request cancellation of your order within <strong className={strong}>24 hours</strong> of placing it.</li>
+          <li><strong className={strong}>Pre-Dispatch Condition:</strong> Cancellation eligibility requires that the order has not already entered the courier dispatch process. Once dispatched, the order cannot be cancelled and must follow the standard return/exchange procedure upon arrival.</li>
+          <li><strong className={strong}>Full Refund on Cancellation:</strong> If cancelled within 24 hours prior to dispatch, prepaid online orders will receive a 100% refund to the original payment source.</li>
+        </ul>
+      </PolicySection>
+
+      <PolicySection id="eligibility" title={sections[3].label}>
+        <p>To qualify for an exchange or return inspection, garments must meet the following criteria:</p>
+        <ul className={policyList}>
+          <li>Garment must be in original, unwashed, and unworn condition.</li>
+          <li>All original brand tags, labels, and protective packaging must be intact.</li>
+          <li>Items showing signs of wear, perfume scents, makeup stains, or alterations cannot be accepted.</li>
+        </ul>
       </PolicySection>
 
       <PolicySection id="how-to" title={sections[4].label}>
         <p>
-          <strong className={strong}>Step 1:</strong> Navigate to your{" "}
-          <Link href="/account/orders" className={`${policyLink} font-medium`}>Account Orders Dashboard</Link> and select the relevant order, or message our WhatsApp support (
-          <a href="https://wa.me/919829014820" className={`${policyLink} font-medium`}>+91 98290 14820</a>).
+          <strong className={strong}>Step 1:</strong> Contact customer support via email at{" "}
+          <a href={`mailto:${BRAND.supportEmail}`} className={`${policyLink} font-medium`}>{BRAND.supportEmail}</a> or WhatsApp / Phone at{" "}
+          <a href={`https://wa.me/${BRAND.phone.replace(/[^0-9]/g, "")}`} className={`${policyLink} font-medium`}>{BRAND.phone}</a>.
         </p>
-        <p><strong className={strong}>Step 2:</strong> State your alteration notes or fit feedback. Our master tailor will review your notes and confirm pickup.</p>
-        <p><strong className={strong}>Step 3:</strong> Pack the garment securely into its original muslin pouch and gift box. Our courier will collect the package directly from your door.</p>
+        <p>
+          <strong className={strong}>Step 2:</strong> Mention your Order ID (e.g. #ST66223), the item name, and whether you are requesting a size exchange, reporting damage, or requesting a 24-hour cancellation.
+        </p>
+        <p>
+          <strong className={strong}>Step 3:</strong> For exchanges, securely pack the garment in its packaging. Our courier partner will pick it up from your address. Once inspected at our Jaipur workshop, your exchange item will be prepared and dispatched.
+        </p>
       </PolicySection>
     </PolicyLayout>
   );

@@ -28,7 +28,6 @@ const NAV = [
   { label: "New Arrivals", href: "/collections?sort=newest" },
   { label: "Best Sellers", href: "/collections?sort=bestselling" },
   { label: "About Us", href: "/about" },
-  { label: "Journal", href: "/journal" },
   { label: "Contact", href: "/contact" },
 ] as const;
 
@@ -428,7 +427,6 @@ export default function Header({ onOpenMenu }: HeaderProps) {
                       {[
                         { href: "/account", label: "My Profile & Details", Icon: User },
                         { href: "/account/orders", label: "Orders & Milestones", Icon: Package },
-                        { href: "/account/wishlist", label: `Curated Wishlist (${wishlist.length})`, Icon: Heart },
                       ].map(({ href, label, Icon }) => (
                         <Link
                           key={href}
@@ -520,19 +518,6 @@ export default function Header({ onOpenMenu }: HeaderProps) {
             )}
           </div>
 
-          {/* Wishlist Link */}
-          <Link
-            href="/account/wishlist"
-            className={`${ICON_BTN} hidden md:inline-flex`}
-            aria-label={`Wishlist with ${wishlist.length} items`}
-          >
-            <Heart className="w-5 h-5 stroke-[1.75]" />
-            {wishlist.length > 0 && (
-              <span className="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-primary text-on-primary text-[10px] font-bold leading-4 text-center">
-                {wishlist.length}
-              </span>
-            )}
-          </Link>
 
           {/* Shopping Bag Trigger */}
           <button

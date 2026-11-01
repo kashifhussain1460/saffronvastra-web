@@ -47,11 +47,13 @@ export default function SizeGuideModal({ isOpen, onClose }: SizeGuideModalProps)
   if (!isOpen) return null;
 
   const sizeData = [
-    { size: "S", bustIn: "34 - 36", waistIn: "28 - 30", hipIn: "36 - 38", lengthIn: "27", bustCm: "86 - 91", waistCm: "71 - 76", hipCm: "91 - 96", lengthCm: "68" },
-    { size: "M", bustIn: "36 - 38", waistIn: "30 - 32", hipIn: "38 - 40", lengthIn: "27.5", bustCm: "91 - 96", waistCm: "76 - 81", hipCm: "96 - 101", lengthCm: "70" },
-    { size: "L", bustIn: "38 - 40", waistIn: "32 - 34", hipIn: "40 - 42", lengthIn: "28", bustCm: "96 - 101", waistCm: "81 - 86", hipCm: "101 - 106", lengthCm: "71" },
-    { size: "XL", bustIn: "40 - 43", waistIn: "34 - 37", hipIn: "42 - 45", lengthIn: "28.5", bustCm: "101 - 109", waistCm: "86 - 94", hipCm: "106 - 114", lengthCm: "72" },
-    { size: "Free Size", bustIn: "34 - 42", waistIn: "28 - 36", hipIn: "36 - 44", lengthIn: "28", bustCm: "86 - 106", waistCm: "71 - 91", hipCm: "91 - 112", lengthCm: "71" },
+    { size: "XS", chestIn: "32 - 34", waistIn: "26 - 28", hipIn: "34 - 36", lengthIn: "26.5", chestCm: "81 - 86", waistCm: "66 - 71", hipCm: "86 - 91", lengthCm: "67" },
+    { size: "S", chestIn: "35 - 37", waistIn: "29 - 31", hipIn: "37 - 39", lengthIn: "27", chestCm: "89 - 94", waistCm: "73 - 79", hipCm: "94 - 99", lengthCm: "69" },
+    { size: "M", chestIn: "38 - 40", waistIn: "32 - 34", hipIn: "40 - 42", lengthIn: "27.5", chestCm: "96 - 101", waistCm: "81 - 86", hipCm: "101 - 107", lengthCm: "70" },
+    { size: "L", chestIn: "41 - 43", waistIn: "35 - 37", hipIn: "43 - 45", lengthIn: "28", chestCm: "104 - 109", waistCm: "89 - 94", hipCm: "109 - 114", lengthCm: "71" },
+    { size: "XL", chestIn: "44 - 46", waistIn: "38 - 40", hipIn: "46 - 48", lengthIn: "28.5", chestCm: "112 - 117", waistCm: "96 - 101", hipCm: "117 - 122", lengthCm: "72" },
+    { size: "XXL", chestIn: "47 - 50", waistIn: "41 - 44", hipIn: "49 - 52", lengthIn: "29", chestCm: "119 - 127", waistCm: "104 - 112", hipCm: "124 - 132", lengthCm: "74" },
+    { size: "Free Size", chestIn: "36 - 44", waistIn: "30 - 38", hipIn: "38 - 46", lengthIn: "28", chestCm: "91 - 112", waistCm: "76 - 96", hipCm: "96 - 117", lengthCm: "71" },
   ];
 
   return (
@@ -79,17 +81,17 @@ export default function SizeGuideModal({ isOpen, onClose }: SizeGuideModalProps)
         <div className="flex items-center gap-2.5 mb-2">
           <Ruler className="w-5 h-5 text-ink" />
           <h2 className="text-xl md:text-2xl text-ink font-medium">
-            {BRAND.name} Size Guide
+            {BRAND.name} Unisex Size Guide
           </h2>
         </div>
         <p className="text-sm text-ink-secondary mb-6 leading-relaxed">
-          Our garments are crafted to order with a contemporary relaxed fit. Measure yourself around the fullest points for the ideal fit.
+          Our jackets and kimonos feature a relaxed, versatile unisex fit designed to look effortless on all genders. Measure yourself around the fullest points for your ideal fit.
         </p>
 
         {/* Unit Toggle */}
         <div className="flex items-center justify-between mb-4 border-b border-line pb-3">
           <span className="text-sm font-medium text-ink">
-            Garment Measurements
+            Unisex Garment Measurements
           </span>
           <div className="inline-flex border border-line rounded-lg bg-surface p-1" role="group" aria-label="Units">
             <button
@@ -125,7 +127,7 @@ export default function SizeGuideModal({ isOpen, onClose }: SizeGuideModalProps)
             <thead>
               <tr className="border-b border-line text-ink text-sm">
                 <th className="py-2.5 font-medium">Size</th>
-                <th className="py-2.5 font-medium">Bust</th>
+                <th className="py-2.5 font-medium">Chest / Bust</th>
                 <th className="py-2.5 font-medium">Waist</th>
                 <th className="py-2.5 font-medium">Hip</th>
                 <th className="py-2.5 font-medium">Jacket Length</th>
@@ -135,7 +137,7 @@ export default function SizeGuideModal({ isOpen, onClose }: SizeGuideModalProps)
               {sizeData.map((row) => (
                 <tr key={row.size} className="hover:bg-surface-muted">
                   <td className="py-3 font-medium text-ink">{row.size}</td>
-                  <td className="py-3">{unit === "inches" ? row.bustIn : row.bustCm}</td>
+                  <td className="py-3">{unit === "inches" ? row.chestIn : row.chestCm}</td>
                   <td className="py-3">{unit === "inches" ? row.waistIn : row.waistCm}</td>
                   <td className="py-3">{unit === "inches" ? row.hipIn : row.hipCm}</td>
                   <td className="py-3">{unit === "inches" ? row.lengthIn : row.lengthCm}</td>
@@ -145,12 +147,20 @@ export default function SizeGuideModal({ isOpen, onClose }: SizeGuideModalProps)
           </table>
         </div>
 
-        {/* Custom Tailoring Note */}
-        <div className="mt-6 p-4 bg-surface-muted rounded-lg text-sm text-ink-secondary space-y-1">
-          <p className="font-medium text-ink">Need Custom Sizing?</p>
-          <p className="leading-relaxed text-sm text-ink-secondary">
-            Because our clothing is made to order by skilled artisans, custom shoulder, sleeve, or length adjustments can be accommodated upon request at checkout.
-          </p>
+        {/* Custom Tailoring & Fit Note */}
+        <div className="mt-6 p-4 bg-surface-muted rounded-lg text-sm text-ink-secondary space-y-2">
+          <div>
+            <p className="font-medium text-ink text-xs uppercase tracking-wider">Unisex Fit Advice</p>
+            <p className="text-xs text-ink-secondary mt-0.5">
+              Men typically fit true-to-size. Women looking for a closer tailored fit may select one size down, or stay true-to-size for an effortless relaxed drape.
+            </p>
+          </div>
+          <div className="pt-2 border-t border-line/60">
+            <p className="font-medium text-ink">Need Custom Sizing?</p>
+            <p className="leading-relaxed text-xs text-ink-secondary">
+              Because our pieces are made to order, custom sleeve length, shoulder width, or body length can be requested at checkout at no extra charge.
+            </p>
+          </div>
         </div>
 
       </div>

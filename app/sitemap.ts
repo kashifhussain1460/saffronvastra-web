@@ -26,13 +26,23 @@ async function allPages(path: string, limit: number): Promise<any[]> {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const url = (path: string) => `${SITE_URL}${path}`;
-  const statics: MetadataRoute.Sitemap = ["/", "/collections", "/journal", "/about", "/contact", "/faqs", "/size-guide", "/policies/shipping", "/policies/returns", "/policies/privacy", "/policies/terms"].map(
-    (path) => ({ url: url(path), changeFrequency: path === "/" ? "daily" : "monthly", priority: path === "/" ? 1 : 0.5 })
-  );
+  const statics: MetadataRoute.Sitemap = [
+    "/",
+    "/collections",
+    "/about",
+    "/contact",
+    "/faqs",
+    "/size-guide",
+    "/payment-methods",
+    "/order-cancellation",
+    "/policies/shipping",
+    "/policies/returns",
+    "/policies/privacy",
+    "/policies/terms",
+  ].map((path) => ({ url: url(path), changeFrequency: path === "/" ? "daily" : "monthly", priority: path === "/" ? 1 : 0.5 }));
 
-  const [products, journal, categories, collections] = await Promise.all([
+  const [products, categories, collections] = await Promise.all([
     allPages("/products", 100),
-    allPages("/journal", 50),
     getJson("/categories"),
     getJson("/collections"),
   ]);
@@ -41,7 +51,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const productEntries = products.map((p) => ({ url: url(`/products/${p.slug}`), lastModified: p.updatedAt, changeFrequency: "weekly" as const, priority: 0.8 }));
   const categoryEntries = (categories?.data || []).map((c: any) => ({ url: url(`/collections?category=${encodeURIComponent(c.slug)}`), changeFrequency: "weekly" as const, priority: 0.7 }));
   const collectionEntries = (collections?.data || []).map((c: any) => ({ url: url(`/collections/${c.slug}`), lastModified: c.updatedAt, changeFrequency: "weekly" as const, priority: 0.7 }));
-  const journalEntries = journal.map((a) => ({ url: url(`/journal/${a.slug}`), lastModified: a.publishedAt || a.updatedAt, changeFrequency: "monthly" as const, priority: 0.5 }));
 
-  return [...statics, ...categoryEntries, ...collectionEntries, ...productEntries, ...journalEntries];
+  return [...statics, ...categoryEntries, ...collectionEntries, ...productEntries];
 }

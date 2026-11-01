@@ -50,8 +50,8 @@ export default function ContactPage() {
                   </p>
                   <p>
                     WhatsApp:{" "}
-                    <a href="https://wa.me/919829014820" target="_blank" rel="noreferrer" className={infoLink}>
-                      +91 98290 14820
+                    <a href="https://wa.me/918209343979" target="_blank" rel="noreferrer" className={infoLink}>
+                      +91 82093 43979
                     </a>
                   </p>
                 </dd>
@@ -96,7 +96,7 @@ export default function ContactPage() {
                 Visiting Jaipur? Schedule an appointment at our Jaipur studio to see our fabrics, view embroidery swatches, and discuss custom sizing in person.
               </p>
               <a
-                href="https://wa.me/919829014820?text=Hello%20Saffron%20Vastra,%20I%20would%20like%20to%20request%20a%20studio%20visit."
+                href="https://wa.me/918209343979?text=Hello%20Saffron%20Vastra,%20I%20would%20like%20to%20request%20a%20studio%20visit."
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center justify-center gap-2 h-12 px-7 rounded-full bg-primary text-on-primary text-sm md:text-base font-semibold hover:bg-primary-hover transition-colors"

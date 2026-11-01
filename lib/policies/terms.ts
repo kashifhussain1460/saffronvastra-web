@@ -10,7 +10,7 @@ export const TERMS_MARKDOWN = `# Terms & Conditions
 
 Welcome to Saffron Vastra. These Terms & Conditions govern your access to and use of [https://saffronvastra.com](https://saffronvastra.com), including the purchase of products offered through our website.
 
-Saffron Vastra is a clothing brand operated by **Saffron Threads**, a sole proprietorship based in Jaipur, Rajasthan, India. We offer clothing products, including cotton TNT, cotton duck and cotton velvet jackets.
+Saffron Vastra is a clothing brand based in Jaipur, Rajasthan, India. We offer clothing products, including cotton TNT, cotton duck and cotton velvet jackets.
 
 By accessing our website, placing an order, or purchasing our products, you agree to these Terms & Conditions. Please read them carefully before making a purchase.
 
@@ -21,12 +21,12 @@ If you do not agree with these terms, you should not use our website, except to 
 The website and products are operated by:
 
 - **Brand Name:** Saffron Vastra
-- **Legal Business Name:** Saffron Threads
+- **Legal Business Name:** Saffron Vastra
 - **Business Structure:** Sole Proprietorship
-- **Business Address:** 125, Abdul Hamid Nagar, Panch Batti, M. I. Road, Jaipur, Rajasthan, India
+- **Business Address:** 125, Abdul Hameed Nagar, Panch Batti, M.I. Road, Jaipur, Rajasthan 302001, India
 - **Website:** https://saffronvastra.com
 - **Customer Support Email:** support@saffronvastra.com
-- **Customer Support Phone:** +91 86198 76160
+- **Customer Support Phone:** +91 82093 43979
 - **Grievance Officer:** Arshad Hussain Naqvi
 
 Saffron Vastra is currently not registered under GST. We do not represent ourselves as a GST-registered business or charge GST as a separately identified tax unless our registration status changes and applicable law permits it.
@@ -370,10 +370,10 @@ We aim to resolve customer concerns fairly, promptly and transparently.
 For questions about an order, product, payment, delivery, return or refund, please contact:
 
 **Grievance Officer:** Arshad Hussain Naqvi\\
-**Business:** Saffron Threads, operating as Saffron Vastra\\
-**Address:** 125, Abdul Hamid Nagar, Panch Batti, M. I. Road, Jaipur, Rajasthan, India\\
+**Business:** Saffron Vastra\\
+**Address:** 125, Abdul Hameed Nagar, Panch Batti, M.I. Road, Jaipur, Rajasthan 302001, India\\
 **Email:** support@saffronvastra.com\\
-**Phone:** +91 86198 76160
+**Phone:** +91 82093 43979
 
 Please include your order number and a clear description of your concern.
 
@@ -424,11 +424,10 @@ If any policy conflicts with mandatory applicable law, the law will prevail. For
 For questions about these Terms & Conditions, orders, products, payments, shipping, returns or refunds, please contact us:
 
 **Saffron Vastra**\\
-Operated by Saffron Threads\\
-125, Abdul Hamid Nagar, Panch Batti, M. I. Road, Jaipur, Rajasthan, India
+125, Abdul Hameed Nagar, Panch Batti, M.I. Road, Jaipur, Rajasthan 302001, India
 
 **Email:** support@saffronvastra.com\\
-**Phone:** +91 86198 76160\\
+**Phone:** +91 82093 43979\\
 **Website:** https://saffronvastra.com
 
 Thank you for choosing Saffron Vastra. We appreciate your trust and are committed to providing clear product information, reliable customer support and a fair shopping experience.

@@ -28,7 +28,6 @@ const LINKS = [
   { href: "/collections?sort=newest", label: "New Arrivals" },
   { href: "/collections?sort=bestselling", label: "Best Sellers" },
   { href: "/about", label: "About Us" },
-  { href: "/journal", label: "Journal" },
   { href: "/contact", label: "Contact" },
   { href: "/faqs", label: "FAQs" },
 ];
@@ -206,14 +205,9 @@ export default function MobileNav({ isOpen, onClose, initialSection = null }: Mo
 
         {/* Quick Account & Wishlist Pills */}
         <div className="mt-6 flex flex-wrap gap-2">
-          <Link href="/account/wishlist" onClick={onClose} className={PILL}>
-            <Heart className="w-4 h-4 stroke-[1.75] text-primary" aria-hidden="true" />
-            <span>Wishlist</span>
-            {wishlist.length > 0 && (
-              <span className="ml-1 px-1.5 py-0.5 rounded-full bg-primary text-on-primary text-[10px] font-bold">
-                {wishlist.length}
-              </span>
-            )}
+          <Link href="/track-order" onClick={onClose} className={PILL}>
+            <Package className="w-4 h-4 stroke-[1.75] text-primary" aria-hidden="true" />
+            <span>Track Order</span>
           </Link>
           {isAuthenticated ? (
             <Link href="/account" onClick={onClose} className={PILL}>

@@ -4,7 +4,6 @@ import DynamicCollections from "@/components/home/DynamicCollections";
 import HomeCatalogue from "@/components/home/HomeCatalogue";
 import CraftsmanshipStory from "@/components/home/CraftsmanshipStory";
 import WhyExplore from "@/components/home/WhyExplore";
-import JournalTeaser from "@/components/home/JournalTeaser";
 import AnnouncementMarquee from "@/components/home/AnnouncementMarquee";
 import NewsletterBanner from "@/components/marketing/NewsletterBanner";
 
@@ -38,10 +37,7 @@ export default function HomePage() {
       {/* 5. Why Explore Saffron Vastra */}
       <WhyExplore />
 
-      {/* 6. Editorial Fashion Journal Stories */}
-      <JournalTeaser />
-
-      {/* 7. Subtle Workshop Announcement Marquee */}
+      {/* 6. Subtle Workshop Announcement Marquee */}
       <AnnouncementMarquee />
 
       {/* 8. Newsletter Subscription */}

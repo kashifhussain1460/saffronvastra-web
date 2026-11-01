@@ -162,16 +162,17 @@ export default function Footer() {
     { label: "Our Story", href: "/about" },
     { label: "Artisans", href: "/about#artisans" },
     { label: "Sustainability", href: "/about#sustainability" },
-    { label: "Journal", href: "/journal" },
     { label: "Contact", href: "/contact" },
   ];
 
   const helpLinks: FooterLink[] = [
     { label: "Size Guide", href: "/size-guide" },
-    { label: "Shipping", href: "/policies/shipping" },
-    { label: "Returns", href: "/policies/returns" },
-    { label: "FAQs", href: "/faqs" },
+    { label: "Shipping Policy", href: "/policies/shipping" },
+    { label: "Returns & Exchanges", href: "/policies/returns" },
+    { label: "Order Cancellation", href: "/order-cancellation" },
+    { label: "Payment Methods", href: "/payment-methods" },
     { label: "Track Order", href: "/track-order" },
+    { label: "FAQs", href: "/faqs" },
   ];
 
   const phoneHref = store.supportPhone ? `tel:${store.supportPhone.replace(/[^\d+]/g, "")}` : "";
@@ -255,7 +256,7 @@ export default function Footer() {
       <div className="border-t border-line">
         <div className="mx-auto max-w-[1320px] px-[15px] py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3 text-sm text-ink-secondary">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-            <p>&copy; {new Date().getFullYear()} {BRAND.name}. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} {BRAND.displayName}. All rights reserved.</p>
             <Link href="/policies/privacy" className="whitespace-nowrap hover:text-primary-hover transition-colors">
               Privacy Policy
             </Link>
@@ -263,12 +264,14 @@ export default function Footer() {
               Terms &amp; Conditions
             </Link>
           </div>
-          {cod.enabled && (
-            <p className="flex items-center gap-2">
-              <span>Payment:</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-ink-muted">Accepted:</span>
+            <span className="inline-flex items-center h-7 px-2.5 rounded border border-line text-xs font-semibold text-ink">UPI</span>
+            <span className="inline-flex items-center h-7 px-2.5 rounded border border-line text-xs font-semibold text-ink">Cards &amp; Net Banking</span>
+            {cod.enabled && (
               <span className="inline-flex items-center h-7 px-2.5 rounded border border-line text-xs font-semibold text-ink">Cash on Delivery</span>
-            </p>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </footer>

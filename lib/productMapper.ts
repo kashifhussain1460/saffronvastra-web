@@ -45,12 +45,15 @@ export function mapBackendProductToFrontend(raw: any): Product {
   if (raw.isBestseller) badges.push("BESTSELLER");
   if (raw.isNewArrival) badges.push("NEW");
 
-  // Determine fabric
-  let fabric: "Velvet" | "Cotton" | "Silk" | "Linen" = "Velvet";
+  // Determine fabric per Spec v1.1: Jackets default to Cotton Velvet; Kimonos specify individual fabric
+  const catSlug = (raw.category?.slug || "").toLowerCase();
+  const isKimono = catSlug.includes("kimono") || (raw.title || "").toLowerCase().includes("kimono");
+  let fabric: "Velvet" | "Cotton" | "Silk" | "Linen" = isKimono ? "Cotton" : "Velvet";
   const mat = (raw.material || "").toLowerCase();
   if (mat.includes("silk")) fabric = "Silk";
-  else if (mat.includes("cotton")) fabric = "Cotton";
   else if (mat.includes("linen")) fabric = "Linen";
+  else if (mat.includes("cotton")) fabric = "Cotton";
+  else if (mat.includes("velvet")) fabric = "Velvet";
 
   return {
     id: raw.id || "prod-1",
@@ -62,10 +65,10 @@ export function mapBackendProductToFrontend(raw: any): Product {
     compareAtPrice,
     description: raw.description || "Handcrafted made-to-order garment crafted by master artisans in Rajasthan.",
     details: [
-      raw.material ? `${raw.material} fabric` : "Premium heavyweight velvet & silk",
+      raw.material ? `${raw.material}` : (isKimono ? "Pure natural cotton fabric with breathable lining" : "Premium cotton velvet fabric with soft satin lining"),
       raw.embroidery ? `Intricate ${raw.embroidery} needlework` : "Intricate hand embroidery by master artisans",
       "Relaxed contemporary silhouette with structured tailoring",
-      "Full sleeves with handcrafted cuffs and satin lining",
+      "Full sleeves with handcrafted cuffs and premium lining",
       "Exclusively made to order in our Jaipur workshop",
     ],
     fabricCare:
@@ -77,7 +80,7 @@ export function mapBackendProductToFrontend(raw: any): Product {
             "Avoid direct sunlight and high humidity",
             "Do not iron directly on embroidery; use light steam",
           ],
-    shippingInfo: "Free worldwide express shipping on all orders. Handcrafted delivery within 5-7 business days.",
+    shippingInfo: "Free shipping across India on orders above ₹5,000. Handcrafted & dispatched within 5–7 business days.",
     leadTime: raw.leadTimeDays ? `${raw.leadTimeDays} business days` : "5-7 business days",
     category: raw.category?.slug || "jackets",
     collection: raw.collections?.[0]?.collection?.slug || "velvet-collection",
