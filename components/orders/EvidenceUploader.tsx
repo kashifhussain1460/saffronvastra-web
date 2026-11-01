@@ -12,7 +12,7 @@ export interface UploadedPhoto {
   name: string;
 }
 
-const ALLOWED = ["image/jpeg", "image/png", "image/webp"];
+const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 
 export default function EvidenceUploader({
   photos,
@@ -102,7 +102,7 @@ export default function EvidenceUploader({
         ref={inputRef}
         id={inputId}
         type="file"
-        accept="image/jpeg,image/png,image/webp"
+        accept="image/jpeg,image/png,image/webp,image/avif"
         multiple
         disabled={full}
         aria-describedby={`${inputId}-hint`}

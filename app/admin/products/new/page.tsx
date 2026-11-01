@@ -32,6 +32,7 @@ import {
   Search,
   Tag,
   SlidersHorizontal,
+  Loader2,
 } from "lucide-react";
 
 interface ApiCategory {
@@ -49,7 +50,7 @@ interface ApiCollection {
 type FieldErrors = Record<string, string>;
 
 const SIZE_KEYS = ["S", "M", "L", "XL", "Free Size"] as const;
-const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
+const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp", "image/avif"];
 const MAX_IMAGE_BYTES = MAX_UPLOAD_BYTES;
 const MAX_IMAGES = 20;
 const MAX_PRICE = 5_000_000;
@@ -292,7 +293,7 @@ function AdminNewProductWizard() {
     }
 
     if (!detailedDescription.trim()) e.description = "Detailed description is required";
-    else if (detailedDescription.length > 2000) e.description = "Detailed description must be 2000 characters or fewer";
+    else if (detailedDescription.length > 5000) e.description = "Detailed description must be 5000 characters or fewer";
 
     if (!resolvedCategoryId) e.category = "Select a primary category";
 
@@ -505,8 +506,9 @@ function AdminNewProductWizard() {
     if (list.length === 0) return;
     const problems: string[] = [];
     const accepted = list.filter((file) => {
-      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-        problems.push(`${file.name}: only PNG, JPG or WebP images are allowed`);
+      const isAvif = file.type === "image/avif" || file.type === "image/x-avif" || /\.avif$/i.test(file.name);
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type) && !isAvif) {
+        problems.push(`${file.name}: only PNG, JPG, WebP or AVIF images are allowed`);
         return false;
       }
       if (file.size > MAX_IMAGE_BYTES) {
@@ -525,7 +527,11 @@ function AdminNewProductWizard() {
     for (const file of toUpload) {
       try {
         const form = new FormData();
-        form.append("file", file);
+        let fileToSend = file;
+        if ((!file.type || file.type === "application/octet-stream" || file.type === "image/x-avif") && /\.avif$/i.test(file.name)) {
+          fileToSend = new File([file], file.name, { type: "image/avif" });
+        }
+        form.append("file", fileToSend);
         form.append("folder", "Product Images");
         form.append("altText", productName.trim() || file.name);
         const res = await fetch("/api/v1/admin/media/upload", { method: "POST", credentials: "include", body: form });
@@ -610,6 +616,7 @@ function AdminNewProductWizard() {
     if (Object.keys(errs).length > 0) {
       setStepRaw(firstErrorStep(errs));
       setSubmitError("Please fix the highlighted fields before saving.");
+      if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
       return false;
     }
 
@@ -637,6 +644,9 @@ function AdminNewProductWizard() {
       loadedVersion.current = body.data.updatedAt || null;
       setProductStatus(status === "Active" ? "published" : "draft");
       savedSnapshot.current = snapshotNow();
+      if (!editId && typeof window !== "undefined") {
+        window.history.replaceState(null, "", `/admin/products/new?edit=${body.data.id}`);
+      }
       return true;
     } catch {
       setSubmitError("Network error: the product was not saved. Check your connection and try again.");
@@ -651,7 +661,7 @@ function AdminNewProductWizard() {
     const saved = await persistProduct("Draft");
     if (saved) {
       setShowDraftNotice(true);
-      setTimeout(() => setShowDraftNotice(false), 2500);
+      setTimeout(() => setShowDraftNotice(false), 3500);
     }
   };
 
@@ -734,9 +744,38 @@ function AdminNewProductWizard() {
       </div>
 
       {showDraftNotice && (
-        <div className="p-3 bg-success-bg border border-success-line text-success rounded-md text-xs flex items-center justify-between animate-in fade-in">
-          <span>Draft saved successfully. Product details preserved.</span>
-          <button onClick={() => setShowDraftNotice(false)} className="text-success font-bold">✕</button>
+        <>
+          <div className="p-3 bg-success-bg border border-success-line text-success rounded-md text-xs flex items-center justify-between animate-in fade-in">
+            <span>Draft saved successfully. Product details preserved.</span>
+            <button onClick={() => setShowDraftNotice(false)} className="text-success font-bold">✕</button>
+          </div>
+          <div className="fixed bottom-6 right-6 z-50 p-4 bg-emerald-700 text-white rounded-xl shadow-2xl text-xs font-medium flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4">
+            <CheckCircle2 className="w-4 h-4 text-emerald-200 shrink-0" />
+            <span>Draft saved successfully. Product details preserved.</span>
+            <button
+              type="button"
+              onClick={() => setShowDraftNotice(false)}
+              aria-label="Dismiss notice"
+              className="text-white/80 hover:text-white font-bold ml-2 text-sm"
+            >
+              ✕
+            </button>
+          </div>
+        </>
+      )}
+
+      {submitError && (
+        <div className="fixed bottom-6 right-6 z-50 p-4 bg-rose-700 text-white rounded-xl shadow-2xl text-xs font-medium flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4">
+          <X className="w-4 h-4 text-rose-200 shrink-0" />
+          <span>{submitError}</span>
+          <button
+            type="button"
+            onClick={() => setSubmitError("")}
+            aria-label="Dismiss error"
+            className="text-white/80 hover:text-white font-bold ml-2 text-sm"
+          >
+            ✕
+          </button>
         </div>
       )}
 
@@ -1109,10 +1148,18 @@ function AdminNewProductWizard() {
           <div className="pt-6 border-t border-line flex items-center justify-end gap-3">
             <button
               type="button"
+              disabled={isSubmittingProduct}
               onClick={handleSaveDraft}
-              className="px-4 py-2 bg-surface border border-line rounded-md text-xs font-semibold text-ink hover:bg-ink/5 shadow-2xs"
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-surface border border-line rounded-md text-xs font-semibold text-ink hover:bg-ink/5 shadow-2xs disabled:opacity-50"
             >
-              Save as Draft
+              {isSubmittingProduct ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Saving…</span>
+                </>
+              ) : (
+                <span>Save as Draft</span>
+              )}
             </button>
             <button
               type="button"
@@ -1462,10 +1509,18 @@ function AdminNewProductWizard() {
             <div className="flex items-center gap-3">
               <button
                 type="button"
+                disabled={isSubmittingProduct}
                 onClick={handleSaveDraft}
-                className="px-4 py-2 bg-surface border border-line rounded-md text-xs font-semibold text-ink hover:bg-ink/5 shadow-2xs"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-surface border border-line rounded-md text-xs font-semibold text-ink hover:bg-ink/5 shadow-2xs disabled:opacity-50"
               >
-                Save as Draft
+                {isSubmittingProduct ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Saving…</span>
+                  </>
+                ) : (
+                  <span>Save as Draft</span>
+                )}
               </button>
               <button
                 type="button"
@@ -1754,10 +1809,18 @@ function AdminNewProductWizard() {
             <div className="flex items-center gap-3">
               <button
                 type="button"
+                disabled={isSubmittingProduct}
                 onClick={handleSaveDraft}
-                className="px-4 py-2 bg-surface border border-line rounded-md text-xs font-semibold text-ink hover:bg-ink/5 shadow-2xs"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-surface border border-line rounded-md text-xs font-semibold text-ink hover:bg-ink/5 shadow-2xs disabled:opacity-50"
               >
-                Save as Draft
+                {isSubmittingProduct ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Saving…</span>
+                  </>
+                ) : (
+                  <span>Save as Draft</span>
+                )}
               </button>
               <button
                 type="button"
@@ -1798,7 +1861,7 @@ function AdminNewProductWizard() {
                   ref={fileInputRef}
                   type="file"
                   multiple
-                  accept="image/png,image/jpeg,image/webp"
+                  accept="image/png,image/jpeg,image/webp,image/avif"
                   aria-label="Upload product images"
                   className="hidden"
                   onClick={(e) => e.stopPropagation()}
@@ -1815,7 +1878,7 @@ function AdminNewProductWizard() {
                     Click to upload <span className="text-ink-muted font-normal">or drag and drop</span>
                   </p>
                   <p className="text-[10px] text-ink-muted mt-0.5">
-                    PNG, JPG or WebP (Max 10MB each, up to {MAX_IMAGES} images)
+                    PNG, JPG, WebP or AVIF (Max 10MB each, up to {MAX_IMAGES} images)
                   </p>
                 </div>
                 <button
@@ -1942,10 +2005,18 @@ function AdminNewProductWizard() {
             <div className="flex items-center gap-3">
               <button
                 type="button"
+                disabled={isSubmittingProduct}
                 onClick={handleSaveDraft}
-                className="px-4 py-2 bg-surface border border-line rounded-md text-xs font-semibold text-ink hover:bg-ink/5 shadow-2xs"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-surface border border-line rounded-md text-xs font-semibold text-ink hover:bg-ink/5 shadow-2xs disabled:opacity-50"
               >
-                Save as Draft
+                {isSubmittingProduct ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Saving…</span>
+                  </>
+                ) : (
+                  <span>Save as Draft</span>
+                )}
               </button>
               <button
                 type="button"
@@ -2126,10 +2197,18 @@ function AdminNewProductWizard() {
             <div className="flex items-center gap-3">
               <button
                 type="button"
+                disabled={isSubmittingProduct}
                 onClick={handleSaveDraft}
-                className="px-4 py-2 bg-surface border border-line rounded-md text-xs font-semibold text-ink hover:bg-ink/5 shadow-2xs"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-surface border border-line rounded-md text-xs font-semibold text-ink hover:bg-ink/5 shadow-2xs disabled:opacity-50"
               >
-                Save as Draft
+                {isSubmittingProduct ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Saving…</span>
+                  </>
+                ) : (
+                  <span>Save as Draft</span>
+                )}
               </button>
               <button
                 type="button"

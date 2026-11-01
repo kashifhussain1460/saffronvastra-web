@@ -191,55 +191,162 @@ export default function CheckoutPage() {
   // Synchronous guard: a fast double click cannot send a second order before React re-renders the disabled button.
   const submitLock = React.useRef(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const validateSingleField = (name: string, val?: any): string => {
+    const value = val !== undefined ? val : formData[name as keyof typeof formData];
+    let err = "";
+
+    switch (name) {
+      case "firstName": {
+        const v = String(value || "").trim();
+        if (!v) err = "First name is required.";
+        else if (v.length < 2) err = "First name must be at least 2 characters.";
+        break;
+      }
+      case "lastName": {
+        const v = String(value || "").trim();
+        if (!v) err = "Last name is required.";
+        break;
+      }
+      case "email": {
+        const v = String(value || "").trim();
+        if (!v) err = "Email address is required.";
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) err = "Please enter a valid email address (e.g. name@example.com).";
+        break;
+      }
+      case "phone": {
+        const digits = String(value || "").replace(/\D/g, "");
+        if (!digits) err = "Mobile number is required.";
+        else if (digits.length < 10) err = `Enter complete 10-digit mobile number (${digits.length}/10).`;
+        else if (!/^[6-9]\d{9}$/.test(digits)) err = "Indian mobile number must begin with 6, 7, 8, or 9.";
+        break;
+      }
+      case "address": {
+        const v = String(value || "").trim();
+        if (!v) err = "Street address or house number is required.";
+        else if (v.length < 5) err = "Please enter complete street address (at least 5 characters).";
+        break;
+      }
+      case "city": {
+        const v = String(value || "").trim();
+        if (!v) err = "Town or City is required.";
+        else if (v.length < 2) err = "Please enter a valid city name.";
+        break;
+      }
+      case "state": {
+        if (!value || value === "") err = "Please select your state.";
+        break;
+      }
+      case "pincode": {
+        const pin = String(value || "").trim();
+        if (!pin) err = "PIN code is required.";
+        else if (pin.length < 6) err = `PIN code must be 6 digits (${pin.length}/6).`;
+        else if (!/^[1-9][0-9]{5}$/.test(pin)) err = "Enter a valid 6-digit Indian PIN code.";
+        break;
+      }
+    }
+
+    setErrors((prev) => {
+      if (!err) {
+        if (!prev[name]) return prev;
+        const next = { ...prev };
+        delete next[name];
+        return next;
+      }
+      return { ...prev, [name]: err };
+    });
+
+    return err;
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData((prev) => ({ ...prev, [name]: checked }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      return;
     }
-    if (errors[name]) {
-      setErrors((prev) => {
-        const next = { ...prev };
-        delete next[name];
-        return next;
-      });
+
+    // Input Sanitization
+    if (name === "phone") {
+      // Numbers only, maximum 10 digits
+      const digits = value.replace(/\D/g, "").slice(0, 10);
+      setFormData((prev) => ({ ...prev, phone: digits }));
+      if (touched.phone || errors.phone) {
+        validateSingleField("phone", digits);
+      }
+      return;
+    }
+
+    if (name === "pincode") {
+      // Numbers only, maximum 6 digits
+      const digits = value.replace(/\D/g, "").slice(0, 6);
+      setFormData((prev) => ({ ...prev, pincode: digits }));
+      if (touched.pincode || errors.pincode) {
+        validateSingleField("pincode", digits);
+      }
+      return;
+    }
+
+    if (name === "firstName" || name === "lastName") {
+      // Name characters only (letters, spaces, hyphens, apostrophes)
+      const cleanName = value.replace(/[^a-zA-Z\s'-]/g, "");
+      setFormData((prev) => ({ ...prev, [name]: cleanName }));
+      if (touched[name] || errors[name]) {
+        validateSingleField(name, cleanName);
+      }
+      return;
+    }
+
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (touched[name] || errors[name]) {
+      validateSingleField(name, value);
     }
   };
 
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    validateSingleField(name, value);
+  };
+
   const validateForm = () => {
+    const allTouched: Record<string, boolean> = {
+      firstName: true,
+      lastName: true,
+      email: true,
+      phone: true,
+      address: true,
+      city: true,
+      state: true,
+      pincode: true,
+    };
+    setTouched(allTouched);
+
     const newErrors: Record<string, string> = {};
-    if (!formData.email.trim() || !formData.email.includes("@")) {
-      newErrors.email = "Please enter a valid email address.";
-    }
-    // Indian mobile numbers: 10 digits starting 6-9, optionally written with +91 or 0.
-    const phoneDigits = formData.phone.replace(/\D/g, "").replace(/^(91|0)(?=\d{10}$)/, "");
-    if (!/^[6-9]\d{9}$/.test(phoneDigits)) {
-      newErrors.phone = "Please enter a valid 10-digit mobile number.";
-    }
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = "First name is required.";
-    }
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = "Last name is required.";
-    }
-    if (!formData.address.trim()) {
-      newErrors.address = "Delivery address is required.";
-    }
-    if (!formData.city.trim()) {
-      newErrors.city = "City is required.";
-    }
-    if (!formData.state) {
-      newErrors.state = "Select your state.";
-    }
-    if (!/^[1-9][0-9]{5}$/.test(formData.pincode.trim())) {
-      newErrors.pincode = "Enter a valid 6-digit PIN code.";
+    const fieldNames = ["firstName", "lastName", "email", "phone", "address", "city", "state", "pincode"];
+    for (const f of fieldNames) {
+      const err = validateSingleField(f);
+      if (err) newErrors[f] = err;
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+
+    if (Object.keys(newErrors).length > 0) {
+      // Focus and scroll to first invalid field
+      const firstField = fieldNames.find((f) => newErrors[f]);
+      if (firstField) {
+        const el = document.getElementById(firstField);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+          setTimeout(() => el.focus({ preventScroll: true }), 200);
+        }
+      }
+      return false;
+    }
+
+    return true;
   };
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
@@ -383,6 +490,7 @@ export default function CheckoutPage() {
       name={name}
       value={formData[name] as string}
       onChange={handleInputChange}
+      onBlur={handleBlur}
       placeholder={opts.placeholder}
       autoComplete={opts.autoComplete}
       maxLength={opts.maxLength}
@@ -468,8 +576,20 @@ export default function CheckoutPage() {
                   </div>
                   <div>
                     <FieldLabel htmlFor="phone">Mobile Phone</FieldLabel>
-                    <div className="flex">
-                      <span className="inline-flex items-center px-3.5 h-12 text-base text-ink-secondary bg-surface-muted border-2 border-r-0 border-line rounded-l-lg">
+                    <div
+                      className={`flex rounded-lg transition-colors border-2 overflow-hidden ${
+                        errors.phone
+                          ? "border-error bg-error-bg/10"
+                          : "border-line focus-within:border-ink"
+                      }`}
+                    >
+                      <span
+                        className={`inline-flex items-center px-3.5 h-12 text-base font-medium select-none border-r ${
+                          errors.phone
+                            ? "bg-error-bg/20 text-error border-error/40"
+                            : "bg-surface-muted text-ink-secondary border-line"
+                        }`}
+                      >
                         +91
                       </span>
                       <input
@@ -478,12 +598,14 @@ export default function CheckoutPage() {
                         name="phone"
                         value={formData.phone}
                         onChange={handleInputChange}
+                        onBlur={handleBlur}
                         placeholder="9876543210"
                         autoComplete="tel-national"
                         inputMode="numeric"
+                        maxLength={10}
                         aria-invalid={errors.phone ? true : undefined}
                         aria-describedby={errors.phone ? "phone-error" : undefined}
-                        className={`${fieldClass(Boolean(errors.phone))} rounded-l-none`}
+                        className="w-full h-12 bg-transparent px-4 text-base text-ink placeholder:text-ink-muted focus:outline-none"
                       />
                     </div>
                     <FieldError id="phone-error" message={errors.phone} />
@@ -532,6 +654,7 @@ export default function CheckoutPage() {
                       name="state"
                       value={formData.state}
                       onChange={handleInputChange}
+                      onBlur={handleBlur}
                       autoComplete="address-level1"
                       aria-invalid={errors.state ? true : undefined}
                       aria-describedby={errors.state ? "state-error" : undefined}
