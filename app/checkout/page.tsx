@@ -12,7 +12,7 @@ import PageTitle from "@/components/checkout/PageTitle";
 import { fieldClass, FieldLabel, FieldError } from "@/components/checkout/fields";
 import PaymentMethodPicker, { type PaymentChoice } from "@/components/checkout/PaymentMethodPicker";
 import { openCashfreeCheckout } from "@/lib/cashfree";
-import { ArrowLeft, Check, AlertCircle, X, ChevronDown } from "lucide-react";
+import { ArrowLeft, Check, AlertCircle, X, ChevronDown, Truck } from "lucide-react";
 
 // Same list as the API (backend/src/common/validators.ts): every state and union territory.
 const INDIAN_STATES = [
@@ -55,8 +55,8 @@ export default function CheckoutPage() {
   const { shipping: shippingRules, store: storeInfo } = useSiteSettings();
   const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 
-  // Shipping Method
-  const [shippingMethod, setShippingMethod] = useState<"standard" | "express">("standard");
+  // Delivery method defaults to Made-to-Order Delivery ("standard")
+  const shippingMethod: "standard" | "express" = "standard";
 
   // Live Backend Quote & Pricing
   const [liveQuote, setLiveQuote] = useState<{
@@ -142,8 +142,6 @@ export default function CheckoutPage() {
     ? 0
     : liveQuote !== null
     ? liveQuote.shipping
-    : shippingMethod === "express"
-    ? shippingRules.flatFee
     : cartTotal >= shippingRules.freeShippingThreshold
     ? 0
     : shippingRules.flatFee;
@@ -516,20 +514,7 @@ export default function CheckoutPage() {
     />
   );
 
-  const shippingOptions = [
-    {
-      id: "standard" as const,
-      title: "Made-to-Order Delivery",
-      text: "Handcrafted & delivered in 5–7 business days with tracked courier.",
-      price: isDeliveryDisabled || cartTotal >= shippingRules.freeShippingThreshold ? "Free" : inr(shippingRules.flatFee),
-    },
-    {
-      id: "express" as const,
-      title: "Express Delivery (Fast Workshop Processing)",
-      text: "Priority stitching & express courier delivery within 3–5 business days.",
-      price: isDeliveryDisabled ? "Free" : inr(shippingRules.flatFee),
-    },
-  ];
+  // Express delivery can be reintroduced here as a priority tier when needed.
 
   return (
     <div className="min-h-screen bg-surface">
@@ -727,37 +712,28 @@ export default function CheckoutPage() {
                 </div>
               </section>
 
-              {/* Delivery method */}
-              <fieldset>
-                <legend className="text-2xl font-medium text-ink mb-5">Delivery Method</legend>
-                <div className="space-y-3">
-                  {shippingOptions.map((opt) => {
-                    const active = shippingMethod === opt.id;
-                    return (
-                      <label
-                        key={opt.id}
-                        className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-colors ${
-                          active ? "border-ink bg-surface-muted" : "border-line hover:border-line-strong"
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="shippingMethod"
-                          value={opt.id}
-                          checked={active}
-                          onChange={() => setShippingMethod(opt.id)}
-                          className="mt-1 w-4 h-4 accent-primary shrink-0"
-                        />
-                        <span className="flex-1 min-w-0">
-                          <span className="block text-base font-medium text-ink">{opt.title}</span>
-                          <span className="block text-sm text-ink-secondary mt-0.5">{opt.text}</span>
-                        </span>
-                        <span className="text-base font-semibold text-ink shrink-0">{opt.price}</span>
-                      </label>
-                    );
-                  })}
+              {/* Delivery Information */}
+              <section aria-labelledby="co-delivery">
+                <h2 id="co-delivery" className="text-2xl font-medium text-ink mb-5">
+                  Delivery Information
+                </h2>
+                <div className="p-5 rounded-xl border border-line bg-surface-muted/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <Truck className="w-5 h-5 text-primary shrink-0" aria-hidden="true" />
+                      <span className="text-base font-semibold text-ink">Made-to-Order Delivery</span>
+                    </div>
+                    <p className="text-sm text-ink-secondary leading-relaxed sm:pl-7">
+                      Handcrafted with care and delivered within 5–7 business days through tracked courier.
+                    </p>
+                  </div>
+                  <div className="shrink-0 self-start sm:self-center">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-success-bg text-success border border-success-line text-xs font-semibold tracking-wide uppercase">
+                      Free
+                    </span>
+                  </div>
                 </div>
-              </fieldset>
+              </section>
 
               <PaymentMethodPicker
                 value={paymentMethod}
