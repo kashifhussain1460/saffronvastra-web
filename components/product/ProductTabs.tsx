@@ -62,9 +62,9 @@ export default function ProductTabs({
   const descParas = paragraphs(description);
 
   return (
-    <div id="product-tabs" className="scroll-mt-28">
+    <div id="product-tabs" className="scroll-mt-12 xl:scroll-mt-7">
       <div className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:px-0">
-        <div className="flex min-w-max gap-7 sm:justify-center sm:gap-10" aria-label="Product information">
+        <div className="flex min-w-max gap-7 sm:justify-center sm:gap-10" role="group" aria-label="Product information">
           {tabs.map((t) => {
             const active = activeTab === t.id;
             return (
@@ -95,7 +95,7 @@ export default function ProductTabs({
         <div id="pdp-panel-description" role="region" aria-labelledby="pdp-tab-description" hidden={activeTab !== "description"}>
           <div className={`grid gap-8 ${materialLines.length || careLines.length ? "md:grid-cols-2 md:gap-10" : ""}`}>
             <div className="space-y-3">
-              <h3 className="text-xs font-semibold uppercase tracking-[0.1em] text-ink">About this piece</h3>
+              <h2 className="text-xs font-semibold uppercase tracking-[0.1em] text-ink">About this piece</h2>
               {descParas.map((p, i) => (
                 <p key={i} className="whitespace-pre-line text-base leading-relaxed text-ink-secondary">
                   {p}
@@ -106,7 +106,7 @@ export default function ProductTabs({
               <div className="space-y-6">
                 {materialLines.length > 0 && (
                   <div className="space-y-3">
-                    <h3 className="text-xs font-semibold uppercase tracking-[0.1em] text-ink">Material and craft</h3>
+                    <h2 className="text-xs font-semibold uppercase tracking-[0.1em] text-ink">Material and craft</h2>
                     <ul className="space-y-2 text-base text-ink">
                       {materialLines.map((l) => (
                         <li key={l} className="flex gap-3">
@@ -119,7 +119,7 @@ export default function ProductTabs({
                 )}
                 {careLines.length > 0 && (
                   <div className="space-y-3">
-                    <h3 className="text-xs font-semibold uppercase tracking-[0.1em] text-ink">Care guidelines</h3>
+                    <h2 className="text-xs font-semibold uppercase tracking-[0.1em] text-ink">Care guidelines</h2>
                     <ul className="space-y-2 text-base text-ink">
                       {careLines.map((l) => (
                         <li key={l} className="flex gap-3">
@@ -162,7 +162,7 @@ export default function ProductTabs({
         <div id="pdp-panel-shipping" role="region" aria-labelledby="pdp-tab-shipping" hidden={activeTab !== "shipping"}>
           <div className="grid gap-8 md:grid-cols-2 md:gap-10">
             <div className="space-y-3">
-              <h3 className="text-xs font-semibold uppercase tracking-[0.1em] text-ink">Made-to-order shipping and timeline</h3>
+              <h2 className="text-xs font-semibold uppercase tracking-[0.1em] text-ink">Made-to-order shipping and timeline</h2>
               <p className="text-base leading-relaxed text-ink-secondary">
                 Each jacket is individually crafted upon order placement. Please allow {leadTime} for hand-tailoring and
                 inspection before dispatch.
@@ -176,7 +176,7 @@ export default function ProductTabs({
               </Link>
             </div>
             <div className="space-y-3">
-              <h3 className="text-xs font-semibold uppercase tracking-[0.1em] text-ink">Returns and exchanges</h3>
+              <h2 className="text-xs font-semibold uppercase tracking-[0.1em] text-ink">Returns and exchanges</h2>
               <p className="text-base leading-relaxed text-ink-secondary">
                 Easy returns (7 days): hassle-free size exchanges.
               </p>

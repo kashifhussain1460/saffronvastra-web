@@ -83,14 +83,14 @@ export default function SearchModal() {
       <div
         aria-hidden="true"
         onClick={closeSearch}
-        className={`fixed inset-0 bg-ink/20 transition-opacity duration-200 ${visible ? "opacity-100" : "opacity-0"}`}
+        className={`fixed inset-0 bg-ink/20 transition-opacity duration-200 motion-reduce:transition-none ${visible ? "opacity-100" : "opacity-0"}`}
       />
 
       <div className="relative flex min-h-full items-start justify-center px-[23px] py-2 md:px-6 md:py-7 pointer-events-none">
         <div
           ref={panelRef}
           tabIndex={-1}
-          className={`pointer-events-auto relative w-full max-w-[1070px] rounded-lg bg-canvas p-[15px] md:p-10 outline-none transition-[opacity,transform] duration-200 ease-out ${
+          className={`pointer-events-auto relative w-full max-w-[1070px] rounded-lg bg-canvas p-[15px] md:p-10 outline-none transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none ${
             visible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-6"
           }`}
         >

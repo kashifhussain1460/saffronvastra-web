@@ -3,6 +3,42 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
+export interface TitleCrumb {
+  label: string;
+  href?: string;
+}
+
+/** A category as GET /api/v1/categories returns it (only the fields the listing heading uses). */
+export interface ShopCategory {
+  id: string;
+  name: string;
+  slug: string;
+  parentId?: string | null;
+  shortDescription?: string | null;
+}
+
+/**
+ * Heading band for /collections. When the URL names exactly one published category the band is that
+ * category's landing page: its name as the H1, its stored short description as the intro and the trail
+ * Home > Collections > [Parent] > Category. Anything else keeps the catalogue heading.
+ * Pure, so the server (metadata, BreadcrumbList) and the browser (visible band) build the same trail.
+ */
+export function collectionsHeading(categories: ShopCategory[] | null | undefined, selected: string[]) {
+  const category = selected.length === 1 ? categories?.find((c) => c.slug === selected[0]) : undefined;
+  if (!category) {
+    const crumbs: TitleCrumb[] = [{ label: "Home", href: "/" }, { label: "Collections" }];
+    return { category: undefined, title: "Our Collections", subtitle: undefined, crumbs };
+  }
+  const parent = category.parentId ? categories?.find((c) => c.id === category.parentId) : undefined;
+  const crumbs: TitleCrumb[] = [
+    { label: "Home", href: "/" },
+    { label: "Collections", href: "/collections" },
+    ...(parent ? [{ label: parent.name, href: `/collections?category=${encodeURIComponent(parent.slug)}` }] : []),
+    { label: category.name },
+  ];
+  return { category, title: category.name, subtitle: category.shortDescription?.trim() || undefined, crumbs };
+}
+
 /**
  * Modave "page-title" band: muted background, centred heading and breadcrumb,
  * with one of our photos bleeding off the right edge on wide screens.
@@ -15,7 +51,7 @@ export default function ShopPageTitle({
   children,
 }: {
   title: React.ReactNode;
-  crumbs: { label: string; href?: string }[];
+  crumbs: TitleCrumb[];
   subtitle?: string;
   image?: string;
   children?: React.ReactNode;

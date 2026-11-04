@@ -63,7 +63,8 @@ function parse(md: string) {
   return { title, preamble: toBlocks(preambleLines), chunks };
 }
 
-const INLINE = /(\*\*[^*]+\*\*|\[[^\]]+\]\([^)\s]+\)|https?:\/\/[^\s)]+|[\w.+-]+@[\w-]+(?:\.[\w-]+)+)/g;
+// A bare URL never ends in sentence punctuation, so "https://example.com," links to the address and leaves the comma as text.
+const INLINE = /(\*\*[^*]+\*\*|\[[^\]]+\]\([^)\s]+\)|https?:\/\/[^\s)]*[^\s).,;:!?]|[\w.+-]+@[\w-]+(?:\.[\w-]+)+)/g;
 
 function Inline({ text }: { text: string }) {
   const parts = text.split(INLINE).filter((p) => p !== "");

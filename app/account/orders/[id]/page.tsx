@@ -768,7 +768,7 @@ export default function OrderDetailPage({ params }: { params?: Promise<{ id: str
                           addToCart(item.rawProduct, item.rawProduct.sizes[0], item.rawProduct.colors[0], 1);
                           openCart();
                         }}
-                        aria-label={`Add ${item.title} to bag`}
+                        aria-label={`Add to Bag: ${item.title}`}
                         className="absolute bottom-2 right-2 w-11 h-11 rounded-full bg-surface text-ink shadow-card flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors"
                       >
                         <ShoppingBag className="w-4 h-4" aria-hidden="true" />

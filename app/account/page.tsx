@@ -484,7 +484,7 @@ export default function AccountDashboardPage() {
                           type="button"
                           onClick={() => handleQuickAdd(item)}
                           className="absolute bottom-2.5 right-2.5 w-11 h-11 rounded-full bg-surface text-ink shadow-card flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors"
-                          aria-label={`Add ${item.title} to bag`}
+                          aria-label={`Add to Bag: ${item.title}`}
                           title="Add to Bag"
                         >
                           <ShoppingBag className="w-4 h-4" aria-hidden="true" />

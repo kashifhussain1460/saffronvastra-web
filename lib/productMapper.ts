@@ -1,12 +1,66 @@
 import { Product, Size, ProductColor, AvailabilityMode } from "@/types";
 
+// Etsy-hosted photos are stored as the full-size original (il_fullxfull, 2048-2250 px wide, 0.5-1.1 MB). Etsy serves
+// the same photo at fixed widths from the same address with a different size segment; the height follows the photo,
+// so the aspect ratio never changes. Fixed-box crops (for example il_340x270) are not matched.
+const ETSY_SIZED = /^(https?:\/\/i\.etsystatic\.com\/[^?#]*\/)il_(?:fullxfull|\d+xN)\.([^/?#]+\.jpg)$/i;
+
+/**
+ * Etsy widths used by the storefront: 794 px for the product page gallery, 570 px for cards and thumbnails,
+ * fullxfull for the original.
+ */
+export type EtsyImageSize = "794xN" | "570xN" | "fullxfull";
+
+/**
+ * Returns the Etsy photo at the given width. Any other address (local /images or /uploads files, Blob addresses,
+ * an Etsy address in another form) is returned unchanged.
+ */
+export function etsyImageUrl(url: string, size: EtsyImageSize): string {
+  const match = typeof url === "string" ? ETSY_SIZED.exec(url) : null;
+  return match ? `${match[1]}il_${size}.${match[2]}` : url;
+}
+
+// Category photos in public/images/categories that also exist as a 1000 px wide copy (<slug>-1000.jpg, the same
+// artwork re-encoded from the 1200x1500 original, same 4:5 ratio).
+const CATEGORY_IMAGES_1000 = new Set([
+  "chikankari",
+  "chikankari-dresses",
+  "chikankari-jackets",
+  "chikankari-kurtas",
+  "chikankari-shirts",
+  "kashmiri-coats",
+  "kashmiri-jackets",
+  "kashmiri-kari",
+  "kashmiri-kimonos",
+  "kashmiri-shawls",
+  "suzani-accessories",
+  "suzani-coats",
+  "suzani-jackets",
+  "suzani-kimonos",
+  "suzani-stitchwork",
+]);
+const CATEGORY_IMAGE = /^\/images\/categories\/([a-z-]+)\.jpg$/;
+
+/**
+ * Returns the 1000 px copy of a bundled category photo (/images/categories/<slug>.jpg) when one exists. Any other
+ * address (an uploaded or Blob image, a slug without a copy) is returned unchanged.
+ */
+export function categoryImageUrl(url: string): string {
+  const match = typeof url === "string" ? CATEGORY_IMAGE.exec(url) : null;
+  return match && CATEGORY_IMAGES_1000.has(match[1]) ? `/images/categories/${match[1]}-1000.jpg` : url;
+}
+
 export function mapBackendProductToFrontend(raw: any): Product {
   const price = Math.round((raw.basePriceMinor || 0) / 100);
   const compareAtPrice = raw.comparePriceMinor ? Math.round(raw.comparePriceMinor / 100) : undefined;
 
+  // Only the single-product response (GET /products/:slug) carries relatedProducts. Its photos fill the product page
+  // gallery (shown up to half the page wide), so they use the 794 px copy; list responses feed cards and use 570 px.
+  const imageSize: EtsyImageSize = Array.isArray(raw.relatedProducts) ? "794xN" : "570xN";
+
   let images: string[] = [];
   if (Array.isArray(raw.images) && raw.images.length > 0) {
-    images = raw.images.map((img: any) => (typeof img === "string" ? img : img.url));
+    images = raw.images.map((img: any) => etsyImageUrl(typeof img === "string" ? img : img.url, imageSize));
   } else {
     images = ["/images/brand/saffronvastra-mark.png"];
   }

@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -16,7 +14,7 @@ export default function CraftsmanshipStory() {
           <div className="lg:col-span-6 relative">
             <div className="relative aspect-[4/3] sm:aspect-[16/11] rounded-3xl overflow-hidden shadow-2xl bg-surface-muted">
               <Image
-                src="/images/categories/suzani-stitchwork.jpg"
+                src="/images/categories/suzani-stitchwork-1000.jpg"
                 alt="Detailed Suzani embroidery featuring intricate decorative needlework"
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
@@ -70,9 +68,9 @@ export default function CraftsmanshipStory() {
                   I
                 </div>
                 <div>
-                  <h4 className="font-heading font-serif text-lg font-semibold text-ink">
+                  <h3 className="font-heading font-serif text-lg font-semibold text-ink">
                     Expressive Floral Motifs
-                  </h4>
+                  </h3>
                   <p className="text-sm text-ink-secondary mt-1 leading-normal font-sans">
                     Richly patterned botanical and medallion motifs inspired by centuries of decorative textile artistry.
                   </p>
@@ -84,9 +82,9 @@ export default function CraftsmanshipStory() {
                   II
                 </div>
                 <div>
-                  <h4 className="font-heading font-serif text-lg font-semibold text-ink">
+                  <h3 className="font-heading font-serif text-lg font-semibold text-ink">
                     Structured & Fluid Silhouettes
-                  </h4>
+                  </h3>
                   <p className="text-sm text-ink-secondary mt-1 leading-normal font-sans">
                     Tailored cropped jackets and flowing kimonos designed for effortless everyday layering and statement looks.
                   </p>
@@ -98,9 +96,9 @@ export default function CraftsmanshipStory() {
                   III
                 </div>
                 <div>
-                  <h4 className="font-heading font-serif text-lg font-semibold text-ink">
+                  <h3 className="font-heading font-serif text-lg font-semibold text-ink">
                     Thoughtfully Selected Fabrics
-                  </h4>
+                  </h3>
                   <p className="text-sm text-ink-secondary mt-1 leading-normal font-sans">
                     Quality cottons and durable canvases chosen to hold bold embroidery while offering enduring drape and comfort.
                   </p>

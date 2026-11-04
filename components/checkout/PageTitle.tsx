@@ -1,6 +1,8 @@
 import React from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import JsonLd from "@/components/seo/JsonLd";
+import { breadcrumbList } from "@/lib/jsonld";
 
 export interface Crumb {
   label: string;
@@ -10,18 +12,29 @@ export interface Crumb {
 /**
  * Modave-style page title band: muted ground, centred 40px heading, breadcrumb underneath.
  * Shared by the cart, checkout, order confirmation and wishlist pages.
+ * The same crumbs are emitted as BreadcrumbList JSON-LD (`schemaCrumbs` replaces them when a visible level is not a page).
  */
 export default function PageTitle({
   title,
   crumbs,
+  schemaCrumbs = crumbs,
   children,
 }: {
   title: React.ReactNode;
   crumbs: Crumb[];
+  schemaCrumbs?: Crumb[];
   children?: React.ReactNode;
 }) {
   return (
     <section className="bg-surface-muted">
+      {schemaCrumbs.length > 0 && (
+        <JsonLd
+          data={breadcrumbList(
+            // Only the crumbs that are links get a URL, as in the visible trail (the last crumb is never a link).
+            schemaCrumbs.map((c, i) => ({ name: c.label, path: i < schemaCrumbs.length - 1 ? c.href : undefined }))
+          )}
+        />
+      )}
       <div className="max-w-[1320px] mx-auto px-4 lg:px-[15px] py-10 md:py-16 lg:py-[68px] text-center">
         <h1 className="font-heading text-[28px] leading-tight md:text-[40px] md:leading-[48px] font-medium text-ink">
           {title}

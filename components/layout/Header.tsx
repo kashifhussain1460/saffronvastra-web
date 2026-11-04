@@ -6,7 +6,8 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useStore } from "@/context/StoreContext";
 import Logo from "@/components/brand/Logo";
-import { useCatalogNav, useFeaturedProducts } from "@/components/layout/useCatalogNav";
+import { useCatalogNav, useFeaturedProducts, type CatalogNav } from "@/components/layout/useCatalogNav";
+import { categoryImageUrl } from "@/lib/productMapper";
 import {
   Search,
   User,
@@ -39,15 +40,20 @@ const QUICK_LINKS = [
   { label: "Frequently Asked Questions", href: "/faqs" },
 ];
 
+// keyboard focus uses the global :focus-visible outline (globals.css), which has enough contrast on white
 const ICON_BTN =
-  "relative inline-flex items-center justify-center w-11 h-11 xl:w-10 xl:h-10 text-ink hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-full";
+  "relative inline-flex items-center justify-center w-11 h-11 xl:w-10 xl:h-10 text-ink hover:text-primary transition-colors rounded-full";
 
 interface HeaderProps {
   /** Opens the mobile off-canvas menu (owned by StorefrontShell). */
   onOpenMenu?: () => void;
+  /** Whether that menu is open, for the menu button's aria-expanded. */
+  menuOpen?: boolean;
+  /** Categories and collections read on the server, so the mega menu links are in the server HTML. */
+  initialNav?: CatalogNav | null;
 }
 
-export default function Header({ onOpenMenu }: HeaderProps) {
+export default function Header({ onOpenMenu, menuOpen = false, initialNav }: HeaderProps) {
   const pathname = usePathname() || "/";
   const { openCart, cartCount, wishlist, openSearch, user, isAuthenticated, logout } = useStore();
 
@@ -79,15 +85,18 @@ export default function Header({ onOpenMenu }: HeaderProps) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // ----- Shop mega menu: hover, focus, Enter/ArrowDown open it; Escape, outside click close it
+  // ----- Shop mega menu: hover opens it; the "Shop menu" disclosure button (click, Enter, Space) toggles it and
+  // ArrowDown opens it and moves into it; Escape and an outside click close it. Keyboard focus alone never opens it.
+  // Its links are always in the DOM (hidden and inert while closed), so they are in the server HTML.
   const megaRef = useRef<HTMLLIElement>(null);
-  const shopLinkRef = useRef<HTMLAnchorElement>(null);
+  const megaBtnRef = useRef<HTMLButtonElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [megaRequested, setMegaRequested] = useState(false);
-  const nav = useCatalogNav(megaRequested);
+  const nav = useCatalogNav(megaRequested, initialNav);
   const featured = useFeaturedProducts(megaRequested, 2);
 
-  const suppressFocusOpen = useRef(false);
+  // a touch tap fires mouseenter and then click: the click must not close what the tap just opened
+  const hoverOpenedAt = useRef(0);
   const openMega = useCallback(() => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
     setMegaRequested(true);
@@ -98,6 +107,18 @@ export default function Header({ onOpenMenu }: HeaderProps) {
     if (delay) closeTimer.current = setTimeout(() => setMegaOpen(false), delay);
     else setMegaOpen(false);
   }, []);
+  const hoverMega = useCallback(() => {
+    if (!megaOpenRef.current) hoverOpenedAt.current = Date.now();
+    openMega();
+  }, [openMega]);
+  const toggleMega = useCallback(() => {
+    if (megaOpenRef.current && Date.now() - hoverOpenedAt.current > 500) closeMega();
+    else openMega();
+  }, [openMega, closeMega]);
+  const focusFirstMegaLink = () => {
+    openMega();
+    setTimeout(() => megaRef.current?.querySelector<HTMLElement>("#shop-mega-menu a")?.focus(), 30);
+  };
 
   // ----- account dropdown
   const [accountOpen, setAccountOpen] = useState(false);
@@ -115,11 +136,7 @@ export default function Header({ onOpenMenu }: HeaderProps) {
       if (e.key !== "Escape") return;
       if (megaOpenRef.current) {
         setMegaOpen(false);
-        if (megaRef.current?.contains(document.activeElement) && document.activeElement !== shopLinkRef.current) {
-          suppressFocusOpen.current = true;
-          shopLinkRef.current?.focus();
-          suppressFocusOpen.current = false;
-        }
+        if (megaRef.current?.querySelector("#shop-mega-menu")?.contains(document.activeElement)) megaBtnRef.current?.focus();
       }
       if (accountRef.current?.contains(document.activeElement)) accountBtnRef.current?.focus();
       setAccountOpen(false);
@@ -162,6 +179,8 @@ export default function Header({ onOpenMenu }: HeaderProps) {
             onClick={onOpenMenu}
             className="xl:hidden -ml-2 w-11 h-11 inline-flex items-center justify-center text-ink hover:text-primary transition-colors"
             aria-label="Open menu"
+            aria-haspopup="dialog"
+            aria-expanded={menuOpen}
           >
             <AlignLeft className="w-6 h-6 stroke-[1.75]" />
           </button>
@@ -195,34 +214,50 @@ export default function Header({ onOpenMenu }: HeaderProps) {
                   key={item.href}
                   ref={megaRef}
                   className="relative flex items-center"
-                  onMouseEnter={openMega}
+                  onMouseEnter={hoverMega}
                   onMouseLeave={() => closeMega(150)}
                   onBlur={(e) => {
                     if (!e.currentTarget.contains(e.relatedTarget as Node | null)) closeMega();
                   }}
                 >
+                  {/* The link goes to /collections; the chevron next to it is the disclosure button. Together they
+                      are as wide and as spaced as the former single link (gap-1, or gap-1.5 while open or active). */}
                   <Link
-                    ref={shopLinkRef}
                     href={item.href}
                     aria-current={active ? "page" : undefined}
-                    onFocus={() => {
-                      if (!suppressFocusOpen.current) openMega();
-                    }}
                     onKeyDown={(e) => {
                       if (e.key === "ArrowDown") {
                         e.preventDefault();
-                        openMega();
-                        setTimeout(() => megaRef.current?.querySelector<HTMLElement>("#shop-mega-menu a")?.focus(), 30);
+                        focusFirstMegaLink();
                       }
                     }}
-                    className={megaOpen || active ? "relative inline-flex items-center gap-1.5 py-7 text-sm font-semibold tracking-wide uppercase text-primary transition-colors" : linkCls}
+                    className={`relative inline-flex items-center py-7 text-sm font-semibold tracking-wide uppercase transition-colors ${
+                      megaOpen || active ? "text-primary" : "text-ink hover:text-primary"
+                    }`}
                   >
                     <span>{item.label}</span>
-                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${megaOpen ? "rotate-180 text-primary" : "text-ink-muted"}`} />
-                    {active && (
-                      <span className="absolute bottom-5 left-0 right-0 h-0.5 bg-primary rounded-full" />
-                    )}
                   </Link>
+                  <button
+                    ref={megaBtnRef}
+                    type="button"
+                    aria-label="Shop menu"
+                    aria-expanded={megaOpen}
+                    aria-controls="shop-mega-menu"
+                    onClick={toggleMega}
+                    onKeyDown={(e) => {
+                      if (e.key === "ArrowDown") {
+                        e.preventDefault();
+                        focusFirstMegaLink();
+                      }
+                    }}
+                    // pr-1.5 with -mr-1.5 widens the hit area to at least 24px (WCAG 2.5.8) without moving anything
+                    className={`inline-flex items-center py-7 pr-1.5 -mr-1.5 ${megaOpen || active ? "pl-1.5" : "pl-1"}`}
+                  >
+                    <ChevronDown aria-hidden="true" className={`w-3.5 h-3.5 transition-transform duration-200 ${megaOpen ? "rotate-180 text-primary" : "text-ink-muted"}`} />
+                  </button>
+                  {active && (
+                    <span className="absolute bottom-5 left-0 right-0 h-0.5 bg-primary rounded-full" />
+                  )}
 
                   {/* Mega Menu: Full-Width Panel */}
                   <div
@@ -241,13 +276,16 @@ export default function Header({ onOpenMenu }: HeaderProps) {
                             <div className="flex items-center gap-3 pb-3 mb-4 border-b border-line">
                               {cat.image ? (
                                 <div className="relative w-9 h-9 rounded-full overflow-hidden shrink-0 border border-line">
-                                  <Image
-                                    src={cat.image}
-                                    alt={cat.name}
-                                    fill
-                                    sizes="36px"
-                                    className="object-cover"
-                                  />
+                                  {/* the panel is hidden until first opened, so its photo is not downloaded before then */}
+                                  {megaRequested && (
+                                    <Image
+                                      src={categoryImageUrl(cat.image)}
+                                      alt={cat.name}
+                                      fill
+                                      sizes="36px"
+                                      className="object-cover"
+                                    />
+                                  )}
                                 </div>
                               ) : (
                                 <div className="w-9 h-9 rounded-full bg-accent/15 border border-accent/30 grid place-items-center text-primary font-serif font-bold">
@@ -306,9 +344,10 @@ export default function Header({ onOpenMenu }: HeaderProps) {
                         {/* Quick Curations & Services Column */}
                         <div className="col-span-3">
                           <div className="pb-3 mb-4 border-b border-line">
-                            <h4 className="font-serif text-lg font-medium text-ink leading-tight">
+                            {/* a styled paragraph, not a heading: the menu comes before the page's h1 */}
+                            <p className="font-serif text-lg font-medium text-ink leading-tight">
                               Featured Collections
-                            </h4>
+                            </p>
                             <span className="text-[11px] uppercase tracking-wider text-ink-muted font-sans font-semibold">
                               Direct Services
                             </span>
@@ -400,7 +439,7 @@ export default function Header({ onOpenMenu }: HeaderProps) {
               onClick={() => setAccountOpen((v) => !v)}
               className={ICON_BTN}
               aria-expanded={accountOpen}
-              aria-haspopup="true"
+              aria-controls={accountOpen ? "header-account-panel" : undefined}
               aria-label={isAuthenticated ? `Account menu for ${user?.fullName || "customer"}` : "Guest account menu"}
             >
               <User className="w-5 h-5 stroke-[1.75]" />
@@ -408,7 +447,7 @@ export default function Header({ onOpenMenu }: HeaderProps) {
 
             {accountOpen && (
               <div
-                role="menu"
+                id="header-account-panel"
                 className="absolute right-0 top-full mt-2 w-72 rounded-2xl bg-white shadow-xl border border-line p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
               >
                 {isAuthenticated ? (
@@ -431,7 +470,6 @@ export default function Header({ onOpenMenu }: HeaderProps) {
                         <Link
                           key={href}
                           href={href}
-                          role="menuitem"
                           onClick={() => setAccountOpen(false)}
                           className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink hover:bg-surface-muted hover:text-primary transition-colors"
                         >
@@ -443,7 +481,6 @@ export default function Header({ onOpenMenu }: HeaderProps) {
                       {isAdmin && (
                         <Link
                           href="/admin/orders"
-                          role="menuitem"
                           onClick={() => setAccountOpen(false)}
                           className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-primary font-semibold hover:bg-accent/10 transition-colors"
                         >
@@ -456,7 +493,6 @@ export default function Header({ onOpenMenu }: HeaderProps) {
                     <div className="pt-1 mt-1 border-t border-line">
                       <button
                         type="button"
-                        role="menuitem"
                         aria-label="Sign Out"
                         onClick={() => {
                           setAccountOpen(false);
@@ -472,9 +508,9 @@ export default function Header({ onOpenMenu }: HeaderProps) {
                 ) : (
                   <div className="p-4">
                     <div className="text-center mb-4">
-                      <h4 className="font-serif text-base font-medium text-ink">
+                      <p className="font-serif text-base font-medium text-ink">
                         Welcome to Saffron Vastra
-                      </h4>
+                      </p>
                       <p className="text-xs text-ink-secondary mt-1">
                         Sign in to access your orders and curated wardrobe.
                       </p>
@@ -482,7 +518,6 @@ export default function Header({ onOpenMenu }: HeaderProps) {
 
                     <Link
                       href="/auth/login"
-                      role="menuitem"
                       onClick={() => setAccountOpen(false)}
                       className="flex w-full items-center justify-center h-10 rounded-full bg-primary text-on-primary text-sm font-semibold hover:bg-primary-hover transition-colors shadow-sm"
                     >
@@ -493,7 +528,6 @@ export default function Header({ onOpenMenu }: HeaderProps) {
                       New customer?{" "}
                       <Link
                         href="/auth/register"
-                        role="menuitem"
                         onClick={() => setAccountOpen(false)}
                         className="font-semibold text-primary underline underline-offset-2 hover:text-primary-hover"
                       >
@@ -504,7 +538,6 @@ export default function Header({ onOpenMenu }: HeaderProps) {
                     <div className="mt-3 pt-3 border-t border-line">
                       <Link
                         href="/track-order"
-                        role="menuitem"
                         onClick={() => setAccountOpen(false)}
                         className="flex items-center justify-center gap-1.5 text-xs text-ink-muted hover:text-primary transition-colors py-1"
                       >

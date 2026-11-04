@@ -1,13 +1,15 @@
 import { BRAND } from "@/lib/brand";
+import { buildMetadata } from "@/lib/seo";
 import React from "react";
 import Link from "next/link";
 import PolicyLayout, { PolicySection, policyList, policyLink, policyNote } from "@/components/content/PolicyLayout";
 
-export const metadata = {
-  title: `Returns, Exchanges & Cancellation Policy | ${BRAND.displayName}`,
+export const metadata = buildMetadata({
+  title: "Returns, Exchanges & Cancellation Policy",
   description:
     `Seven-day exchange policy, damaged item resolutions, and 24-hour cancellation terms at ${BRAND.displayName}.`,
-};
+  path: "/policies/returns",
+});
 
 const sections = [
   { id: "returns-exchanges", label: "1. 7-Day Standard Returns (Exchange Only)" },

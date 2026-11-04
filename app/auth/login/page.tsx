@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import AuthSplit from "@/components/auth/AuthSplit";
+import { safeRedirectPath } from "@/lib/safeRedirect";
 import { btnPrimary, inputClass, labelClass } from "@/components/auth/ui";
 
 function LoginForm() {
@@ -17,20 +18,30 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // which fields the validation message is about (for aria-invalid and focus), as on /contact
+  const [invalid, setInvalid] = useState<{ email?: boolean; password?: boolean }>({});
+
+  const flagInvalid = (fields: { email?: boolean; password?: boolean }) => {
+    setInvalid(fields);
+    document.getElementById(fields.email ? "login-email" : "login-password")?.focus();
+  };
 
   const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password) {
       setError("Please enter your email address and password.");
+      flagInvalid({ email: !email.trim(), password: !password });
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       setError("Please enter a valid email address.");
+      flagInvalid({ email: true });
       return;
     }
 
     setLoading(true);
     setError(null);
+    setInvalid({});
 
     const loginEmail = email.trim();
     const loginPassword = password;
@@ -81,12 +92,7 @@ function LoginForm() {
         }
 
         setLoading(false);
-        const destination =
-          redirectQuery && redirectQuery.startsWith("/") && !redirectQuery.startsWith("//")
-            ? redirectQuery
-            : isAdmin
-            ? "/admin/orders"
-            : "/account";
+        const destination = safeRedirectPath(redirectQuery, isAdmin ? "/admin/orders" : "/account");
 
         router.push(destination);
         return;
@@ -137,6 +143,7 @@ function LoginForm() {
 
       {error && (
         <div
+          id="login-error"
           role="alert"
           className="mb-5 rounded-lg border border-red-200 bg-red-50/90 px-4 py-3 text-xs sm:text-sm text-red-700 font-sans"
         >
@@ -155,7 +162,12 @@ function LoginForm() {
             autoComplete="email"
             required
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (invalid.email) setInvalid((f) => ({ ...f, email: false }));
+            }}
+            aria-invalid={invalid.email ? true : undefined}
+            aria-describedby={invalid.email && error ? "login-error" : undefined}
             placeholder="you@email.com"
             className={inputClass()}
           />
@@ -172,14 +184,19 @@ function LoginForm() {
               type={showPassword ? "text" : "password"}
               required
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (invalid.password) setInvalid((f) => ({ ...f, password: false }));
+              }}
+              aria-invalid={invalid.password ? true : undefined}
+              aria-describedby={invalid.password && error ? "login-error" : undefined}
               placeholder="••••••••••••"
               className={`${inputClass()} pr-11`}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-700 transition-colors cursor-pointer"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-ink-muted hover:text-stone-700 transition-colors cursor-pointer"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

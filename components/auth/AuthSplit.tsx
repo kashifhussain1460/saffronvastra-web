@@ -118,10 +118,11 @@ export default function AuthSplit({
           </div>
         </section>
 
-        {/* Right Section: Form Panel */}
+        {/* Right Section: Form Panel (the page's main landmark) */}
         {/* Desktop: 30-32% column, scrollable, vertically centered */}
         {/* Mobile & Tablet: full width, centered container on warm cream canvas */}
-        <section
+        <main
+          id="main-content"
           aria-label={title}
           className="w-full flex-1 flex flex-col justify-center items-center py-8 sm:py-12 md:py-16 px-4 sm:px-6 lg:relative lg:bg-[#FAF9F5] lg:h-full lg:overflow-y-auto lg:border-l lg:border-stone-200/80 lg:py-10 lg:px-10 xl:px-14"
         >
@@ -171,7 +172,7 @@ export default function AuthSplit({
                   <div className="absolute inset-0 flex items-center" aria-hidden="true">
                     <div className="w-full border-t border-stone-200" />
                   </div>
-                  <div className="relative bg-[#FBFBFA] lg:bg-[#FAF9F5] px-4 text-[11px] uppercase tracking-widest text-stone-400 font-medium font-sans">
+                  <div className="relative bg-[#FBFBFA] lg:bg-[#FAF9F5] px-4 text-[11px] uppercase tracking-widest text-ink-muted font-medium font-sans">
                     OR
                   </div>
                 </div>
@@ -201,7 +202,7 @@ export default function AuthSplit({
             </div>
 
           </div>
-        </section>
+        </main>
 
       </div>
     </div>

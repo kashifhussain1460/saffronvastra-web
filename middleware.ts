@@ -1,6 +1,7 @@
 import { BRAND } from "@/lib/brand";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { safeRedirectPath } from "@/lib/safeRedirect";
 
 export const SESSION_COOKIE_NAME = "saffron_session";
 
@@ -96,8 +97,7 @@ export async function middleware(request: NextRequest) {
     if (isAuthRoute && session.state === "valid") {
       // 2. Signed-in patrons do not need the sign-in forms again.
       const rawRedirect = request.nextUrl.searchParams.get("redirect");
-      const safeDestination =
-        rawRedirect && rawRedirect.startsWith("/") && !rawRedirect.startsWith("//") ? rawRedirect : "/account";
+      const safeDestination = safeRedirectPath(rawRedirect, "/account");
       return NextResponse.redirect(new URL(safeDestination, request.url));
     }
   }

@@ -1,13 +1,15 @@
 import { BRAND } from "@/lib/brand";
+import { buildMetadata } from "@/lib/seo";
 import React from "react";
 import Link from "next/link";
 import PolicyLayout, { PolicySection, policyList, policyNote } from "@/components/content/PolicyLayout";
 
-export const metadata = {
-  title: `Payment Methods | ${BRAND.displayName}`,
+export const metadata = buildMetadata({
+  title: "Payment Methods",
   description:
     `Secure payment options supported by ${BRAND.displayName}, including UPI, Debit/Credit Cards, Net Banking via Cashfree, and Cash on Delivery.`,
-};
+  path: "/payment-methods",
+});
 
 const sections = [
   { id: "online-payments", label: "1. Online Payment Options (Powered by Cashfree)" },

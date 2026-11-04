@@ -5,13 +5,16 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Plus, Minus, Mail, Phone, ArrowUpRight, Check } from "lucide-react";
 import { useSiteSettings } from "@/context/SettingsContext";
-import { useCatalogNav } from "@/components/layout/useCatalogNav";
+import { useCatalogNav, type CatalogNav } from "@/components/layout/useCatalogNav";
 import { subscribeToNewsletter } from "@/lib/newsletter";
 import { emailError } from "@/lib/validation";
 
 type FooterLink = { label: string; href: string };
 
 const HEADING = "text-base font-semibold text-ink";
+// Column titles are styled paragraphs, not headings (the footer must not add steps to the page outline). The base
+// heading rule in globals.css gave them -0.01em letter-spacing, kept here so they look exactly the same.
+const TITLE_TRACKING = "tracking-[-0.01em]";
 
 // Below md each column collapses into a plus/minus accordion (Modave footer); md+ shows plain columns.
 // Every anchor stays in the DOM at all widths: closed panels are only hidden below md.
@@ -40,7 +43,7 @@ function FooterColumn({
         <span>{title}</span>
         {open ? <Minus aria-hidden="true" className="w-4 h-4" /> : <Plus aria-hidden="true" className="w-4 h-4" />}
       </button>
-      <h3 className={`hidden md:block mb-4 ${HEADING}`}>{title}</h3>
+      <p className={`hidden md:block mb-4 ${HEADING} ${TITLE_TRACKING}`}>{title}</p>
       <div id={`footer-${id}`} className={`${open ? "block pb-5" : "hidden"} md:block md:pb-0`}>
         {children}
       </div>
@@ -146,15 +149,19 @@ function FooterNewsletter() {
   );
 }
 
-// The shop column lists the categories that really exist (top level, in their admin order).
-export default function Footer() {
+// The shop column lists the categories that really exist: each top-level category followed by its subcategories,
+// in their admin order. `initialNav` is the server copy, so these links are in the server HTML.
+export default function Footer({ initialNav }: { initialNav?: CatalogNav | null }) {
   const { store, cod } = useSiteSettings();
-  const { categories } = useCatalogNav();
+  const { categories } = useCatalogNav(true, initialNav);
   const [openCols, setOpenCols] = useState<Record<string, boolean>>({});
   const toggleCol = (k: string) => setOpenCols((o) => ({ ...o, [k]: !o[k] }));
 
   const shopLinks: FooterLink[] = [
-    ...categories.slice(0, 6).map((c) => ({ label: c.name, href: `/collections?category=${encodeURIComponent(c.slug)}` })),
+    ...categories
+      .flatMap((c) => [c, ...c.subcategories])
+      .slice(0, 6)
+      .map((c) => ({ label: c.name, href: `/collections?category=${encodeURIComponent(c.slug)}` })),
     { label: "All Products", href: "/collections" },
   ];
 
@@ -186,10 +193,12 @@ export default function Footer() {
           <Link href="/" aria-label="SaffronVastra home" className="inline-flex items-center justify-center group transition-opacity hover:opacity-85">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={encodeURI("/SaffronVastra Botanical Monogram Logo (1).png")}
+              src="/images/brand/saffronvastra-footer-642.webp"
               alt="SaffronVastra"
               width={1086}
               height={362}
+              loading="lazy"
+              decoding="async"
               className="h-auto w-[220px] sm:w-[260px] md:w-[290px] lg:w-[320px] mix-blend-multiply transition-transform duration-300 group-hover:scale-[1.01]"
             />
           </Link>
@@ -202,7 +211,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-0 md:gap-x-8 md:gap-y-10 lg:gap-x-8 pt-10 md:pt-12">
           {/* Studio & Contact */}
           <div className="md:order-1 lg:order-none lg:col-span-4 pb-6 md:pb-0">
-            <h3 className="mb-4 text-base font-semibold text-ink">Jaipur Studio &amp; Customer Support</h3>
+            <p className={`mb-4 text-base font-semibold text-ink ${TITLE_TRACKING}`}>Jaipur Studio &amp; Customer Support</p>
             {store.address && <p className="max-w-xs text-base leading-relaxed text-ink-secondary">{store.address}</p>}
             <Link
               href="/contact"

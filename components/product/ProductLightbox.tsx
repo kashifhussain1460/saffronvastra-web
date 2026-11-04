@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut } from "lucide-react";
+import { etsyImageUrl } from "@/lib/productMapper";
 
 interface ProductLightboxProps {
   open: boolean;
@@ -174,7 +175,7 @@ export default function ProductLightbox({
         >
           <Image
             key={images[index]}
-            src={images[index]}
+            src={etsyImageUrl(images[index], "fullxfull")}
             alt={alts[index] || ""}
             fill
             priority

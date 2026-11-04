@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import { Product } from "@/types";
 import ProductCard from "@/components/ui/ProductCard";

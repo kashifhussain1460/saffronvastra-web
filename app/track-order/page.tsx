@@ -42,7 +42,11 @@ export default function TrackOrderPage() {
     if (mail) next.email = mail;
     setErrors(next);
     setFormError("");
-    if (Object.keys(next).length) return;
+    if (Object.keys(next).length) {
+      // as on /contact: move focus to the first field that needs fixing
+      document.getElementById(next.orderNumber ? "track-order-number" : "track-email")?.focus();
+      return;
+    }
     setLoading(true);
     try {
       const res = await fetch("/api/v1/orders/track", {

@@ -1,12 +1,14 @@
 import { BRAND } from "@/lib/brand";
+import { buildMetadata } from "@/lib/seo";
 import PolicyMarkdown from "@/components/content/PolicyMarkdown";
 import { TERMS_MARKDOWN } from "@/lib/policies/terms";
 
-export const metadata = {
-  title: `Terms & Conditions | ${BRAND.name}`,
+export const metadata = buildMetadata({
+  title: "Terms & Conditions",
   description:
-    "These Terms & Conditions govern your access to and use of https://saffronvastra.com, including the purchase of products offered through our website.",
-};
+    `These Terms & Conditions govern your access to and use of ${BRAND.url}, including the purchase of products offered through our website.`,
+  path: "/policies/terms",
+});
 
 // The wording lives in lib/policies/terms.ts exactly as supplied by the business owner.
 export default function TermsPage() {

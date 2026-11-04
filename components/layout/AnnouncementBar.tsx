@@ -1,14 +1,13 @@
-"use client";
-
 import Link from "next/link";
 import { Mail, Phone } from "lucide-react";
-import { useSiteSettings } from "@/context/SettingsContext";
+import type { SiteSettings } from "@/lib/siteSettings";
 
 // Modave top bar: a thin white strip with a bottom rule and the centred uppercase announcement.
 // The reference's side slots hold social icons and currency/language pickers; we have no real social
 // accounts or currencies, so xl+ shows our real support contacts on the left and help links on the right.
-export default function AnnouncementBar() {
-  const { announcement, store } = useSiteSettings();
+// A server component: the root layout renders it with the settings it already read, and StorefrontShell places it.
+// It is an aside landmark, so its content is not outside every landmark.
+export default function AnnouncementBar({ announcement, store }: Pick<SiteSettings, "announcement" | "store">) {
   if (!announcement.enabled || !announcement.text) return null;
 
   const text = announcement.link ? (
@@ -24,7 +23,7 @@ export default function AnnouncementBar() {
   const phoneHref = store.supportPhone ? `tel:${store.supportPhone.replace(/[^\d+]/g, "")}` : "";
 
   return (
-    <div data-testid="announcement-bar" className="bg-canvas text-ink border-b border-line">
+    <aside aria-label="Store announcements" data-testid="announcement-bar" className="bg-canvas text-ink border-b border-line">
       <div className="mx-auto max-w-[1320px] px-[15px] min-h-[37px] xl:min-h-[49px] py-2 grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4">
         <div className="hidden xl:flex items-center gap-5 text-sm text-ink-secondary min-w-0">
           {store.supportPhone && (
@@ -51,6 +50,6 @@ export default function AnnouncementBar() {
           <Link href="/faqs" className="whitespace-nowrap hover:text-primary-hover transition-colors">Help &amp; FAQs</Link>
         </div>
       </div>
-    </div>
+    </aside>
   );
 }

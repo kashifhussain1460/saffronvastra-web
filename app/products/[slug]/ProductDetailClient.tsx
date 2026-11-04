@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Product, Size, ProductColor } from "@/types";
 import { useStore } from "@/context/StoreContext";
 import { analytics } from "@/lib/analytics";
+import { truncateAtWord } from "@/lib/seo";
 import PriceTag from "@/components/ui/PriceTag";
 import SizeGuideModal from "@/components/product/SizeGuideModal";
 import ProductGallery from "@/components/product/ProductGallery";
@@ -27,6 +28,9 @@ export interface ProductExtras {
   brand?: string | null;
   productType?: string | null;
   categoryName?: string | null;
+  /** The category's parent (for example "Suzani Stitchwork"), shown as its own breadcrumb level when both are set. */
+  categoryParentName?: string | null;
+  categoryParentSlug?: string | null;
   collectionName?: string | null;
 }
 
@@ -176,6 +180,14 @@ export default function ProductDetailClient({ product, relatedProducts, extras }
   ];
 
   const categoryLabel = extras?.categoryName || product.category.replace(/-/g, " ");
+  const parentCrumb =
+    extras?.categoryParentName && extras.categoryParentSlug
+      ? { name: extras.categoryParentName, slug: extras.categoryParentSlug }
+      : null;
+  // The summary under the price is clamped to four lines, so it only carries an excerpt; the full description is
+  // rendered once, in the Description tab. 600 characters still overflow four lines at the widest column (735px, just
+  // below md), so the clamped text looks exactly as before.
+  const summaryText = product.subtitle || truncateAtWord(product.description, 600);
   // eyebrow: the stored collection, else the category (never the mapper's placeholder collection)
   const eyebrow = extras ? extras.collectionName || extras.categoryName || "" : categoryLabel;
   const stickySummary = [selectedColor?.name, selectedSize].filter(Boolean).join(", ");
@@ -194,6 +206,19 @@ export default function ProductDetailClient({ product, relatedProducts, extras }
             <li aria-hidden="true" className="shrink-0">
               <ChevronRight className="h-3.5 w-3.5" />
             </li>
+            {/* the same levels as the BreadcrumbList structured data built in page.tsx */}
+            {parentCrumb && (
+              <>
+                <li className="shrink-0">
+                  <Link href={`/collections?category=${parentCrumb.slug}`} className="capitalize transition-colors hover:text-primary-hover">
+                    {parentCrumb.name}
+                  </Link>
+                </li>
+                <li aria-hidden="true" className="shrink-0">
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </li>
+              </>
+            )}
             <li className="shrink-0">
               <Link href={`/collections?category=${product.category}`} className="capitalize transition-colors hover:text-primary-hover">
                 {categoryLabel}
@@ -265,9 +290,7 @@ export default function ProductDetailClient({ product, relatedProducts, extras }
                 )}
               </div>
 
-              {(product.subtitle || product.description) && (
-                <p className="line-clamp-4 text-base leading-relaxed text-ink-secondary">{product.subtitle || product.description}</p>
-              )}
+              {summaryText && <p className="line-clamp-4 text-base leading-relaxed text-ink-secondary">{summaryText}</p>}
             </div>
 
             {/* Options */}

@@ -168,7 +168,7 @@ function AdminNewProductWizard() {
   const loadedVersion = useRef<string | null>(null);
   const isSubmittingRef = useRef(false);
 
-  // STEP 5 STATE: SEO & Publish (SEO fields are not stored by the backend yet)
+  // STEP 5 STATE: SEO & Publish
   const [metaTitle, setMetaTitle] = useState("");
   const [metaDescription, setMetaDescription] = useState("");
   const [focusKeywords, setFocusKeywords] = useState<string[]>([]);

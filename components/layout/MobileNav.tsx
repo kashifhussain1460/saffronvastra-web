@@ -9,7 +9,7 @@ import Offcanvas from "@/components/ui/Offcanvas";
 import { AccordionItem } from "@/components/ui/Accordion";
 import { useStore } from "@/context/StoreContext";
 import { useSiteSettings } from "@/context/SettingsContext";
-import { useCatalogNav } from "@/components/layout/useCatalogNav";
+import { useCatalogNav, type CatalogNav } from "@/components/layout/useCatalogNav";
 import { BRAND } from "@/lib/brand";
 
 interface MobileNavProps {
@@ -17,6 +17,8 @@ interface MobileNavProps {
   onClose: () => void;
   /** Open with the Shop section expanded (the bottom toolbar's "Categories" button). */
   initialSection?: "shop" | null;
+  /** Categories and collections the server already read (no extra request when the menu opens). */
+  initialNav?: CatalogNav | null;
 }
 
 const ROW = "flex w-full items-center justify-between gap-4 min-h-12 py-3 text-sm font-semibold tracking-wide uppercase text-left transition-colors";
@@ -32,12 +34,12 @@ const LINKS = [
   { href: "/faqs", label: "FAQs" },
 ];
 
-export default function MobileNav({ isOpen, onClose, initialSection = null }: MobileNavProps) {
+export default function MobileNav({ isOpen, onClose, initialSection = null, initialNav }: MobileNavProps) {
   const pathname = usePathname() || "/";
   const router = useRouter();
   const { user, isAuthenticated, logout, wishlist } = useStore();
   const { store } = useSiteSettings();
-  const nav = useCatalogNav(isOpen);
+  const nav = useCatalogNav(isOpen, initialNav);
   const [shopOpen, setShopOpen] = useState(false);
   const [query, setQuery] = useState("");
   const closeRef = useRef<HTMLButtonElement>(null);

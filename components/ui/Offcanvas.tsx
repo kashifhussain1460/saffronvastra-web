@@ -167,12 +167,12 @@ export default function Offcanvas({
       <div
         aria-hidden="true"
         onClick={onClose}
-        className={`absolute inset-0 bg-ink/20 transition-opacity duration-300 ${visible ? "opacity-100" : "opacity-0"}`}
+        className={`absolute inset-0 bg-ink/20 transition-opacity duration-300 motion-reduce:transition-none ${visible ? "opacity-100" : "opacity-0"}`}
       />
       <div
         ref={panelRef}
         tabIndex={-1}
-        className={`absolute inset-y-0 ${side === "left" ? "left-0" : "right-0"} flex bg-canvas outline-none transition-transform duration-300 ease-out ${
+        className={`absolute inset-y-0 ${side === "left" ? "left-0" : "right-0"} flex bg-canvas outline-none transition-transform duration-300 ease-out motion-reduce:transition-none ${
           visible ? "translate-x-0" : hiddenTransform
         } ${panelClassName}`}
       >

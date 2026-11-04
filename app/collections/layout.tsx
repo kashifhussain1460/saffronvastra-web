@@ -1,10 +1,11 @@
-import { BRAND } from "@/lib/brand";
 import type { Metadata } from "next";
+import { BRAND_TITLE_SUFFIX } from "@/lib/seo";
 
+// A plain string title here would drop the root template for /collections/[slug], so the template is repeated.
+// The /collections page sets its own title, description, canonical and Open Graph per view (page.tsx), and each
+// collection page sets its own, so nothing else is inherited from here.
 export const metadata: Metadata = {
-  title: `Shop the Collection | ${BRAND.name}`,
-  description: "Hand-embroidered velvet and cotton jackets, made to order by artisans in Jaipur. Browse every piece and filter by category, size and price.",
-  alternates: { canonical: "/collections" },
+  title: { default: "Shop the Collection", template: `%s | ${BRAND_TITLE_SUFFIX}` },
 };
 
 export default function CollectionsLayout({ children }: { children: React.ReactNode }) {

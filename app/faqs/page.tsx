@@ -1,12 +1,13 @@
-import { BRAND } from "@/lib/brand";
+import { buildMetadata } from "@/lib/seo";
 import FaqView from "@/components/content/FaqView";
 import { FAQ_MARKDOWN } from "@/lib/policies/faqs";
 
-export const metadata = {
-  title: `FAQs | ${BRAND.name}`,
+export const metadata = buildMetadata({
+  title: "FAQs",
   description:
     "Find answers to common questions about our products, sizes, orders, payments, shipping, returns and customer support.",
-};
+  path: "/faqs",
+});
 
 // The wording lives in lib/policies/faqs.ts exactly as supplied by the business owner.
 export default function FAQsPage() {

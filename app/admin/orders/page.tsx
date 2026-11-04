@@ -16,7 +16,6 @@ import {
   Search,
   Filter,
   RotateCcw,
-  MoreVertical,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
@@ -54,8 +53,10 @@ export default function AdminOrdersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [selectedPaymentStatus, setSelectedPaymentStatus] = useState<string>("all");
+  const [selectedAmountRange, setSelectedAmountRange] = useState<string>("all");
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [exportNotice, setExportNotice] = useState(false);
 
   const [orders, setOrders] = useState<AdminOrder[]>([]);
@@ -147,6 +148,11 @@ export default function AdminOrdersPage() {
       // Payment Status dropdown
       if (selectedPaymentStatus !== "all" && order.paymentStatus.toLowerCase() !== selectedPaymentStatus.toLowerCase()) return false;
 
+      // Amount Range dropdown
+      if (selectedAmountRange === "under15k" && !(order.totalAmount < 15000)) return false;
+      if (selectedAmountRange === "15k-25k" && !(order.totalAmount >= 15000 && order.totalAmount <= 25000)) return false;
+      if (selectedAmountRange === "above25k" && !(order.totalAmount > 25000)) return false;
+
       // Search Query
       if (searchQuery.trim() !== "") {
         const query = searchQuery.toLowerCase();
@@ -158,7 +164,31 @@ export default function AdminOrdersPage() {
 
       return true;
     });
-  }, [orders, activeTab, selectedStatus, selectedPaymentStatus, searchQuery]);
+  }, [orders, activeTab, selectedStatus, selectedPaymentStatus, selectedAmountRange, searchQuery]);
+
+  // Pagination operates on the filtered set. Reset to page 1 whenever the filters, search, tab or page size change,
+  // so the admin never lands on a page number that no longer exists for the current result set.
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, selectedStatus, selectedPaymentStatus, selectedAmountRange, searchQuery, pageSize]);
+
+  const totalFilteredPages = Math.max(1, Math.ceil(filteredOrders.length / pageSize));
+  const safePage = Math.min(currentPage, totalFilteredPages);
+  const pagedOrders = useMemo(
+    () => filteredOrders.slice((safePage - 1) * pageSize, safePage * pageSize),
+    [filteredOrders, safePage, pageSize]
+  );
+  // A small window of page-number buttons centred on the current page, matching the 5-button look of the mockup
+  // while staying correct for any total page count.
+  const pageWindow = useMemo(() => {
+    const maxButtons = 5;
+    let start = Math.max(1, safePage - Math.floor(maxButtons / 2));
+    const end = Math.min(totalFilteredPages, start + maxButtons - 1);
+    start = Math.max(1, end - maxButtons + 1);
+    const pages: number[] = [];
+    for (let p = start; p <= end; p++) pages.push(p);
+    return pages;
+  }, [safePage, totalFilteredPages]);
 
   const toggleSelectAll = () => {
     if (selectedOrders.length === filteredOrders.length) {
@@ -206,6 +236,7 @@ export default function AdminOrdersPage() {
     setSearchQuery("");
     setSelectedStatus("all");
     setSelectedPaymentStatus("all");
+    setSelectedAmountRange("all");
   };
 
   const tabs = [
@@ -431,7 +462,12 @@ export default function AdminOrdersPage() {
           </select>
 
           {/* Amount Range */}
-          <select className="px-3 py-1.5 bg-surface border border-line rounded-md text-xs text-ink focus:outline-none focus:border-primary">
+          <select
+            aria-label="Amount range"
+            value={selectedAmountRange}
+            onChange={(e) => setSelectedAmountRange(e.target.value)}
+            className="px-3 py-1.5 bg-surface border border-line rounded-md text-xs text-ink focus:outline-none focus:border-primary"
+          >
             <option value="all">Amount: All</option>
             <option value="under15k">Under ₹15,000</option>
             <option value="15k-25k">₹15,000 – ₹25,000</option>
@@ -474,7 +510,18 @@ export default function AdminOrdersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {filteredOrders.map((order) => {
+              {pagedOrders.length === 0 && (
+                <tr>
+                  <td colSpan={9} className="p-8 text-center text-ink-muted">
+                    {orders.length === 0
+                      ? loadState === "loading"
+                        ? "Loading orders..."
+                        : "No orders yet."
+                      : "No orders match these filters."}
+                  </td>
+                </tr>
+              )}
+              {pagedOrders.map((order) => {
                 const isSelected = selectedOrders.includes(order.orderId);
 
                 // Status Pill styling
@@ -620,12 +667,6 @@ export default function AdminOrdersPage() {
                         >
                           View
                         </Link>
-                        <button
-                          className="p-1 hover:bg-ink/5 rounded-xs text-ink-muted"
-                          aria-label="More actions"
-                        >
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
                       </div>
                     </td>
                   </tr>
@@ -638,48 +679,55 @@ export default function AdminOrdersPage() {
         {/* 6. PAGINATION FOOTER */}
         <div className="p-4 bg-surface border-t border-line flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs text-ink-muted">
           <p>
-            Showing 1 to {Math.min(10, filteredOrders.length)} of {orders.length} orders
+            {filteredOrders.length === 0
+              ? "Showing 0 of 0 orders"
+              : `Showing ${(safePage - 1) * pageSize + 1} to ${Math.min(safePage * pageSize, filteredOrders.length)} of ${filteredOrders.length} orders`}
           </p>
 
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1">
               <button
-                disabled={currentPage === 1}
+                disabled={safePage === 1}
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 aria-label="Previous page"
                 className="w-7 h-7 rounded-sm border border-line flex items-center justify-center text-ink-secondary hover:bg-ink/5 disabled:opacity-40"
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
               </button>
-              <button className="w-7 h-7 rounded-sm bg-primary text-on-primary font-semibold flex items-center justify-center">
-                1
-              </button>
-              <button className="w-7 h-7 rounded-sm border border-line text-ink-secondary hover:bg-ink/5 flex items-center justify-center">
-                2
-              </button>
-              <button className="w-7 h-7 rounded-sm border border-line text-ink-secondary hover:bg-ink/5 flex items-center justify-center">
-                3
-              </button>
-              <button className="w-7 h-7 rounded-sm border border-line text-ink-secondary hover:bg-ink/5 flex items-center justify-center">
-                4
-              </button>
-              <button className="w-7 h-7 rounded-sm border border-line text-ink-secondary hover:bg-ink/5 flex items-center justify-center">
-                5
-              </button>
+              {pageWindow.map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setCurrentPage(p)}
+                  aria-label={`Page ${p}`}
+                  aria-current={p === safePage ? "page" : undefined}
+                  className={
+                    p === safePage
+                      ? "w-7 h-7 rounded-sm bg-primary text-on-primary font-semibold flex items-center justify-center"
+                      : "w-7 h-7 rounded-sm border border-line text-ink-secondary hover:bg-ink/5 flex items-center justify-center"
+                  }
+                >
+                  {p}
+                </button>
+              ))}
               <button
-                disabled={currentPage === 5}
-                onClick={() => setCurrentPage((p) => Math.min(5, p + 1))}
+                disabled={safePage === totalFilteredPages}
+                onClick={() => setCurrentPage((p) => Math.min(totalFilteredPages, p + 1))}
                 aria-label="Next page"
-                className="w-7 h-7 rounded-sm border border-line flex items-center justify-center text-ink-secondary hover:bg-ink/5"
+                className="w-7 h-7 rounded-sm border border-line flex items-center justify-center text-ink-secondary hover:bg-ink/5 disabled:opacity-40"
               >
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            <select className="px-2.5 py-1 bg-surface border border-line rounded-sm text-xs text-ink">
-              <option>10 per page</option>
-              <option>25 per page</option>
-              <option>50 per page</option>
+            <select
+              aria-label="Orders per page"
+              value={pageSize}
+              onChange={(e) => setPageSize(Number(e.target.value))}
+              className="px-2.5 py-1 bg-surface border border-line rounded-sm text-xs text-ink"
+            >
+              <option value={10}>10 per page</option>
+              <option value={25}>25 per page</option>
+              <option value={50}>50 per page</option>
             </select>
           </div>
         </div>

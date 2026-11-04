@@ -1,14 +1,16 @@
 import { BRAND } from "@/lib/brand";
+import { buildMetadata } from "@/lib/seo";
 import React from "react";
 import Link from "next/link";
 import { Scissors, Sparkles, MessageSquare, ShieldCheck } from "lucide-react";
 import PageTitle from "@/components/checkout/PageTitle";
 
-export const metadata = {
-  title: `Unisex Size Guide & Measurement Guide | ${BRAND.name}`,
+export const metadata = buildMetadata({
+  title: "Unisex Size Guide & Measurement Guide",
   description:
     `Unisex size charts in inches and centimeters, custom measurement guidance, and fit recommendations for jackets and kimonos at ${BRAND.name}.`,
-};
+  path: "/size-guide",
+});
 
 export default function SizeGuidePage() {
   const sizeRows = [
@@ -56,15 +58,17 @@ export default function SizeGuidePage() {
                 </span>
               </div>
 
-              <div className="overflow-x-auto">
+              {/* Focusable so the table can be scrolled sideways with the keyboard on narrow screens. */}
+              <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Size chart">
                 <table className="w-full min-w-[540px] text-left text-sm border border-line">
+                  <caption className="sr-only">Unisex Body &amp; Garment Measurements</caption>
                   <thead className="bg-surface-muted text-ink font-medium">
                     <tr>
-                      <th className="p-3 border-b border-line">Size</th>
-                      <th className="p-3 border-b border-line">Chest / Bust (In / Cm)</th>
-                      <th className="p-3 border-b border-line">Waist (In / Cm)</th>
-                      <th className="p-3 border-b border-line">Hips (In / Cm)</th>
-                      <th className="p-3 border-b border-line">Length (In / Cm)</th>
+                      <th scope="col" className="p-3 border-b border-line">Size</th>
+                      <th scope="col" className="p-3 border-b border-line">Chest / Bust (In / Cm)</th>
+                      <th scope="col" className="p-3 border-b border-line">Waist (In / Cm)</th>
+                      <th scope="col" className="p-3 border-b border-line">Hips (In / Cm)</th>
+                      <th scope="col" className="p-3 border-b border-line">Length (In / Cm)</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-line">

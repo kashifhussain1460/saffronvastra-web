@@ -1,0 +1,35 @@
+/*
+ * Accessibility rules for the whole storefront, kept apart from globals.css (which is regenerated from the theme).
+ * Imported once, after globals.css, from app/layout.tsx.
+ */
+
+/*
+ * Focus not obscured (WCAG 2.4.11): when focus or an anchor jump scrolls the page, keep the target clear of the
+ * sticky header (h-16, xl:h-[84px] in Header.tsx) and of the fixed bottom toolbar below lg, whose height
+ * BottomNav.tsx publishes as --bottom-nav-h (0px wherever the toolbar is not shown).
+ */
+html {
+  scroll-padding-top: 64px;
+  scroll-padding-bottom: var(--bottom-nav-h, 0px);
+}
+
+@media (min-width: 1280px) {
+  html {
+    scroll-padding-top: 84px;
+  }
+}
+
+/*
+ * Reduced motion (WCAG 2.3.3): transitions and animations finish at once instead of moving. A very short duration
+ * rather than none, so transitionend and animationend still fire for components that wait for them.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -31,7 +29,7 @@ export default function ShopTheLook({ products }: { products: Product[] }) {
             >
               <Image
                 src={p.images[1] || p.images[0]}
-                alt=""
+                alt={p.title}
                 fill
                 sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
                 className="object-cover object-top transition-transform duration-700 ease-out group-hover:scale-105"

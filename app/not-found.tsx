@@ -2,6 +2,15 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
+import type { Metadata } from "next";
+import { BASE_OG, NOT_FOUND_TITLE, titleFor } from "@/lib/seo";
+
+// No robots field: Next already renders <meta name="robots" content="noindex"> on every 404 response,
+// and a second robots tag would duplicate it. openGraph has no url so a 404 does not claim the home page's og:url.
+export const metadata: Metadata = {
+  title: NOT_FOUND_TITLE,
+  openGraph: { ...BASE_OG, title: titleFor(NOT_FOUND_TITLE) },
+};
 
 export default function NotFound() {
   const quickLinks = [

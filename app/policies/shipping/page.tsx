@@ -1,14 +1,16 @@
 import { BRAND } from "@/lib/brand";
+import { buildMetadata } from "@/lib/seo";
 import React from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import PolicyLayout, { PolicySection, policyList, policyNote } from "@/components/content/PolicyLayout";
 
-export const metadata = {
-  title: `Shipping & Delivery Policy | ${BRAND.displayName}`,
+export const metadata = buildMetadata({
+  title: "Shipping & Delivery Policy",
   description:
     `Domestic shipping policy, handcrafted dispatch timelines, and delivery terms across India for ${BRAND.displayName}.`,
-};
+  path: "/policies/shipping",
+});
 
 const sections = [
   { id: "domestic-shipping", label: "1. Domestic Shipping Across India" },

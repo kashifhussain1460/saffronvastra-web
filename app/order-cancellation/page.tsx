@@ -1,13 +1,15 @@
 import { BRAND } from "@/lib/brand";
+import { buildMetadata } from "@/lib/seo";
 import React from "react";
 import Link from "next/link";
 import PolicyLayout, { PolicySection, policyList, policyLink, policyNote } from "@/components/content/PolicyLayout";
 
-export const metadata = {
-  title: `Order Cancellation Policy | ${BRAND.displayName}`,
+export const metadata = buildMetadata({
+  title: "Order Cancellation Policy",
   description:
     `24-hour order cancellation window and refund procedures for orders placed at ${BRAND.displayName}.`,
-};
+  path: "/order-cancellation",
+});
 
 const sections = [
   { id: "cancellation-window", label: "1. 24-Hour Cancellation Policy" },

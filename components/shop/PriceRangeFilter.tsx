@@ -2,9 +2,18 @@
 
 import React, { useEffect, useState } from "react";
 
+/*
+ * Target size (WCAG 2.5.8, 24x24 CSS px). The drawn thumb is still a 16px circle with a 2px primary ring, but its box
+ * is 24x24: a 4px transparent border is the extra hit area, the surface fill is clipped to the padding box (16px) and
+ * the ring is an inset 2px shadow inside that 16px circle. The range inputs are 24px tall (centred on the 20px track
+ * row, so the track does not move) and 8px wider (4px past each end), which keeps the thumb centre travelling over
+ * exactly the same 8px..(width-8px) span as the old 16px thumb on a full-width input.
+ */
 const thumb =
-  "[&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-solid [&::-webkit-slider-thumb]:border-primary [&::-webkit-slider-thumb]:bg-surface " +
-  "[&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-solid [&::-moz-range-thumb]:border-primary [&::-moz-range-thumb]:bg-surface";
+  "[&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-4 [&::-webkit-slider-thumb]:border-solid [&::-webkit-slider-thumb]:border-transparent [&::-webkit-slider-thumb]:bg-surface [&::-webkit-slider-thumb]:bg-clip-padding [&::-webkit-slider-thumb]:[box-shadow:inset_0_0_0_2px_rgb(var(--color-primary))] " +
+  "[&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-4 [&::-moz-range-thumb]:border-solid [&::-moz-range-thumb]:border-transparent [&::-moz-range-thumb]:bg-surface [&::-moz-range-thumb]:bg-clip-padding [&::-moz-range-thumb]:[box-shadow:inset_0_0_0_2px_rgb(var(--color-primary))]";
+// 24px tall, centred on the h-5 row (-2px), and 4px past each end of it (see the note above).
+const rangeBox = "pointer-events-none absolute -left-1 -top-0.5 h-6 w-[calc(100%+0.5rem)] appearance-none bg-transparent";
 
 /**
  * Two-thumb price slider with Min / Max number fields (Modave "facet-price").
@@ -77,7 +86,7 @@ export default function PriceRangeFilter({
           onPointerUp={release}
           onKeyUp={release}
           onTouchEnd={release}
-          className={`pointer-events-none absolute inset-0 h-5 w-full appearance-none bg-transparent ${thumb}`}
+          className={`${rangeBox} ${thumb}`}
         />
         <input
           type="range"
@@ -94,7 +103,7 @@ export default function PriceRangeFilter({
           onPointerUp={release}
           onKeyUp={release}
           onTouchEnd={release}
-          className={`pointer-events-none absolute inset-0 h-5 w-full appearance-none bg-transparent ${thumb}`}
+          className={`${rangeBox} ${thumb}`}
         />
       </div>
       <div className="mt-4 grid grid-cols-2 gap-4 xl:gap-5">

@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { useCatalogNav } from "@/components/layout/useCatalogNav";
-import { CategoryGridSkeleton } from "@/components/ui/Skeleton";
+import { categoryImageUrl } from "@/lib/productMapper";
+import type { CollectionCategory } from "./homeData";
 
 interface CollectionCardData {
   title: string;
@@ -22,7 +23,7 @@ const DEFAULT_COLLECTIONS: CollectionCardData[] = [
     slug: "suzani-jackets",
     description: "Make a statement with expressive Suzani embroidery and thoughtfully styled jacket silhouettes.",
     cta: "Explore Jackets",
-    image: "/images/categories/suzani-jackets.jpg",
+    image: "/images/categories/suzani-jackets-1000.jpg",
     badge: "Statement Silhouettes",
   },
   {
@@ -30,18 +31,20 @@ const DEFAULT_COLLECTIONS: CollectionCardData[] = [
     slug: "suzani-kimonos",
     description: "Discover distinctive kimono silhouettes featuring the character and artistry of Suzani needlework.",
     cta: "Explore Kimonos",
-    image: "/images/categories/suzani-kimonos.jpg",
+    image: "/images/categories/suzani-kimonos-1000.jpg",
     badge: "Flowing Drape",
   },
 ];
 
-export default function DynamicCollections() {
-  const { allFlatCategories } = useCatalogNav(true);
-  const [mounted, setMounted] = useState(false);
+interface DynamicCollectionsProps {
+  /** Categories read on the server. When absent (the API was unreachable while the page rendered) they load in the
+   * browser as before; the cards render with their default image and badge until then. */
+  categories?: CollectionCategory[];
+}
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+export default function DynamicCollections({ categories }: DynamicCollectionsProps) {
+  const { allFlatCategories: browserCategories } = useCatalogNav(!categories);
+  const allFlatCategories: CollectionCategory[] = categories ?? browserCategories;
 
   // Map dynamic backend counts and images if available
   const collections: CollectionCardData[] = DEFAULT_COLLECTIONS.map((def) => {
@@ -52,14 +55,10 @@ export default function DynamicCollections() {
 
     return {
       ...def,
-      image: match.image || def.image,
+      image: match.image ? categoryImageUrl(match.image) : def.image,
       badge: match.count && match.count > 0 ? `${match.count} Designs` : def.badge,
     };
   });
-
-  if (!mounted) {
-    return <CategoryGridSkeleton />;
-  }
 
   return (
     <section aria-labelledby="suzani-collections-title" className="py-20 lg:py-28 bg-[#FAF8F5]">

@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { emailError, mobileError, nameError, nationalMobileDigits, passwordError, passwordStrength } from "@/lib/validation";
 import { Eye, EyeOff } from "lucide-react";
 import AuthSplit from "@/components/auth/AuthSplit";
+import { safeRedirectPath } from "@/lib/safeRedirect";
 import { btnPrimary, errorText, inputClass, labelClass } from "@/components/auth/ui";
 
 type Field = "fullName" | "email" | "phone" | "password" | "confirmPassword" | "terms";
@@ -98,7 +99,8 @@ function RegisterForm() {
           }).catch(() => undefined);
         }
         // No session yet: the account opens once the email address is confirmed.
-        const next = redirectQuery && redirectQuery.startsWith("/") && !redirectQuery.startsWith("//") ? `&redirect=${encodeURIComponent(redirectQuery)}` : "";
+        const safeRedirect = safeRedirectPath(redirectQuery, "");
+        const next = safeRedirect ? `&redirect=${encodeURIComponent(safeRedirect)}` : "";
         router.push(`/auth/verify-email/sent?email=${encodeURIComponent(cleanEmail)}${next}`);
         return;
       }
@@ -125,10 +127,8 @@ function RegisterForm() {
     }
   };
 
-  const signInHref =
-    redirectQuery && redirectQuery.startsWith("/") && !redirectQuery.startsWith("//")
-      ? `/auth/login?redirect=${encodeURIComponent(redirectQuery)}`
-      : "/auth/login";
+  const signInRedirect = safeRedirectPath(redirectQuery, "");
+  const signInHref = signInRedirect ? `/auth/login?redirect=${encodeURIComponent(signInRedirect)}` : "/auth/login";
 
   return (
     <AuthSplit

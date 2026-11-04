@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import { SlidersHorizontal, CheckCircle2, Circle } from "lucide-react";
 import ProductCard from "@/components/ui/ProductCard";
 import { ProductGridSkeleton } from "@/components/ui/Skeleton";
@@ -15,15 +16,42 @@ import { useMediaQuery, useShopQuery } from "./hooks";
 import {
   applyFilters,
   buildFacetOptions,
+  buildShopSearch,
   countActiveFilters,
   EMPTY_FILTERS,
   isOnSale,
   ListFacet,
   priceBounds,
   ShopProduct,
+  ShopQuery,
   sortProducts,
   ViewMode,
 } from "./shopData";
+
+/**
+ * One page of the listing rendered on the server, shown while the browser is still loading the full
+ * catalogue so the first HTML already holds the products and pagination. `query` is the listing query it
+ * was built for (query.page is the page shown); once the visitor changes it, or the catalogue has loaded,
+ * the normal in-browser listing takes over.
+ */
+export interface InitialShopPage {
+  query: ShopQuery;
+  items: ShopProduct[];
+  totalPages: number;
+  total: number;
+  /** The catalogue's price-slider ceiling (priceBounds of its dearest product), used until the catalogue has loaded. */
+  priceCeiling?: number;
+}
+
+// The part of the URL that decides which products are listed (the layout switch does not).
+const listingKey = (q: ShopQuery) => buildShopSearch(new URLSearchParams(), { ...q, view: null });
+
+// The query after adding or removing one facet value (back to page 1).
+function toggled(q: ShopQuery, facet: ListFacet, value: string): ShopQuery {
+  const cur = q.filters[facet];
+  const next = cur.includes(value) ? cur.filter((v) => v !== value) : [...cur, value];
+  return { ...q, page: 1, filters: { ...q.filters, [facet]: next } };
+}
 
 export interface ShopViewProps {
   products: ShopProduct[];
@@ -40,6 +68,8 @@ export interface ShopViewProps {
   emptyCatalogue?: React.ReactNode;
   /** Shown when filters remove every product. */
   emptyFiltered?: (clear: () => void) => React.ReactNode;
+  /** Server-rendered page shown instead of the loading skeleton (see InitialShopPage). */
+  initialPage?: InitialShopPage;
 }
 
 const GRID_CLASS: Record<Exclude<ViewMode, "list">, string> = {
@@ -65,16 +95,23 @@ export default function ShopView({
   loadingText = "Loading the collection...",
   emptyCatalogue,
   emptyFiltered,
+  initialPage,
 }: ShopViewProps) {
   const { query, setQuery } = useShopQuery();
   const { filters, sort, page, view } = query;
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const isMd = useMediaQuery("(min-width: 768px)");
   const isXl = useMediaQuery("(min-width: 1280px)");
   const topRef = useRef<HTMLDivElement>(null);
 
-  const bounds = useMemo(() => priceBounds(products), [products]);
+  // While the catalogue is still loading behind the server's page, the slider already reaches the dearest piece.
+  const bounds = useMemo(
+    () => (products.length === 0 && initialPage?.priceCeiling ? { floor: 0, ceiling: initialPage.priceCeiling } : priceBounds(products)),
+    [products, initialPage]
+  );
   const options = useMemo(() => buildFacetOptions(products, filters, labels), [products, filters, labels]);
   const filtered = useMemo(() => sortProducts(applyFilters(products, filters), sort), [products, filters, sort]);
   const saleCount = useMemo(() => applyFilters(products, { ...filters, sale: false }).filter(isOnSale).length, [products, filters]);
@@ -84,17 +121,23 @@ export default function ShopView({
   const currentPage = Math.min(page, totalPages);
   const pageItems = filtered.slice((currentPage - 1) * perPage, currentPage * perPage);
 
+  // Until the catalogue has loaded, the server's page stands in for the listing, as long as it is the page asked for.
+  const serverPage = loadState === "loading" && initialPage && listingKey(initialPage.query) === listingKey(query) ? initialPage : null;
+  const viewState = serverPage ? "ready" : loadState;
+  const shownItems = serverPage ? serverPage.items : pageItems;
+  const shownCount = serverPage ? serverPage.total : filtered.length;
+
+  // Real URLs for the pages and category values, so crawlers can follow them; a click still updates the page in place.
+  const hrefFor = (q: ShopQuery) => `${pathname}${buildShopSearch(new URLSearchParams(searchParams.toString()), q)}`;
+  const pageHref = (p: number) => hrefFor({ ...query, page: p });
+  const facetHref = (facet: ListFacet, value: string) => hrefFor(toggled(query, facet, value));
+
   // Requested layout, narrowed to what fits this screen (4 columns from xl, 3 from md).
   const wanted: ViewMode = view ?? "4";
   const effective: ViewMode = wanted === "list" ? "list" : (String(Math.min(Number(wanted), isXl ? 4 : isMd ? 3 : 2)) as ViewMode);
   const showSidebar = layout === "sidebar" && sidebarOpen;
 
-  const toggle = (facet: ListFacet, value: string) =>
-    setQuery((q) => {
-      const cur = q.filters[facet];
-      const next = cur.includes(value) ? cur.filter((v) => v !== value) : [...cur, value];
-      return { ...q, page: 1, filters: { ...q.filters, [facet]: next } };
-    });
+  const toggle = (facet: ListFacet, value: string) => setQuery((q) => toggled(q, facet, value));
   const setPrice = (min: number | null, max: number | null) => setQuery((q) => ({ ...q, page: 1, filters: { ...q.filters, min, max } }));
   const setSale = (on: boolean) => setQuery((q) => ({ ...q, page: 1, filters: { ...q.filters, sale: on } }));
   const clearAll = () =>
@@ -128,6 +171,7 @@ export default function ShopView({
       onSale={setSale}
       saleCount={saleCount}
       hide={hideFacets}
+      facetHref={facetHref}
     />
   );
 
@@ -137,7 +181,7 @@ export default function ShopView({
   };
 
   return (
-    <div ref={topRef} className="mx-auto max-w-[1320px] scroll-mt-24 px-[15px] pb-16 pt-6 md:pt-10 lg:pb-24 xl:pt-20">
+    <div ref={topRef} className="mx-auto max-w-[1320px] scroll-mt-8 xl:scroll-mt-3 px-[15px] pb-16 pt-6 md:pt-10 lg:pb-24 xl:pt-20">
       {/* Toolbar */}
       <div className="flex items-center justify-between gap-2 sm:gap-4">
         <div className="flex min-w-0 flex-1 items-center gap-4 sm:gap-5">
@@ -179,7 +223,7 @@ export default function ShopView({
 
       {/* Count + applied filters */}
       <div className="mt-5 md:mt-7">
-        <AppliedFilterChips count={filtered.length} chips={chips} onClearAll={clearAll} />
+        <AppliedFilterChips count={shownCount} chips={chips} onClearAll={clearAll} />
       </div>
 
       <div className="mt-6 flex items-start gap-[30px] md:mt-8">
@@ -190,14 +234,20 @@ export default function ShopView({
         )}
 
         <div className="min-w-0 flex-1">
-          {loadState === "loading" ? (
+          {/* the rest of the catalogue (and so the filters) is still loading behind the server's page */}
+          {serverPage && (
+            <p role="status" className="sr-only">
+              {loadingText}
+            </p>
+          )}
+          {viewState === "loading" ? (
             <div>
               <p role="status" className="sr-only">
                 {loadingText}
               </p>
               <ProductGridSkeleton count={perPage || 8} columns={wanted === "list" ? "4" : wanted} />
             </div>
-          ) : loadState === "error" ? (
+          ) : viewState === "error" ? (
             <div role="alert" className="rounded-lg border border-line px-6 py-16 text-center">
               <p className="text-base text-ink-secondary">{errorText}</p>
               {onRetry && (
@@ -210,9 +260,9 @@ export default function ShopView({
                 </button>
               )}
             </div>
-          ) : products.length === 0 && emptyCatalogue ? (
+          ) : !serverPage && products.length === 0 && emptyCatalogue ? (
             emptyCatalogue
-          ) : filtered.length === 0 ? (
+          ) : shownCount === 0 ? (
             emptyFiltered ? (
               emptyFiltered(clearAll)
             ) : (
@@ -230,13 +280,13 @@ export default function ShopView({
             )
           ) : effective === "list" ? (
             <div className="space-y-8 lg:space-y-10">
-              {pageItems.map((p) => (
+              {shownItems.map((p) => (
                 <ProductListItem key={p.id} product={p} />
               ))}
             </div>
           ) : (
             <div className={`grid gap-x-[15px] gap-y-[30px] xl:gap-x-[30px] xl:gap-y-10 ${GRID_CLASS[wanted === "list" ? "4" : wanted]}`}>
-              {pageItems.map((p, i) => (
+              {shownItems.map((p, i) => (
                 <ProductCard
                   key={p.id}
                   product={p}
@@ -253,11 +303,18 @@ export default function ShopView({
             </div>
           )}
 
-          {loadState === "ready" && <Pagination page={currentPage} totalPages={totalPages} onChange={goPage} />}
+          {viewState === "ready" && (
+            <Pagination
+              page={serverPage ? serverPage.query.page : currentPage}
+              totalPages={serverPage ? serverPage.totalPages : totalPages}
+              onChange={goPage}
+              hrefFor={pageHref}
+            />
+          )}
         </div>
       </div>
 
-      <MobileFilterDrawer id="shop-filter-drawer" open={drawerOpen} onClose={() => setDrawerOpen(false)} onReset={clearAll} resultCount={filtered.length}>
+      <MobileFilterDrawer id="shop-filter-drawer" open={drawerOpen} onClose={() => setDrawerOpen(false)} onReset={clearAll} resultCount={shownCount}>
         {panel("drawer")}
       </MobileFilterDrawer>
     </div>

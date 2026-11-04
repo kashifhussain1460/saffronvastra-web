@@ -27,6 +27,41 @@ export default function ProductGallery({ images, alts = [], title, badge, discou
   const count = images.length;
   const altFor = (i: number) => alts[i] || `${title}, photo ${i + 1} of ${count}`;
 
+  // The first photo is the LCP element. The other slides sit just off screen in the scroller and the thumbnails are in
+  // view on mobile, so the browser would fetch every other photo at the same moment and they would share the
+  // bandwidth with the first one. They are mounted once the first photo has loaded (or failed) and the page is idle,
+  // so the first photo is painted first; until then their boxes show the same muted background they show while any
+  // photo loads. Thumbnail 1 is the first photo's URL, so it is shown from the start.
+  const firstImgRef = useRef<HTMLImageElement>(null);
+  const [restReady, setRestReady] = useState(false);
+  useEffect(() => {
+    const img = firstImgRef.current;
+    let idle = 0;
+    let timer = 0;
+    const done = () => {
+      if (idle || timer) return;
+      // Safari has no requestIdleCallback
+      if (typeof window.requestIdleCallback === "function") idle = window.requestIdleCallback(() => setRestReady(true), { timeout: 1500 });
+      else timer = window.setTimeout(() => setRestReady(true), 200);
+    };
+    // a photo that never settles must not keep the rest of the gallery empty
+    const fallback = window.setTimeout(() => setRestReady(true), 4000);
+    // already loaded (or already failed) before hydration
+    if (!img || img.complete) done();
+    else {
+      img.addEventListener("load", done, { once: true });
+      img.addEventListener("error", done, { once: true });
+    }
+    return () => {
+      img?.removeEventListener("load", done);
+      img?.removeEventListener("error", done);
+      window.clearTimeout(fallback);
+      window.clearTimeout(timer);
+      if (idle) window.cancelIdleCallback(idle);
+    };
+  }, []);
+  const showPhoto = (i: number) => i === 0 || restReady || i === active;
+
   // keep the active index in sync with the swipe position
   const onScroll = useCallback(() => {
     const el = trackRef.current;
@@ -78,6 +113,7 @@ export default function ProductGallery({ images, alts = [], title, badge, discou
           ref={trackRef}
           onScroll={onScroll}
           className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth rounded-xl bg-surface-muted [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          role="region"
           aria-roledescription="carousel"
           aria-label={`${title} photos`}
         >
@@ -97,14 +133,20 @@ export default function ProductGallery({ images, alts = [], title, badge, discou
                 className="absolute inset-0 cursor-zoom-in"
                 aria-label={`Open photo ${i + 1} of ${count} in full screen`}
               >
-                <Image
-                  src={src}
-                  alt={altFor(i)}
-                  fill
-                  priority={i === 0}
-                  sizes="(max-width: 767px) 100vw, 50vw"
-                  className="object-cover"
-                />
+                {showPhoto(i) && (
+                  <Image
+                    ref={i === 0 ? firstImgRef : undefined}
+                    src={src}
+                    alt={altFor(i)}
+                    fill
+                    // the first photo is the LCP element: fetched eagerly at high priority; the other slides load lazily
+                    priority={i === 0}
+                    fetchPriority={i === 0 ? "high" : undefined}
+                    loading={i === 0 ? undefined : "lazy"}
+                    sizes="(max-width: 767px) 100vw, 50vw"
+                    className="object-cover"
+                  />
+                )}
               </button>
             </div>
           ))}
@@ -170,6 +212,7 @@ export default function ProductGallery({ images, alts = [], title, badge, discou
         <div
           ref={thumbsRef}
           className="flex gap-2.5 overflow-x-auto xl:absolute xl:inset-0 xl:flex-col xl:overflow-x-hidden xl:overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          role="group"
           aria-label="Choose a photo"
         >
           {images.map((src, i) => (
@@ -184,7 +227,7 @@ export default function ProductGallery({ images, alts = [], title, badge, discou
                 i === active ? "border-primary" : "border-transparent opacity-80 hover:opacity-100"
               }`}
             >
-              <Image src={src} alt="" fill sizes="80px" className="object-cover" />
+              {showPhoto(i) && <Image src={src} alt="" fill sizes="80px" className="object-cover" />}
             </button>
           ))}
         </div>

@@ -1,15 +1,16 @@
-import { BRAND } from "@/lib/brand";
 import { cache } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Calendar, Clock } from "lucide-react";
 import JournalCard, { formatJournalDate, type JournalSummary } from "@/components/content/JournalCard";
+import { API_ORIGIN } from "@/lib/site";
+import { buildMetadata, notFoundMetadata, truncateAtWord } from "@/lib/seo";
+import JsonLd from "@/components/seo/JsonLd";
+import { blogPosting } from "@/lib/jsonld";
 
 // Always read the live journal, so an unpublished story disappears at once.
 export const dynamic = "force-dynamic";
-
-const API_ORIGIN = process.env.API_ORIGIN || "http://127.0.0.1:4000";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -55,12 +56,18 @@ async function loadRelated(slug: string, category: string | null): Promise<Journ
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const story = await loadStory(slug).catch(() => null);
-  if (!story) return { title: `Story not found | ${BRAND.name}` };
+  // The same title and Open Graph as the 404 page itself, so the server HTML and the browser agree (see notFoundMetadata).
+  if (!story) return notFoundMetadata();
+  const metadata = buildMetadata({
+    title: story.title,
+    description: truncateAtWord(story.excerpt || story.body, 155),
+    path: `/journal/${story.slug}`,
+    type: "article",
+    ...(story.coverImage ? { images: [{ url: story.coverImage, alt: story.title }] } : {}),
+  });
   return {
-    title: `${story.title} | The Saffron Journal`,
-    description: story.excerpt || undefined,
-    alternates: { canonical: `/journal/${story.slug}` },
-    openGraph: { type: "article", title: story.title, description: story.excerpt || undefined, url: `/journal/${story.slug}`, ...(story.coverImage ? { images: [{ url: story.coverImage }] } : {}) },
+    ...metadata,
+    openGraph: { ...metadata.openGraph, type: "article", ...(story.publishedAt ? { publishedTime: story.publishedAt } : {}) },
   };
 }
 
@@ -76,6 +83,7 @@ export default async function JournalStoryPage({ params }: Props) {
 
   return (
     <div className="bg-canvas text-ink">
+      <JsonLd data={blogPosting(story)} />
       {story.coverImage ? (
         <div className="relative h-[260px] sm:h-[380px] lg:h-[568px] bg-surface-muted overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}

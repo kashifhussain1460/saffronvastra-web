@@ -32,42 +32,57 @@ const ATELIER_PILLARS = [
 export default function HeroBanners() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [isPlaying, setIsPlaying] = useState(true);
+  const controlRef = useRef<HTMLButtonElement | null>(null);
+  // Set once the visitor pauses with the control; every automatic play path respects it.
+  const userPausedRef = useRef(false);
+  // Automatic playback is only allowed after the poster has painted.
+  const autoPlayReadyRef = useRef(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
 
-  // Reliable cross-browser autoplay initiator
   useEffect(() => {
+    const reducedMotion =
+      typeof window.matchMedia === "function"
+        ? window.matchMedia("(prefers-reduced-motion: reduce)")
+        : null;
+    const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+
+    // Never start motion automatically for reduced motion or Save-Data visitors.
+    const autoPlayBlocked = () => Boolean(reducedMotion?.matches || connection?.saveData);
+
     const playVideo = () => {
       const v = videoRef.current;
-      if (!v) return;
+      if (!v || !autoPlayReadyRef.current || userPausedRef.current || autoPlayBlocked()) return;
+      if (!v.paused) return;
       v.defaultMuted = true;
       v.muted = true;
       const promise = v.play();
       if (promise !== undefined) {
-        promise
-          .then(() => {
-            setIsPlaying(true);
-            setVideoLoaded(true);
-          })
-          .catch(() => {
-            // Browser autoplay policy might require first user gesture
-          });
+        promise.catch(() => {
+          // Browser autoplay policy might require a first user gesture
+        });
       }
     };
 
-    // 1. Immediate attempt on mount
-    playVideo();
-
-    // 2. Retry on initial frame/load events
-    const v = videoRef.current;
-    if (v) {
-      v.addEventListener("loadeddata", playVideo);
-      v.addEventListener("canplay", playVideo);
-      v.addEventListener("canplaythrough", playVideo);
+    // 1. Start after the poster has painted, once the main thread is idle
+    let idleHandle: number | null = null;
+    let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
+    const startAfterPaint = () => {
+      autoPlayReadyRef.current = true;
+      playVideo();
+    };
+    if (typeof window.requestIdleCallback === "function") {
+      idleHandle = window.requestIdleCallback(startAfterPaint, { timeout: 2000 });
+    } else {
+      timeoutHandle = setTimeout(startAfterPaint, 200);
     }
 
-    // 3. Fallback: kickstart playback on any user interaction (scroll, touch, click, pointer)
-    const handleGesture = () => {
+    // 2. Fallback: kickstart playback on the first scroll, touch or pointer interaction.
+    // Presses on the control itself are left to togglePlayback.
+    const handleGesture = (event: Event) => {
+      const target = event.target;
+      if (target instanceof Node && controlRef.current?.contains(target)) return;
+      if (!autoPlayReadyRef.current) return;
       playVideo();
       detachGestures();
     };
@@ -76,15 +91,13 @@ export default function HeroBanners() {
       window.removeEventListener("pointerdown", handleGesture);
       window.removeEventListener("touchstart", handleGesture);
       window.removeEventListener("scroll", handleGesture);
-      window.removeEventListener("click", handleGesture);
     };
 
     window.addEventListener("pointerdown", handleGesture, { passive: true });
     window.addEventListener("touchstart", handleGesture, { passive: true });
     window.addEventListener("scroll", handleGesture, { passive: true });
-    window.addEventListener("click", handleGesture, { passive: true });
 
-    // 4. Resume immediately when tab comes into foreground
+    // 3. Resume when the tab comes back into the foreground
     const handleVisibility = () => {
       if (document.visibilityState === "visible") {
         playVideo();
@@ -92,7 +105,7 @@ export default function HeroBanners() {
     };
     document.addEventListener("visibilitychange", handleVisibility);
 
-    // 5. IntersectionObserver to play whenever hero is in viewport
+    // 4. Play whenever the hero is back in the viewport
     let observer: IntersectionObserver | null = null;
     if (typeof IntersectionObserver !== "undefined" && containerRef.current) {
       observer = new IntersectionObserver(
@@ -108,28 +121,41 @@ export default function HeroBanners() {
       observer.observe(containerRef.current);
     }
 
+    // 5. Stop motion if the visitor turns on reduced motion while on the page
+    const handleMotionPreference = (event: MediaQueryListEvent) => {
+      if (event.matches) {
+        videoRef.current?.pause();
+      }
+    };
+    reducedMotion?.addEventListener?.("change", handleMotionPreference);
+
     return () => {
+      if (idleHandle !== null && typeof window.cancelIdleCallback === "function") {
+        window.cancelIdleCallback(idleHandle);
+      }
+      if (timeoutHandle !== null) {
+        clearTimeout(timeoutHandle);
+      }
       detachGestures();
       document.removeEventListener("visibilitychange", handleVisibility);
-      if (v) {
-        v.removeEventListener("loadeddata", playVideo);
-        v.removeEventListener("canplay", playVideo);
-        v.removeEventListener("canplaythrough", playVideo);
-      }
       if (observer) {
         observer.disconnect();
       }
+      reducedMotion?.removeEventListener?.("change", handleMotionPreference);
     };
   }, []);
 
   const togglePlayback = () => {
-    if (!videoRef.current) return;
-    if (videoRef.current.paused) {
-      videoRef.current.defaultMuted = true;
-      videoRef.current.muted = true;
-      videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) {
+      userPausedRef.current = false;
+      v.defaultMuted = true;
+      v.muted = true;
+      v.play().catch(() => {});
     } else {
-      videoRef.current.pause();
+      userPausedRef.current = true;
+      v.pause();
       setIsPlaying(false);
     }
   };
@@ -151,14 +177,13 @@ export default function HeroBanners() {
             className="object-cover object-[center_35%] filter brightness-[0.85]"
           />
 
-          {/* Ambient Fashion Video Loop — Always Autoplay */}
+          {/* Ambient Fashion Video Loop — started after first paint, never for reduced motion or Save-Data */}
           <video
             ref={videoRef}
-            autoPlay
             muted
             loop
             playsInline
-            preload="auto"
+            preload="metadata"
             poster="/images/hero/suzani_hero_poster.jpg"
             onCanPlay={() => setVideoLoaded(true)}
             onLoadedData={() => setVideoLoaded(true)}
@@ -176,8 +201,7 @@ export default function HeroBanners() {
             }`}
             aria-hidden="true"
           >
-            <source src="/clideo_editor_cca07515185443df8a3b205365a5596d.mp4" type="video/mp4" />
-            <source src="/videos/hero/suzani_embroidery_loop.mp4" type="video/mp4" />
+            <source src="/videos/hero/suzani-embroidery-loop.mp4" type="video/mp4" />
           </video>
 
           {/* Multi-stage Luxury Vignette Gradients */}
@@ -192,10 +216,11 @@ export default function HeroBanners() {
 
           {/* Discreet Media Controls (WCAG 2.2.2 compliance) */}
           <button
+            ref={controlRef}
             type="button"
             onClick={togglePlayback}
-            aria-label={isPlaying ? "Pause background fashion video" : "Play background fashion video"}
-            className="absolute bottom-6 right-6 z-20 hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/20 text-white/80 hover:text-white text-xs font-sans transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
+            aria-label={isPlaying ? "Pause motion" : "Play motion"}
+            className="absolute bottom-6 right-6 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/20 text-white/80 hover:text-white text-xs font-sans transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           >
             {isPlaying ? (
               <>

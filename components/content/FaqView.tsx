@@ -98,7 +98,8 @@ function parse(md: string): Parsed {
 }
 
 // **bold**, [text](url), web addresses, e-mail addresses and +91 phone numbers; the visible text is never changed.
-const INLINE = /(\*\*[^*]+\*\*)|(\[[^\]]+\]\([^)\s]+\))|(https?:\/\/[^\s)]+)|([\w.+-]+@[\w-]+(?:\.[\w-]+)+)|(\+91 \d{5} \d{5})/g;
+// A bare web address never ends in sentence punctuation, so a trailing "." or "," stays outside the link.
+const INLINE = /(\*\*[^*]+\*\*)|(\[[^\]]+\]\([^)\s]+\))|(https?:\/\/[^\s)]*[^\s).,;:!?])|([\w.+-]+@[\w-]+(?:\.[\w-]+)+)|(\+91 \d{5} \d{5})/g;
 
 function Inline({ text }: { text: string }) {
   const nodes: React.ReactNode[] = [];
@@ -124,7 +125,7 @@ function Inline({ text }: { text: string }) {
         </a>
       );
     } else {
-      const punct = /[.,;:]+$/.exec(token); // sentence punctuation after an address is not part of it
+      const punct = /[.,;:!?]+$/.exec(token); // sentence punctuation after an address is not part of it
       if (punct) {
         tail = punct[0];
         token = token.slice(0, -tail.length);

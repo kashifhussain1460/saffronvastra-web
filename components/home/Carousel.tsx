@@ -121,7 +121,8 @@ export default function Carousel({
       : "cursor-default border-transparent bg-inverse/20 text-on-inverse";
 
   return (
-    <div role="region" aria-roledescription="carousel" aria-label={label} className="relative">
+    // The region name differs from the parent section's name, so the two landmarks stay distinguishable.
+    <div role="region" aria-roledescription="carousel" aria-label={`${label} carousel`} className="relative">
       <ul
         ref={trackRef}
         onScroll={measure}

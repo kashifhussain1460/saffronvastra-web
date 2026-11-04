@@ -99,6 +99,9 @@ export default function AdminOrderDetailPage({ params }: OrderDetailProps) {
   const [trackingUrlInput, setTrackingUrlInput] = useState("");
   const [estimatedDeliveryInput, setEstimatedDeliveryInput] = useState("");
   const [refundFor, setRefundFor] = useState<null | { paymentId?: string; suggestedMinor?: number }>(null);
+  // Cancelling an order and hand-marking a payment Paid/Failed are financially meaningful and hard to undo,
+  // so (like the refund flow) they ask for confirmation before the request is sent.
+  const [confirmAction, setConfirmAction] = useState<null | { kind: "status"; value: string } | { kind: "payment"; value: "Paid" | "Failed" }>(null);
   const [reconciling, setReconciling] = useState(false);
   const [reconcileNotice, setReconcileNotice] = useState("");
 
@@ -158,16 +161,27 @@ export default function AdminOrderDetailPage({ params }: OrderDetailProps) {
 
   const handleUpdateStatus = async (nextStatus: string) => {
     setStatusDropdownOpen(false);
-    await send(
+    return send(
       `/api/v1/admin/orders/${encodeURIComponent(cleanId)}/status`,
       { method: "PATCH", body: JSON.stringify({ status: nextStatus }) },
       "The status could not be changed."
     );
   };
 
+  // Cancelling is the one status change that is hard to undo (it closes any open payment session), so it asks
+  // for confirmation first; every other forward transition (Processing, Ready to Ship, Delivered) stays one click.
+  const requestStatusChange = (nextStatus: string) => {
+    setStatusDropdownOpen(false);
+    if (nextStatus === "Cancelled") {
+      setConfirmAction({ kind: "status", value: nextStatus });
+    } else {
+      void handleUpdateStatus(nextStatus);
+    }
+  };
+
   // Staff record a payment only when it was really received (cash collected, transfer confirmed).
   const handlePaymentStatus = async (next: "Paid" | "Failed" | "Pending") => {
-    await send(
+    return send(
       `/api/v1/admin/orders/${encodeURIComponent(cleanId)}/payment-status`,
       { method: "PATCH", body: JSON.stringify({ paymentStatus: next }) },
       "The payment status could not be changed."
@@ -343,7 +357,7 @@ export default function AdminOrderDetailPage({ params }: OrderDetailProps) {
 
             {address.email ? (
               <a
-                href={`mailto:${address.email}?subject=${encodeURIComponent(`Your {BRAND.name} order ${order.orderNumber}`)}`}
+                href={`mailto:${address.email}?subject=${encodeURIComponent(`Your ${BRAND.name} order ${order.orderNumber}`)}`}
                 className="inline-flex items-center gap-2 px-3.5 py-2 bg-surface border border-line rounded-md text-xs font-semibold text-ink hover:bg-ink/5 transition-colors shadow-2xs"
               >
                 <Mail className="w-3.5 h-3.5 text-ink-secondary" />
@@ -388,7 +402,7 @@ export default function AdminOrderDetailPage({ params }: OrderDetailProps) {
                     <button
                       key={st}
                       role="menuitem"
-                      onClick={() => handleUpdateStatus(st)}
+                      onClick={() => requestStatusChange(st)}
                       className="w-full text-left px-3.5 py-2 hover:bg-canvas text-ink"
                     >
                       Mark as {st}
@@ -806,7 +820,7 @@ export default function AdminOrderDetailPage({ params }: OrderDetailProps) {
                 <button
                   type="button"
                   disabled={busy || order.status === "Cancelled"}
-                  onClick={() => handlePaymentStatus("Paid")}
+                  onClick={() => setConfirmAction({ kind: "payment", value: "Paid" })}
                   className="px-2.5 py-1 text-xs font-semibold text-on-primary bg-inverse-hover rounded-xs hover:bg-inverse disabled:opacity-40"
                 >
                   Mark as paid
@@ -815,7 +829,7 @@ export default function AdminOrderDetailPage({ params }: OrderDetailProps) {
                   <button
                     type="button"
                     disabled={busy}
-                    onClick={() => handlePaymentStatus("Failed")}
+                    onClick={() => setConfirmAction({ kind: "payment", value: "Failed" })}
                     className="px-2.5 py-1 text-xs font-semibold text-primary border border-primary rounded-xs hover:bg-primary-hover hover:text-on-primary disabled:opacity-40"
                   >
                     Mark as failed
@@ -927,6 +941,57 @@ export default function AdminOrderDetailPage({ params }: OrderDetailProps) {
           onClose={() => setRefundFor(null)}
           onChanged={() => void loadOrder()}
         />
+      )}
+
+      {/* MODAL: CONFIRM (cancel order / mark payment Paid or Failed) */}
+      {confirmAction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="alertdialog" aria-label="Confirm action">
+          <div className="fixed inset-0 bg-ink/50" onClick={() => (busy ? null : setConfirmAction(null))} />
+          <div className="relative bg-surface rounded-xl border border-line shadow-2xl max-w-md w-full p-6 space-y-4 z-10">
+            <div className="flex items-center justify-between border-b border-line pb-3">
+              <h3 className="font-serif text-lg text-ink">
+                {confirmAction.kind === "status" ? "Cancel this order?" : `Mark payment as ${confirmAction.value}?`}
+              </h3>
+              <button onClick={() => (busy ? null : setConfirmAction(null))} aria-label="Close">
+                <X className="w-4 h-4 text-ink-muted" />
+              </button>
+            </div>
+            <p className="text-xs text-ink-muted">
+              {confirmAction.kind === "status"
+                ? "This closes any open payment session for this order and cannot be undone. The customer will be notified."
+                : confirmAction.value === "Paid"
+                ? "Only confirm this once the cash or transfer has actually been received for this order."
+                : "This marks the Cash on Delivery payment as not received. The customer can be offered a retry."}
+            </p>
+            {modalError && (
+              <p role="alert" className="text-xs text-error">
+                {modalError}
+              </p>
+            )}
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                onClick={() => setConfirmAction(null)}
+                disabled={busy}
+                className="px-3.5 py-1.5 border border-line rounded-md text-xs font-semibold disabled:opacity-60"
+              >
+                Go back
+              </button>
+              <button
+                onClick={async () => {
+                  const action = confirmAction;
+                  if (!action) return;
+                  const ok = action.kind === "status" ? await handleUpdateStatus(action.value) : await handlePaymentStatus(action.value);
+                  if (ok) setConfirmAction(null);
+                  // On failure the dialog stays open and shows modalError (set inside send()), same as the other modals.
+                }}
+                disabled={busy}
+                className="px-4 py-1.5 bg-primary text-on-primary rounded-md text-xs font-semibold hover:bg-primary-hover disabled:opacity-60"
+              >
+                {busy ? "Working..." : confirmAction.kind === "status" ? "Yes, cancel order" : `Yes, mark ${confirmAction.value}`}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* MODAL: ADD NOTE */}

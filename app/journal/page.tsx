@@ -1,22 +1,80 @@
-import React from "react";
+import React, { cache } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import PageTitle from "@/components/checkout/PageTitle";
+import type { Metadata } from "next";
 import JournalCard, { type JournalSummary } from "@/components/content/JournalCard";
-
-export const metadata = {
-  alternates: { canonical: "/journal" },
-  title: "The Saffron Journal | Stories & Craft Notes",
-  description:
-    "Stories of Rajasthani craftsmanship, styling, generational embroidery arts, and behind-the-scenes craft chronicles.",
-};
+import { API_ORIGIN, INDEXING_ALLOWED } from "@/lib/site";
+import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-const API_ORIGIN = process.env.API_ORIGIN || "http://127.0.0.1:4000";
-
 interface JournalPageProps {
   searchParams: Promise<{ category?: string; page?: string }>;
+}
+
+const JOURNAL_PATH = "/journal";
+const JOURNAL_TITLE = "The Saffron Journal | Stories & Craft Notes";
+const JOURNAL_DESCRIPTION =
+  "Stories of Rajasthani craftsmanship, styling, generational embroidery arts, and behind-the-scenes craft chronicles.";
+
+// Self-canonical for each category and page view: /journal, /journal?category=X, /journal?page=N (N > 1).
+// The page number is read the way the API reads it, so the canonical names the page that is actually shown.
+function journalPath(category?: string, page?: string): string {
+  const parts: string[] = [];
+  const cat = typeof category === "string" ? category.trim() : "";
+  if (cat) parts.push(`category=${encodeURIComponent(cat)}`);
+  const n = parseInt(String(page ?? ""), 10);
+  if (n > 1) parts.push(`page=${n}`);
+  return parts.length ? `${JOURNAL_PATH}?${parts.join("&")}` : JOURNAL_PATH;
+}
+
+interface JournalListing {
+  articles: JournalSummary[];
+  categories: string[];
+  totalPages: number;
+  currentPage: number;
+}
+
+// One page of the journal (one call per request, shared by the metadata and the page). null when the API fails.
+const loadJournal = cache(async (category: string, page: string): Promise<JournalListing | null> => {
+  const query = new URLSearchParams({ limit: "9" });
+  if (category) query.set("category", category);
+  if (page) query.set("page", page);
+  try {
+    const res = await fetch(`${API_ORIGIN}/api/v1/journal?${query}`, { cache: "no-store" });
+    if (!res.ok) return null;
+    const body = await res.json();
+    return {
+      articles: body.items ?? [],
+      categories: body.categories ?? [],
+      totalPages: body.pagination?.totalPages || 1,
+      currentPage: body.pagination?.page || 1,
+    };
+  } catch {
+    return null;
+  }
+});
+
+export async function generateMetadata({ searchParams }: JournalPageProps): Promise<Metadata> {
+  const { category, page } = await searchParams;
+  const listing = await loadJournal(String(category ?? ""), String(page ?? ""));
+
+  // The same rule as /collections: an unknown category, or a page past the last one, is not a page of its own.
+  // It is kept out of the index (links still followed where indexing is allowed) and is canonical to /journal.
+  // When the API fails nothing is known, so the self-canonical below is kept.
+  const cat = typeof category === "string" ? category.trim().toLowerCase() : "";
+  const requested = parseInt(String(page ?? ""), 10);
+  const unknownCategory = listing !== null && cat !== "" && !listing.categories.some((c) => c.toLowerCase() === cat);
+  const pastLastPage = listing !== null && requested > 1 && requested > listing.totalPages;
+  if (unknownCategory || pastLastPage) {
+    return {
+      ...buildMetadata({ title: JOURNAL_TITLE, description: JOURNAL_DESCRIPTION, path: JOURNAL_PATH }),
+      robots: { index: false, follow: INDEXING_ALLOWED },
+    };
+  }
+
+  return buildMetadata({ title: JOURNAL_TITLE, description: JOURNAL_DESCRIPTION, path: journalPath(category, page) });
 }
 
 // Page numbers to show: first, last, current and its neighbours, with gaps marked as null.
@@ -33,26 +91,12 @@ function pageList(current: number, total: number): (number | null)[] {
 
 export default async function JournalPage({ searchParams }: JournalPageProps) {
   const { category, page } = await searchParams;
-  const query = new URLSearchParams({ limit: "9" });
-  if (category) query.set("category", category);
-  if (page) query.set("page", page);
-
-  let articles: JournalSummary[] = [];
-  let categories: string[] = [];
-  let totalPages = 1;
-  let currentPage = 1;
-  let loadFailed = false;
-  try {
-    const res = await fetch(`${API_ORIGIN}/api/v1/journal?${query}`, { cache: "no-store" });
-    if (!res.ok) throw new Error(String(res.status));
-    const body = await res.json();
-    articles = body.items ?? [];
-    categories = body.categories ?? [];
-    totalPages = body.pagination?.totalPages || 1;
-    currentPage = body.pagination?.page || 1;
-  } catch {
-    loadFailed = true;
-  }
+  const listing = await loadJournal(String(category ?? ""), String(page ?? ""));
+  const loadFailed = listing === null;
+  const articles: JournalSummary[] = listing?.articles ?? [];
+  const categories: string[] = listing?.categories ?? [];
+  const totalPages = listing?.totalPages ?? 1;
+  const currentPage = listing?.currentPage ?? 1;
   const pageHref = (n: number) => {
     const p = new URLSearchParams();
     if (category) p.set("category", category);

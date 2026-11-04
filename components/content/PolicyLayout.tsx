@@ -34,7 +34,12 @@ export default function PolicyLayout({
 }) {
   return (
     <div className="bg-canvas text-ink">
-      <PageTitle title={title} crumbs={[{ label: "Home", href: "/" }, { label: "Policies" }, { label: crumb }]} />
+      {/* "Policies" is not a page (no link), so the BreadcrumbList skips that level; the visible trail is unchanged. */}
+      <PageTitle
+        title={title}
+        crumbs={[{ label: "Home", href: "/" }, { label: "Policies" }, { label: crumb }]}
+        schemaCrumbs={[{ label: "Home", href: "/" }, { label: crumb }]}
+      />
 
       <section className="py-10 md:py-20">
         <div className="max-w-[1320px] mx-auto px-4 lg:px-[15px] grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-[60px]">
@@ -85,7 +90,7 @@ export default function PolicyLayout({
 
 export function PolicySection({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
   return (
-    <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-28 space-y-3">
+    <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-12 xl:scroll-mt-7 space-y-3">
       <h2 id={`${id}-title`} className="text-lg leading-6 md:text-2xl md:leading-[30px] font-medium text-ink">
         {title}
       </h2>

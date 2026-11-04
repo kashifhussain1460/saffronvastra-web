@@ -8,10 +8,12 @@ const ASSETS = {
   full: { src: "/images/brand/saffronvastra-logo.png", width: 800, height: 585 },
   wordmark: { src: "/images/brand/saffronvastra-wordmark.png", width: 900, height: 159 },
   mark: { src: "/images/brand/saffronvastra-mark.png", width: 512, height: 512 },
-  // the floral SV monogram used in the header
-  header: { src: "/images/brand/saffronvastra-header.png", width: 480, height: 375 },
-  // Elegant Botanical SV Monogram Logo used on authentication pages
-  auth: { src: "/Elegant Botanical SV Monogram Logo.png", width: 1536, height: 1024 },
+  // the floral SV monogram used in the header. The file is a 160x125 (2x of the 56px-tall render) WebP of
+  // saffronvastra-header.png; width/height stay at the source's 480x375, which has the same aspect ratio.
+  header: { src: "/images/brand/saffronvastra-header-160.webp", width: 480, height: 375 },
+  // Elegant Botanical SV Monogram Logo used on authentication pages. The file is a 240x160 (2x of the 80px-tall
+  // render) WebP of "/Elegant Botanical SV Monogram Logo.png"; width/height stay at the source's 1536x1024 (same ratio).
+  auth: { src: "/images/brand/saffronvastra-auth-240.webp", width: 1536, height: 1024 },
 } as const;
 
 const HEIGHTS = {

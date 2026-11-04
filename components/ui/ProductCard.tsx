@@ -37,12 +37,20 @@ export default function ProductCard({
 }: ProductCardProps) {
   const { toggleWishlist, isInWishlist } = useStore();
   const [quick, setQuick] = useState<null | "view" | "add">(null);
+  // The hover photo is only mounted after the first pointer hover or focus, so it is not downloaded for every card.
+  // The hover cross-fade classes are applied once it has loaded, so the first hover never fades to an empty well.
+  const [hoverMounted, setHoverMounted] = useState(false);
+  const [hoverLoadedSrc, setHoverLoadedSrc] = useState<string | null>(null);
 
   const isFavorited = isInWishlist(product.id);
   const hasCompare = !!product.compareAtPrice && product.compareAtPrice > product.price;
   const discount = hasCompare ? Math.round((1 - product.price / product.compareAtPrice!) * 100) : 0;
   const secondImage = product.images.length > 1 ? product.images[1] : null;
   const colours = realColours(product);
+  const hoverReady = !!secondImage && hoverLoadedSrc === secondImage;
+  const mountHover = () => {
+    if (secondImage && !hoverMounted) setHoverMounted(true);
+  };
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -58,7 +66,14 @@ export default function ProductCard({
   const slideIn = "lg:translate-x-3 lg:group-hover:translate-x-0 lg:group-focus-within:translate-x-0";
 
   return (
-    <div className={`group relative flex h-full flex-col bg-canvas ${className}`}>
+    <div
+      className={`group relative flex h-full flex-col bg-canvas ${className}`}
+      onPointerEnter={(e) => {
+        // the hover photo is a desktop (lg+) effect; a touch tap never shows it
+        if (e.pointerType !== "touch") mountHover();
+      }}
+      onFocus={mountHover}
+    >
       {/* Image well */}
       <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg bg-surface-muted">
         <Link href={`/products/${product.slug}`} className="block h-full w-full" aria-label={product.title} tabIndex={-1}>
@@ -69,17 +84,20 @@ export default function ProductCard({
             priority={priority}
             sizes={imageSizes}
             className={`object-cover object-top transition-all duration-700 ease-out ${
-              secondImage ? "lg:group-hover:opacity-0" : "lg:group-hover:scale-105"
+              secondImage ? (hoverReady ? "lg:group-hover:opacity-0" : "") : "lg:group-hover:scale-105"
             }`}
           />
-          {secondImage && (
+          {secondImage && hoverMounted && (
             <Image
               src={secondImage}
               alt=""
               aria-hidden="true"
               fill
               sizes={imageSizes}
-              className="hidden object-cover object-top opacity-0 transition-all duration-700 ease-out lg:block lg:scale-105 lg:group-hover:scale-100 lg:group-hover:opacity-100"
+              onLoad={() => setHoverLoadedSrc(secondImage)}
+              className={`hidden object-cover object-top opacity-0 transition-all duration-700 ease-out lg:block lg:scale-105 ${
+                hoverReady ? "lg:group-hover:scale-100 lg:group-hover:opacity-100" : ""
+              }`}
             />
           )}
         </Link>

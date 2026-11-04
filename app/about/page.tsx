@@ -1,4 +1,5 @@
 import { BRAND } from "@/lib/brand";
+import { buildMetadata } from "@/lib/seo";
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -6,11 +7,12 @@ import { Sparkles, HeartHandshake, Leaf, Scissors } from "lucide-react";
 import PageTitle from "@/components/checkout/PageTitle";
 import Tabs from "@/components/content/Tabs";
 
-export const metadata = {
-  title: `Our Story & Jaipur Craftsmanship | ${BRAND.name}`,
+export const metadata = buildMetadata({
+  title: "Our Story & Jaipur Craftsmanship",
   description:
     `Discover the heritage, master artisans, and made-to-order slow fashion philosophy behind ${BRAND.name} in Jaipur, India.`,
-};
+  path: "/about",
+});
 
 const pillars = [
   {
@@ -205,7 +207,7 @@ export default function AboutPage() {
       </section>
 
       {/* Artisans */}
-      <section id="artisans" className="scroll-mt-24 py-10 md:py-20 bg-surface-muted">
+      <section id="artisans" className="scroll-mt-8 xl:scroll-mt-3 py-10 md:py-20 bg-surface-muted">
         <div className={`${container} grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-[60px] items-center`}>
           <div className="min-w-0 space-y-5">
             <h2 className={sectionHeading}>Hands That Breathe Soul Into Silk</h2>
@@ -232,7 +234,7 @@ export default function AboutPage() {
       </section>
 
       {/* Sustainability */}
-      <section id="sustainability" className="scroll-mt-24 py-10 md:py-20">
+      <section id="sustainability" className="scroll-mt-8 xl:scroll-mt-3 py-10 md:py-20">
         <div className={container}>
           <div className="max-w-3xl mx-auto text-center mb-8 md:mb-12">
             <h2 className={sectionHeading}>Sustainability Through Intentionality</h2>

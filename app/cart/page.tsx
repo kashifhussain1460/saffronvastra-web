@@ -385,7 +385,7 @@ export default function CartPage() {
                       <button
                         type="button"
                         onClick={() => handleAddCrossSell(item)}
-                        aria-label={`Add ${item.title} to bag`}
+                        aria-label={`${isAdded ? "Added" : "Add to Cart"}: ${item.title}`}
                         className={`absolute left-3 right-3 bottom-3 h-11 md:h-10 rounded-full text-sm font-semibold transition-all inline-flex items-center justify-center gap-1.5 md:opacity-0 md:translate-y-2 md:group-hover:opacity-100 md:group-hover:translate-y-0 md:focus-visible:opacity-100 md:focus-visible:translate-y-0 ${
                           isAdded
                             ? "bg-success text-on-primary md:opacity-100 md:translate-y-0"
