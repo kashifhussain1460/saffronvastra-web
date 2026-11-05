@@ -165,7 +165,16 @@ export default function AdminLayout({
     { label: "Orders", href: "/admin/orders", icon: ShoppingBag },
     { label: "Returns", href: "/admin/returns", icon: Undo2 },
     { label: "Customers", href: "/admin/customers", icon: Users },
-    { label: "Marketing", href: "/admin/marketing", icon: Megaphone },
+    {
+      label: "Marketing",
+      href: "/admin/marketing",
+      icon: Megaphone,
+      ...(process.env.NEXT_PUBLIC_SOCIAL_PUBLISHING_ENABLED === 'true' ? {
+        children: [
+          { label: "Social Media Publishing", href: "/admin/marketing/social" },
+        ],
+      } : {}),
+    },
     { label: "Content", href: "/admin/content", icon: FileText },
     { label: "Media Library", href: "/admin/media", icon: ImageIcon },
     { label: "Reviews", href: "/admin/reviews", icon: Star },
