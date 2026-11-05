@@ -63,15 +63,17 @@ export default function ProductSelectorClient({ initialPlatforms }: Props) {
     const result = await api('/api/v1/admin/social/campaigns', {
       method: 'POST',
       json: {
+        name: `Campaign ${new Date().toISOString().slice(0, 10)}`,
         productIds: selectedProductIds,
-        variants: validVariants.map(([platform, contentType]) => ({ platform, contentType })),
+        platforms: validVariants.map(([platform, contentType]) => ({ platform, contentType })),
+        content: {},
       },
     });
 
     setSubmitting(false);
 
-    if (result.ok && result.body?.data?.id) {
-      router.push(`/admin/marketing/social/campaigns/${result.body.data.id}`);
+    if (result.ok && result.body?.data?.campaignId) {
+      router.push(`/admin/marketing/social/campaigns/${result.body.data.campaignId}`);
     } else {
       setError(result.message || 'Failed to create campaign. Please try again.');
     }

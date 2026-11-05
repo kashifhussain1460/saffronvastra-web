@@ -22,13 +22,13 @@ interface Variant {
   caption: string | null;
   hashtags: string[];
   settings: Record<string, unknown> | null;
-  jobs: Job[];
+  publishJob: Job | null;
 }
 
 interface Product {
   id: string;
   productId: string;
-  title: string;
+  product: { title: string };
   variants: Variant[];
 }
 
@@ -46,9 +46,7 @@ const TERMINAL_STATUSES = new Set(['published', 'failed', 'dead']);
 function allJobsTerminal(campaign: Campaign): boolean {
   for (const product of campaign.products) {
     for (const variant of product.variants) {
-      for (const job of variant.jobs) {
-        if (!TERMINAL_STATUSES.has(job.status)) return false;
-      }
+      if (variant.publishJob && !TERMINAL_STATUSES.has(variant.publishJob.status)) return false;
     }
   }
   return true;
@@ -67,7 +65,7 @@ function derivePlatforms(products: Product[]): string[] {
 /** Returns the first job for the given product+platform (may be undefined). */
 function findJob(product: Product, platform: string): Job | undefined {
   const variant = product.variants.find((v) => v.platform === platform);
-  return variant?.jobs?.[0];
+  return variant?.publishJob ?? undefined;
 }
 
 /** Returns all variants across all products (deduplicated by variant id). */
@@ -232,7 +230,7 @@ export default function CampaignDetailPage() {
               {campaign.products.map((product) => (
                 <tr key={product.id}>
                   <td className="px-4 py-3 text-ink font-medium max-w-[200px]">
-                    <span className="line-clamp-2">{product.title}</span>
+                    <span className="line-clamp-2">{product.product.title}</span>
                   </td>
                   {platforms.map((platform) => {
                     const job = findJob(product, platform);

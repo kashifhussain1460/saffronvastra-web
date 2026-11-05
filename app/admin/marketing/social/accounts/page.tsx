@@ -8,11 +8,17 @@ type SocialAccount = {
   id: string;
   platform: string;
   accountName: string | null;
-  status: string;
   connectionStatus: string | null;
+  appReviewStatus: string | null;
   credentialSource: string;
   lastVerifiedAt: string | null;
 };
+
+function deriveAccountStatus(account: SocialAccount): string {
+  if (account.connectionStatus === 'connected' && account.appReviewStatus === 'approved') return 'ready';
+  if (account.appReviewStatus === 'pending' || account.appReviewStatus === 'under_review') return 'approval_pending';
+  return 'manual';
+}
 
 function StatusPill({ status }: { status: string }) {
   if (status === 'ready') {
@@ -88,7 +94,7 @@ export default async function AccountsPage() {
                     {account.accountName ? <div className="text-ink-muted">{account.accountName}</div> : null}
                   </td>
                   <td className="px-4 py-3">
-                    <StatusPill status={account.status} />
+                    <StatusPill status={deriveAccountStatus(account)} />
                   </td>
                   <td className="px-4 py-3 text-ink">
                     {account.credentialSource === 'env'

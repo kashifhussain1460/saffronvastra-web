@@ -56,12 +56,19 @@ export default function ProductSelectorTable({ selectedIds, onToggle }: Props) {
     const params = new URLSearchParams();
     params.set('page', currentPage.toString());
     if (search.trim()) params.set('search', search.trim());
-    if (category) params.set('category', category);
+    if (category) params.set('categorySlug', category);
 
     const result = await api(`/api/v1/admin/social/products?${params.toString()}`);
     if (result.ok && result.body?.items) {
       setProducts(result.body.items);
-      setPagination(result.body.pagination ?? { page: 1, pageSize: 20, total: 0, totalPages: 1 });
+      setPagination({
+        page: result.body.page ?? 1,
+        pageSize: result.body.limit ?? 20,
+        total: result.body.total ?? 0,
+        totalPages: result.body.total && result.body.limit
+          ? Math.ceil(result.body.total / result.body.limit)
+          : 1,
+      });
     } else {
       setProducts([]);
     }

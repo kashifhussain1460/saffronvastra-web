@@ -3,13 +3,22 @@ import { api } from '@/lib/adminApi';
 import { SITE_URL } from '@/lib/site';
 import ProductSelectorClient from './components/ProductSelectorClient';
 
+interface PlatformMeta {
+  key: string;
+  displayName: string;
+  color: string;
+  status: 'ready' | 'approval_pending' | 'manual_required';
+  contentTypes: string[];
+  manual: boolean;
+}
+
 export const dynamic = 'force-dynamic';
 
 export default async function SocialPage() {
   const cookieHeader = (await cookies()).toString();
-  const platforms = await api(`${SITE_URL}/api/v1/admin/social/platforms`, {
+  const platforms = await api<{ data: Record<string, PlatformMeta> }>(`${SITE_URL}/api/v1/admin/social/platforms`, {
     headers: { cookie: cookieHeader },
-  }).then(r => r.body?.data ?? []);
+  }).then(r => Object.values(r.body?.data ?? {}));
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div>
