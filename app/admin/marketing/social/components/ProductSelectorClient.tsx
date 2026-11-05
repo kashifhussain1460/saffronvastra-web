@@ -70,8 +70,8 @@ export default function ProductSelectorClient({ initialPlatforms }: Props) {
 
     setSubmitting(false);
 
-    if (result.ok && result.body?.id) {
-      router.push(`/admin/marketing/social/campaigns/${result.body.id}`);
+    if (result.ok && result.body?.data?.id) {
+      router.push(`/admin/marketing/social/campaigns/${result.body.data.id}`);
     } else {
       setError(result.message || 'Failed to create campaign. Please try again.');
     }

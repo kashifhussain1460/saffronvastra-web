@@ -1,10 +1,15 @@
+import { cookies } from 'next/headers';
 import { api } from '@/lib/adminApi';
+import { SITE_URL } from '@/lib/site';
 import ProductSelectorClient from './components/ProductSelectorClient';
 
 export const dynamic = 'force-dynamic';
 
 export default async function SocialPage() {
-  const platforms = await api('/api/v1/admin/social/platforms').then(r => r.body?.data ?? []);
+  const cookieHeader = (await cookies()).toString();
+  const platforms = await api(`${SITE_URL}/api/v1/admin/social/platforms`, {
+    headers: { cookie: cookieHeader },
+  }).then(r => r.body?.data ?? []);
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div>
