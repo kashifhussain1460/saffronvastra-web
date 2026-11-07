@@ -10,6 +10,7 @@ import PriceTag from "@/components/ui/PriceTag";
 import PageTitle from "@/components/checkout/PageTitle";
 import { Heart, X, Check, ArrowUpRight, ChevronLeft, ChevronDown } from "lucide-react";
 import { ProductGridSkeleton } from "@/components/ui/Skeleton";
+import { COLOUR_VARIANTS_ENABLED } from "@/lib/features";
 
 export default function WishlistPage() {
   const { wishlist, toggleWishlist, addToCart, openCart } = useStore();
@@ -179,7 +180,8 @@ export default function WishlistPage() {
                     </Link>
                     <PriceTag price={product.price} compareAtPrice={product.compareAtPrice} className="mt-1" />
 
-                    {product.colors && product.colors.length > 1 && (
+                    {/* Colour picker — TEMPORARILY HIDDEN while COLOUR_VARIANTS_ENABLED is false (lib/features.ts). */}
+                    {COLOUR_VARIANTS_ENABLED && product.colors && product.colors.length > 1 && (
                       <div className="flex flex-wrap items-center gap-1 mt-2.5" role="group" aria-label="Colour">
                         {product.colors.map((color) => {
                           const isSelected = currentColor?.name === color.name;

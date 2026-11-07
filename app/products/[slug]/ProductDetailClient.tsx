@@ -7,6 +7,7 @@ import { Product, Size, ProductColor } from "@/types";
 import { useStore } from "@/context/StoreContext";
 import { analytics } from "@/lib/analytics";
 import { truncateAtWord } from "@/lib/seo";
+import { COLOUR_VARIANTS_ENABLED } from "@/lib/features";
 import PriceTag from "@/components/ui/PriceTag";
 import SizeGuideModal from "@/components/product/SizeGuideModal";
 import ProductGallery from "@/components/product/ProductGallery";
@@ -54,7 +55,10 @@ export default function ProductDetailClient({ product, relatedProducts, extras }
   const firstAvailableColor = product.colors.length === 1 && colorAvailable(variants, product.colors[0].name) ? product.colors[0] : null;
   const [selectedColor, setSelectedColor] = useState<ProductColor | null>(firstAvailableColor);
   const [selectedSize, setSelectedSize] = useState<Size | null>(
-    product.sizes.length === 1 && sizeAvailable(variants, product.sizes[0], firstAvailableColor?.name) ? product.sizes[0] : null
+    product.sizes.length === 1 &&
+      sizeAvailable(variants, product.sizes[0], COLOUR_VARIANTS_ENABLED ? firstAvailableColor?.name : undefined)
+      ? product.sizes[0]
+      : null
   );
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<PdpTab>("description");
@@ -85,12 +89,25 @@ export default function ProductDetailClient({ product, relatedProducts, extras }
   const hasCompare = !!product.compareAtPrice && product.compareAtPrice > product.price;
   const discount = hasCompare ? Math.round((1 - product.price / product.compareAtPrice!) * 100) : 0;
 
+  // While colour variants are off (lib/features.ts) the shopper only picks a size; the colour is the one
+  // that size is stocked in (the first active variant of that size), so the cart still gets a real variant.
+  const activeColor = useMemo<ProductColor | null>(() => {
+    if (COLOUR_VARIANTS_ENABLED) return selectedColor;
+    if (!selectedSize) return null;
+    const v = variants.find((x) => x.size === selectedSize && (!x.status || x.status === "Active"));
+    const name = v ? v.colourName || "Standard" : product.colors[0]?.name;
+    if (!name) return null;
+    return product.colors.find((c) => c.name === name) || { name, hex: v?.colourHex || "" };
+  }, [selectedColor, selectedSize, variants, product.colors]);
+  // Colour used to filter sizes: none while colours are off (every stocked size is selectable).
+  const sizeFilterColor = COLOUR_VARIANTS_ENABLED ? selectedColor?.name : undefined;
+
   const selectedVariant = useMemo(
     () =>
       selectedSize
-        ? variants.find((v) => v.size === selectedSize && (!selectedColor || (v.colourName || "Standard") === selectedColor.name))
+        ? variants.find((v) => v.size === selectedSize && (!activeColor || (v.colourName || "Standard") === activeColor.name))
         : undefined,
-    [variants, selectedSize, selectedColor]
+    [variants, selectedSize, activeColor]
   );
 
   const handleColorChange = (c: ProductColor) => {
@@ -105,17 +122,18 @@ export default function ProductDetailClient({ product, relatedProducts, extras }
 
   /** Checks the required options; on failure shows the message and moves the user to the option. */
   const validate = (): { size: Size; color: ProductColor } | null => {
-    const missingColor = !selectedColor;
+    // With colours off there is no colour control to point at; the colour follows the size.
+    const missingColor = COLOUR_VARIANTS_ENABLED && !selectedColor;
     const missingSize = !selectedSize;
     setColorError(missingColor ? "Please select a colour." : "");
     setSizeError(missingSize ? "Please select a size." : "");
-    if (missingColor || missingSize) {
+    if (missingColor || missingSize || !activeColor) {
       const target = missingColor ? colorGroupRef.current : sizeGroupRef.current;
       target?.scrollIntoView({ behavior: "smooth", block: "center" });
       target?.focus({ preventScroll: true });
       return null;
     }
-    return { size: selectedSize!, color: selectedColor! };
+    return { size: selectedSize!, color: activeColor };
   };
 
   const handleAddToCart = () => {
@@ -170,7 +188,9 @@ export default function ProductDetailClient({ product, relatedProducts, extras }
   const specs: SpecRow[] = [
     ...(extras?.material ? [{ label: "Material", value: extras.material }] : []),
     ...(extras?.embroidery ? [{ label: "Embroidery", value: extras.embroidery }] : []),
-    { label: product.colors.length > 1 ? "Colours" : "Colour", value: product.colors.map((c) => c.name).join(", ") },
+    ...(COLOUR_VARIANTS_ENABLED
+      ? [{ label: product.colors.length > 1 ? "Colours" : "Colour", value: product.colors.map((c) => c.name).join(", ") }]
+      : []),
     { label: "Sizes", value: product.sizes.join(", ") },
     { label: "Availability", value: product.availabilityMode },
     { label: "Production lead time", value: leadTimeText },
@@ -190,7 +210,7 @@ export default function ProductDetailClient({ product, relatedProducts, extras }
   const summaryText = product.subtitle || truncateAtWord(product.description, 600);
   // eyebrow: the stored collection, else the category (never the mapper's placeholder collection)
   const eyebrow = extras ? extras.collectionName || extras.categoryName || "" : categoryLabel;
-  const stickySummary = [selectedColor?.name, selectedSize].filter(Boolean).join(", ");
+  const stickySummary = [COLOUR_VARIANTS_ENABLED ? selectedColor?.name : null, selectedSize].filter(Boolean).join(", ");
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -460,7 +480,7 @@ export default function ProductDetailClient({ product, relatedProducts, extras }
         summary={stickySummary}
         sizes={product.sizes}
         selectedSize={selectedSize}
-        isSizeAvailable={(s) => sizeAvailable(variants, s, selectedColor?.name)}
+        isSizeAvailable={(s) => sizeAvailable(variants, s, sizeFilterColor)}
         onSizeChange={handleSizeChange}
         onAdd={handleAddToCart}
         disabled={unavailable}

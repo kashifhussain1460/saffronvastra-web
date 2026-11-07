@@ -2,6 +2,7 @@
 
 import React from "react";
 import type { ProductColor, Size } from "@/types";
+import { COLOUR_VARIANTS_ENABLED } from "@/lib/features";
 
 export interface PdpVariant {
   id: string;
@@ -56,7 +57,8 @@ export default function VariantSelector({
 }: VariantSelectorProps) {
   return (
     <div className="space-y-5">
-      {/* Colour */}
+      {/* Colour — TEMPORARILY HIDDEN while COLOUR_VARIANTS_ENABLED is false (lib/features.ts). */}
+      {COLOUR_VARIANTS_ENABLED && (
       <div ref={colorGroupRef} tabIndex={-1} className="space-y-2.5 focus:outline-none">
         <p className="text-base text-ink" id="pdp-colour-label">
           Colour:{" "}
@@ -95,6 +97,7 @@ export default function VariantSelector({
           </p>
         )}
       </div>
+      )}
 
       {/* Size */}
       <div ref={sizeGroupRef} tabIndex={-1} className="space-y-2.5 focus:outline-none">
@@ -116,7 +119,7 @@ export default function VariantSelector({
         <div role="group" aria-labelledby="pdp-size-label" className="flex flex-wrap gap-2.5">
           {sizes.map((size) => {
             const active = selectedSize === size;
-            const available = sizeAvailable(variants, size, selectedColor?.name);
+            const available = sizeAvailable(variants, size, COLOUR_VARIANTS_ENABLED ? selectedColor?.name : undefined);
             const wide = size.length > 2;
             return (
               <button

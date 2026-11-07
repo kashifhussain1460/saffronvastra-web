@@ -72,8 +72,8 @@ export default function ForgotPasswordPage() {
 
           <p className="text-base text-ink-secondary leading-relaxed">
             We have transmitted secure password reset instructions to{" "}
-            <span className="font-semibold text-ink break-all">{emailOrPhone}</span>. Please check your inbox or SMS message folder
-            within the next 15 minutes.
+            <span className="font-semibold text-ink break-all">{emailOrPhone}</span>. Please check your email inbox (and spam
+            folder) within the next 15 minutes.
           </p>
 
           <div className="pt-4 flex flex-wrap items-center gap-x-6 gap-y-3">

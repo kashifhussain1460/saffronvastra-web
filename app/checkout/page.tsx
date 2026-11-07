@@ -12,6 +12,7 @@ import PageTitle from "@/components/checkout/PageTitle";
 import { fieldClass, FieldLabel, FieldError } from "@/components/checkout/fields";
 import PaymentMethodPicker, { type PaymentChoice } from "@/components/checkout/PaymentMethodPicker";
 import { openCashfreeCheckout } from "@/lib/cashfree";
+import { COLOUR_VARIANTS_ENABLED } from "@/lib/features";
 import { ArrowLeft, Check, AlertCircle, X, ChevronDown, Truck } from "lucide-react";
 
 // Same list as the API (backend/src/common/validators.ts): every state and union territory.
@@ -164,7 +165,9 @@ export default function CheckoutPage() {
     saveAddress: true,
     billingSameAsShipping: true,
     bespokeNotes: "",
-    smsUpdates: true,
+    // WhatsApp/SMS dispatch updates are not offered yet (no provider), so the opt-in is commented out below.
+    // It was never sent to the API. Restore this field together with the checkbox when a provider is connected.
+    // smsUpdates: false,
   });
 
   // Prefill from the signed-in customer's own profile and default address, once, without overwriting typing.
@@ -611,6 +614,10 @@ export default function CheckoutPage() {
                     <FieldError id="phone-error" message={errors.phone} />
                   </div>
                 </div>
+                {/*
+                  TEMPORARILY HIDDEN: WhatsApp/SMS dispatch notifications are not available yet (no messaging
+                  provider is connected). Restore this checkbox and `smsUpdates` in formData when they are, and
+                  send the choice to the API at that point (it was never stored).
                 <label htmlFor="smsUpdates" className="mt-4 flex items-start gap-2.5 text-sm text-ink-secondary cursor-pointer">
                   <input
                     type="checkbox"
@@ -622,6 +629,7 @@ export default function CheckoutPage() {
                   />
                   Send dispatch notifications and order tracking updates via WhatsApp &amp; SMS.
                 </label>
+                */}
               </section>
 
               {/* Address */}
@@ -820,7 +828,7 @@ export default function CheckoutPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-base text-ink line-clamp-2">{item.product.title}</p>
-                      <p className="text-sm text-ink-secondary mt-1">{[item.size, item.color?.name].filter(Boolean).join(" / ")}</p>
+                      <p className="text-sm text-ink-secondary mt-1">{[item.size, COLOUR_VARIANTS_ENABLED ? item.color?.name : null].filter(Boolean).join(" / ")}</p>
                     </div>
                     <p className="text-base text-ink shrink-0 whitespace-nowrap">
                       {item.quantity} X {inr(item.product.price)}

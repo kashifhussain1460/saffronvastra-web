@@ -8,6 +8,7 @@ import { useStore } from "@/context/StoreContext";
 import PriceTag from "@/components/ui/PriceTag";
 import QuickView from "./QuickView";
 import { ShopProduct } from "./shopData";
+import { COLOUR_VARIANTS_ENABLED } from "@/lib/features";
 
 /** Modave list-view row: photo left, title / price / description / colours / sizes / actions right. */
 export default function ProductListItem({ product }: { product: ShopProduct }) {
@@ -52,7 +53,8 @@ export default function ProductListItem({ product }: { product: ShopProduct }) {
           {product.availabilityMode} &middot; ships in {product.leadTime}
         </p>
 
-        {product.variantColours.some((c) => c.hex) && (
+        {/* Colour swatches — TEMPORARILY HIDDEN while COLOUR_VARIANTS_ENABLED is false (lib/features.ts). */}
+        {COLOUR_VARIANTS_ENABLED && product.variantColours.some((c) => c.hex) && (
           <ul className="flex flex-wrap gap-1.5" aria-label={`Colours: ${product.variantColours.map((c) => c.name).join(", ")}`}>
             {product.variantColours.map((c, i) => (
               <li key={c.name} title={c.name} className={`grid h-7 w-7 place-items-center rounded-full border ${i === 0 ? "border-ink" : "border-transparent"}`}>

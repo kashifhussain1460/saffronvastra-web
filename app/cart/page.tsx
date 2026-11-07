@@ -11,6 +11,7 @@ import PriceTag from "@/components/ui/PriceTag";
 import PageTitle from "@/components/checkout/PageTitle";
 import QtyStepper from "@/components/cart/QtyStepper";
 import FreeShippingProgress from "@/components/cart/FreeShippingProgress";
+import { COLOUR_VARIANTS_ENABLED } from "@/lib/features";
 import { ShoppingBag, ArrowRight, ArrowUpRight, XCircle, X, Heart, Check, AlertCircle } from "lucide-react";
 
 const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
@@ -129,7 +130,9 @@ export default function CartPage() {
                 <ul className="divide-y divide-line border-b border-line">
                   {cart.map((item) => {
                     const itemTotal = item.product.price * item.quantity;
-                    const variant = [item.size && `Size: ${item.size}`, item.color?.name && item.color.name]
+                    // Colour is left out while colour variants are off (lib/features.ts).
+                    const showColour = COLOUR_VARIANTS_ENABLED && !!item.color?.name;
+                    const variant = [item.size && `Size: ${item.size}`, showColour && item.color.name]
                       .filter(Boolean)
                       .join(" / ");
                     return (
@@ -160,7 +163,7 @@ export default function CartPage() {
                             </Link>
                             {variant && (
                               <p className="mt-1.5 inline-flex items-center gap-1.5 text-sm text-ink-secondary">
-                                {item.color?.hex && item.color?.name && (
+                                {showColour && item.color?.hex && (
                                   <span
                                     aria-hidden="true"
                                     className="inline-block w-3 h-3 rounded-full border border-line"

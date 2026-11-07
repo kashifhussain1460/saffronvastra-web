@@ -7,6 +7,7 @@ import FilterAccordion from "./FilterAccordion";
 import { inPageLinkProps } from "./Pagination";
 import PriceRangeFilter from "./PriceRangeFilter";
 import { FACET_TITLES, FacetOption, ListFacet, ShopFilters } from "./shopData";
+import { COLOUR_VARIANTS_ENABLED } from "@/lib/features";
 
 // Colours shown before "Show more"; a selected colour is always kept visible.
 const COLOUR_LIMIT = 8;
@@ -30,7 +31,9 @@ export interface FilterPanelProps {
 /** The facet groups, shared by the desktop sidebar and the mobile / canvas filter drawer. */
 export default function FilterPanel({ filters, options, bounds, onToggle, onPrice, onSale, saleCount = 0, hide = [], idPrefix, facetHref }: FilterPanelProps) {
   const [showAllColours, setShowAllColours] = useState(false);
-  const show = (f: ListFacet) => !hide.includes(f) && options[f].length > 0;
+  // The colour filter is hidden while colour variants are off (lib/features.ts).
+  const show = (f: ListFacet) =>
+    !hide.includes(f) && options[f].length > 0 && (f !== "colour" || COLOUR_VARIANTS_ENABLED);
 
   const linkList = (facet: ListFacet) => (
     <ul className="space-y-1 xl:space-y-3">

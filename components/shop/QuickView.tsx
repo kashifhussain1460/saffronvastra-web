@@ -9,6 +9,7 @@ import { Product, Size, ProductColor } from "@/types";
 import { useStore } from "@/context/StoreContext";
 import PriceTag from "@/components/ui/PriceTag";
 import QtyStepper from "@/components/cart/QtyStepper";
+import { COLOUR_VARIANTS_ENABLED } from "@/lib/features";
 import { useDialog } from "./hooks";
 
 interface Variant {
@@ -76,9 +77,14 @@ export default function QuickView({
     return Array.from(m, ([name, hex]) => ({ name, hex }));
   }, [variants]);
   const sizes = useMemo(() => Array.from(new Set(variants.map((v) => v.size))), [variants]);
-  const sizeAvailable = (s: string) => variants.some((v) => v.size === s && (colour === null || (v.colourName || "") === colour));
-  const chosen = variants.find((v) => v.size === size && (v.colourName || "") === (colour ?? "")) || null;
-  const needsColour = colours.length > 1 && colour === null;
+  // While colour variants are off (lib/features.ts) only the size is chosen: any active variant of that
+  // size is used, so the cart still receives a variant that really exists.
+  const sizeAvailable = (s: string) =>
+    variants.some((v) => v.size === s && (!COLOUR_VARIANTS_ENABLED || colour === null || (v.colourName || "") === colour));
+  const chosen = COLOUR_VARIANTS_ENABLED
+    ? variants.find((v) => v.size === size && (v.colourName || "") === (colour ?? "")) || null
+    : variants.find((v) => v.size === size) || null;
+  const needsColour = COLOUR_VARIANTS_ENABLED && colours.length > 1 && colour === null;
   const needsSize = size === null || (size !== null && !sizeAvailable(size));
 
   if (!open || !mounted) return null;
@@ -163,7 +169,8 @@ export default function QuickView({
           <div className="mt-5 border-t border-line pt-5">
             {state === "loading" && (
               <p role="status" className="flex items-center gap-2 text-sm text-ink-secondary">
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> Loading sizes and colours...
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />{" "}
+                {COLOUR_VARIANTS_ENABLED ? "Loading sizes and colours..." : "Loading sizes..."}
               </p>
             )}
             {state === "error" && (
@@ -176,7 +183,8 @@ export default function QuickView({
             )}
             {state === "ready" && variants.length > 0 && (
               <div className="space-y-5">
-                {colours.length > 0 && colours.some((c) => c.name) && (
+                {/* Colour picker — TEMPORARILY HIDDEN while COLOUR_VARIANTS_ENABLED is false (lib/features.ts). */}
+                {COLOUR_VARIANTS_ENABLED && colours.length > 0 && colours.some((c) => c.name) && (
                   <fieldset>
                     <legend className="mb-2 text-sm text-ink">
                       Colour: <span className="font-semibold">{colour || "Select"}</span>
@@ -214,7 +222,7 @@ export default function QuickView({
                           disabled={!ok}
                           onClick={() => setSize(s)}
                           aria-pressed={size === s}
-                          aria-label={`Size ${s}${ok ? "" : " (not available in this colour)"}`}
+                          aria-label={`Size ${s}${ok ? "" : COLOUR_VARIANTS_ENABLED ? " (not available in this colour)" : " (not available)"}`}
                           className={`grid h-11 min-w-11 place-items-center rounded-full border px-3 text-sm transition-colors disabled:cursor-not-allowed disabled:border-line disabled:text-ink-muted disabled:line-through ${
                             size === s && ok ? "border-ink bg-primary text-on-primary" : "border-line text-ink hover:border-ink"
                           }`}

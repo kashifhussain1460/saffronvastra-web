@@ -8,6 +8,7 @@ import Offcanvas from "@/components/ui/Offcanvas";
 import QtyStepper from "@/components/cart/QtyStepper";
 import PriceTag from "@/components/ui/PriceTag";
 import { useFeaturedProducts } from "@/components/layout/useCatalogNav";
+import { COLOUR_VARIANTS_ENABLED } from "@/lib/features";
 import { X, Truck } from "lucide-react";
 
 const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
@@ -157,7 +158,7 @@ export default function CartDrawer() {
                     <div className="mt-1 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-sm">
                       <span className="text-ink-secondary">
                         {item.size}
-                        {item.color?.name && <> / {item.color.name}</>}
+                        {COLOUR_VARIANTS_ENABLED && item.color?.name && <> / {item.color.name}</>}
                       </span>
                       <span className="font-semibold text-ink">
                         {item.quantity} &times; {inr(item.product.price)}

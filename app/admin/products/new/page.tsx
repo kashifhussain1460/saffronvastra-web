@@ -5,6 +5,7 @@ import React, { Suspense, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL } from "@/lib/uploadLimits";
+import { COLOUR_VARIANTS_ENABLED, DEFAULT_COLOUR } from "@/lib/features";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ChevronRight,
@@ -145,7 +146,13 @@ function AdminNewProductWizard() {
   const allCollectionsList = collectionsData.map((c) => c.title);
 
   // STEP 3 STATE: Variants & Pricing
-  const [colourVariants, setColourVariants] = useState([{ id: "c1", name: "", hex: "#6B1F1F" }]);
+  // Colour variants are temporarily off (lib/features.ts): new products get one default colour so that
+  // one variant is created per selected size. Products being edited keep the colours they already have.
+  const [colourVariants, setColourVariants] = useState(
+    COLOUR_VARIANTS_ENABLED
+      ? [{ id: "c1", name: "", hex: "#6B1F1F" }]
+      : [{ id: "c1", name: DEFAULT_COLOUR.name as string, hex: DEFAULT_COLOUR.hex as string }]
+  );
   const [sizeOptions, setSizeOptions] = useState<Record<string, boolean>>({
     S: false,
     M: false,
@@ -313,10 +320,13 @@ function AdminNewProductWizard() {
       else if (!e.price && compare <= price) e.compare = "Compare-at price must be greater than the regular price";
     }
 
-    const names = colourVariants.map((c) => c.name.trim().toLowerCase());
-    if (colourVariants.length === 0 || names.some((n) => !n)) e.colours = "Add at least one colour and give each colour a name";
-    else if (new Set(names).size !== names.length) e.colours = "Colour names must be unique";
-    else if (colourVariants.some((c) => !HEX_PATTERN.test(c.hex))) e.colours = "Colour hex must look like #6B1F1F";
+    // The colour editor is hidden while colour variants are off, so its errors could not be fixed; skip them.
+    if (COLOUR_VARIANTS_ENABLED) {
+      const names = colourVariants.map((c) => c.name.trim().toLowerCase());
+      if (colourVariants.length === 0 || names.some((n) => !n)) e.colours = "Add at least one colour and give each colour a name";
+      else if (new Set(names).size !== names.length) e.colours = "Colour names must be unique";
+      else if (colourVariants.some((c) => !HEX_PATTERN.test(c.hex))) e.colours = "Colour hex must look like #6B1F1F";
+    }
 
     if (!SIZE_KEYS.some((s) => sizeOptions[s])) e.sizes = "Select at least one size";
 
@@ -359,6 +369,9 @@ function AdminNewProductWizard() {
   // Variants
   // ---------------------------------------------------------------------
   const selectedSizes = SIZE_KEYS.filter((s) => sizeOptions[s]);
+  // With colours off the preview is per size only, unless an older product being edited still has several
+  // colours: then the colour column stays so its rows (and per-variant prices) can be told apart.
+  const showColourColumn = COLOUR_VARIANTS_ENABLED || colourVariants.length > 1;
 
   const handleAddColour = () => {
     setColourVariants([...colourVariants, { id: `c${Date.now()}`, name: "", hex: "#D4AF37" }]);
@@ -1543,12 +1556,15 @@ function AdminNewProductWizard() {
             <div>
               <h2 className="font-serif text-xl text-ink">Variants</h2>
               <p className="text-xs text-ink-muted mt-0.5">
-                Define the different sizes, colours and pricing for this product.
+                {COLOUR_VARIANTS_ENABLED
+                  ? "Define the different sizes, colours and pricing for this product."
+                  : "Define the different sizes and pricing for this product."}
               </p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 text-xs">
-              {/* Colour Variants */}
+              {/* Colour Variants — TEMPORARILY HIDDEN while COLOUR_VARIANTS_ENABLED is false (lib/features.ts). */}
+              {COLOUR_VARIANTS_ENABLED && (
               <div className="lg:col-span-8 space-y-3">
                 <label className="font-semibold text-ink block">
                   Colour Variants <span className="text-primary">*</span>
@@ -1614,9 +1630,12 @@ function AdminNewProductWizard() {
                   <span>Add Colour</span>
                 </button>
               </div>
+              )}
 
               {/* Size Options (Modern Atelier Selection) */}
-              <div className="lg:col-span-4 bg-canvas p-4 sm:p-5 rounded-xl border border-line space-y-3">
+              <div
+                className={`${COLOUR_VARIANTS_ENABLED ? "lg:col-span-4" : "lg:col-span-6"} bg-canvas p-4 sm:p-5 rounded-xl border border-line space-y-3`}
+              >
                 <div className="flex items-center justify-between">
                   <label className="font-semibold text-xs text-ink block">
                     Size Options <span className="text-primary">*</span>
@@ -1672,7 +1691,9 @@ function AdminNewProductWizard() {
                 <div>
                   <span className="font-semibold text-ink">Same price for all variants</span>
                   <p className="text-[11px] text-ink-muted">
-                    All colour and size variants will have the same price.
+                    {COLOUR_VARIANTS_ENABLED
+                      ? "All colour and size variants will have the same price."
+                      : "All size variants will have the same price."}
                   </p>
                 </div>
               </label>
@@ -1744,7 +1765,7 @@ function AdminNewProductWizard() {
                 <thead className="bg-canvas text-ink-muted border-b border-line">
                   <tr>
                     <th className="p-3.5 font-semibold text-ink">SKU</th>
-                    <th className="p-3.5 font-semibold text-ink">Colour</th>
+                    {showColourColumn && <th className="p-3.5 font-semibold text-ink">Colour</th>}
                     <th className="p-3.5 font-semibold text-ink">Size</th>
                     <th className="p-3.5 font-semibold text-ink">Price</th>
                   </tr>
@@ -1756,12 +1777,14 @@ function AdminNewProductWizard() {
                       return (
                         <tr key={key} className="hover:bg-canvas/50 transition-colors">
                           <td className="p-3.5 font-mono text-ink-muted">Assigned on save</td>
-                          <td className="p-3.5">
-                            <div className="flex items-center gap-2">
-                              <span className="w-3 h-3 rounded-full border border-ink/10" style={{ backgroundColor: c.hex }} />
-                              <span>{c.name.trim()}</span>
-                            </div>
-                          </td>
+                          {showColourColumn && (
+                            <td className="p-3.5">
+                              <div className="flex items-center gap-2">
+                                <span className="w-3 h-3 rounded-full border border-ink/10" style={{ backgroundColor: c.hex }} />
+                                <span>{c.name.trim()}</span>
+                              </div>
+                            </td>
+                          )}
                           <td className="p-3.5 font-medium">{sz}</td>
                           <td className="p-3.5 font-semibold text-ink">
                             {priceType === "different" ? (
@@ -1770,7 +1793,7 @@ function AdminNewProductWizard() {
                                 min="0"
                                 step="0.01"
                                 inputMode="decimal"
-                                aria-label={`Price for ${c.name.trim()} ${sz}`}
+                                aria-label={showColourColumn ? `Price for ${c.name.trim()} ${sz}` : `Price for ${sz}`}
                                 placeholder={basePrice || "Base price"}
                                 value={variantPrices[key] ?? ""}
                                 onChange={(e) => setVariantPrices({ ...variantPrices, [key]: e.target.value })}
@@ -1790,7 +1813,9 @@ function AdminNewProductWizard() {
               </table>
               {(colourVariants.every((c) => !c.name.trim()) || selectedSizes.length === 0) && (
                 <p className="p-4 text-[11px] text-ink-muted">
-                  Name at least one colour and select at least one size to see the variants that will be created.
+                  {COLOUR_VARIANTS_ENABLED
+                    ? "Name at least one colour and select at least one size to see the variants that will be created."
+                    : "Select at least one size to see the variants that will be created."}
                 </p>
               )}
             </div>
@@ -2238,7 +2263,10 @@ function AdminNewProductWizard() {
               <h3 className="font-serif text-xl text-ink">Product Ready to Launch</h3>
               <p className="text-xs text-ink-muted mt-1">
                 &quot;{productName}&quot; is ready to be published to {BRAND.name} storefront with{" "}
-                {colourVariants.length} colour variants and lead time of {productionLeadTime}.
+                {COLOUR_VARIANTS_ENABLED
+                  ? `${colourVariants.length} colour variants`
+                  : `${selectedSizes.length} size variant${selectedSizes.length === 1 ? "" : "s"}`}{" "}
+                and lead time of {productionLeadTime}.
               </p>
             </div>
             <div className="flex items-center justify-center gap-3 pt-2">

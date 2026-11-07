@@ -8,6 +8,7 @@ import { useStore } from "@/context/StoreContext";
 import { Heart, Eye, ShoppingBag } from "lucide-react";
 import PriceTag from "./PriceTag";
 import QuickView from "@/components/shop/QuickView";
+import { COLOUR_VARIANTS_ENABLED } from "@/lib/features";
 
 interface ProductCardProps {
   product: Product;
@@ -46,7 +47,8 @@ export default function ProductCard({
   const hasCompare = !!product.compareAtPrice && product.compareAtPrice > product.price;
   const discount = hasCompare ? Math.round((1 - product.price / product.compareAtPrice!) * 100) : 0;
   const secondImage = product.images.length > 1 ? product.images[1] : null;
-  const colours = realColours(product);
+  // Colour swatches are hidden while colour variants are off (lib/features.ts).
+  const colours = COLOUR_VARIANTS_ENABLED ? realColours(product) : [];
   const hoverReady = !!secondImage && hoverLoadedSrc === secondImage;
   const mountHover = () => {
     if (secondImage && !hoverMounted) setHoverMounted(true);

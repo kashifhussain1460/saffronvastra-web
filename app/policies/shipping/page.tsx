@@ -107,7 +107,7 @@ export default function ShippingPolicyPage() {
 
       <PolicySection id="tracking" title={sections[5].label}>
         <p>
-          As soon as your shipment is dispatched, you will receive an SMS and email notification with your AWB tracking number and courier tracking link. You can also view real-time updates directly in your account dashboard.
+          As soon as your shipment is dispatched, you will receive an email notification with your AWB tracking number and courier tracking link. You can also view real-time updates directly in your account dashboard.
         </p>
         <Link
           href="/account/orders"

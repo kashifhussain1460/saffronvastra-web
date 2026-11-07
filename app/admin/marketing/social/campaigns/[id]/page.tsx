@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Trash2 } from 'lucide-react';
 import { api, formatDateTime } from '@/lib/adminApi';
 import { StatusPill } from '../../components/StatusPill';
 import { VariantForm } from '../../components/VariantForm';
@@ -13,6 +15,7 @@ interface Job {
   status: string;
   attemptCount: number;
   lastErrorCode: string | null;
+  lastErrorMessage: string | null;
 }
 
 interface Variant {
@@ -91,6 +94,7 @@ function capitalize(s: string) {
 
 export default function CampaignDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const campaignId = params.id;
 
   const [campaign, setCampaign] = useState<Campaign | null>(null);
@@ -99,6 +103,8 @@ export default function CampaignDetailPage() {
   const [publishError, setPublishError] = useState<string | null>(null);
   const [retryingJobId, setRetryingJobId] = useState<string | null>(null);
   const [openVariantId, setOpenVariantId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pollingElapsedRef = useRef(0);
@@ -153,6 +159,21 @@ export default function CampaignDetailPage() {
     startPolling();
   }
 
+  async function handleDelete() {
+    if (!window.confirm('Delete this campaign? This permanently removes its products, variants and publish jobs. This cannot be undone.')) {
+      return;
+    }
+    setDeleting(true);
+    setDeleteError(null);
+    const res = await api(`/api/v1/admin/social/campaigns/${campaignId}`, { method: 'DELETE' });
+    if (res.ok) {
+      router.push('/admin/marketing/social/campaigns');
+      return;
+    }
+    setDeleting(false);
+    setDeleteError(res.message || 'Failed to delete the campaign.');
+  }
+
   async function handleRetry(jobId: string) {
     setRetryingJobId(jobId);
     await api(`/api/v1/admin/social/campaigns/${campaignId}/jobs/${jobId}/retry`, { method: 'POST' });
@@ -160,9 +181,19 @@ export default function CampaignDetailPage() {
     setRetryingJobId(null);
   }
 
-  // onSave is a no-op until the backend PATCH endpoint is added.
-  async function handleVariantSave(_variantId: string, _data: Partial<Variant>) {
-    // TODO: add PATCH variant endpoint on the backend to enable saving.
+  async function handleVariantSave(variantId: string, data: Partial<Variant>) {
+    setCampaign((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        products: prev.products.map((product) => ({
+          ...product,
+          variants: product.variants.map((v) =>
+            v.id === variantId ? { ...v, ...data } : v
+          ),
+        })),
+      };
+    });
   }
 
   if (loadError) {
@@ -184,6 +215,11 @@ export default function CampaignDetailPage() {
 
   return (
     <div className="p-6 lg:p-8 space-y-8">
+      {/* Back */}
+      <Link href="/admin/marketing/social/campaigns" className="inline-flex items-center gap-1 text-sm text-ink-muted hover:text-ink transition-colors">
+        ← All Campaigns
+      </Link>
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
@@ -197,14 +233,27 @@ export default function CampaignDetailPage() {
         </div>
 
         <div className="flex flex-col items-end gap-2">
-          <button
-            type="button"
-            onClick={handlePublish}
-            disabled={publishing}
-            className="rounded-lg bg-ink px-4 py-2 text-sm font-medium text-white hover:bg-ink/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {publishing ? 'Publishing…' : 'Publish'}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={deleting || publishing}
+              title="Delete campaign"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-line px-3 py-2 text-sm font-medium text-ink-muted hover:text-red-600 hover:border-red-200 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              {deleting ? 'Deleting…' : 'Delete'}
+            </button>
+            <button
+              type="button"
+              onClick={handlePublish}
+              disabled={publishing}
+              className="rounded-lg bg-ink px-4 py-2 text-sm font-medium text-white hover:bg-ink/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {publishing ? 'Publishing…' : 'Publish'}
+            </button>
+          </div>
+          {deleteError && <p className="text-xs text-red-600 max-w-xs text-right">{deleteError}</p>}
           {publishError && (
             <p className="text-xs text-red-600">{publishError}</p>
           )}
@@ -250,7 +299,14 @@ export default function CampaignDetailPage() {
                               </button>
                             )}
                             {job.lastErrorCode && (
-                              <span className="text-[11px] text-ink-muted">{job.lastErrorCode}</span>
+                              <span className="text-[11px] text-ink-muted" title={job.lastErrorMessage ?? undefined}>
+                                {job.lastErrorCode}
+                              </span>
+                            )}
+                            {job.lastErrorMessage && (
+                              <span className="text-[11px] text-red-600 max-w-[220px] break-words">
+                                {job.lastErrorMessage}
+                              </span>
                             )}
                           </div>
                         ) : (
@@ -291,7 +347,7 @@ export default function CampaignDetailPage() {
                   </button>
                   {isOpen && (
                     <div className="border-t border-line">
-                      <VariantForm variant={variant} onSave={handleVariantSave} />
+                      <VariantForm variant={variant} campaignId={campaignId} onSave={handleVariantSave} />
                     </div>
                   )}
                 </div>

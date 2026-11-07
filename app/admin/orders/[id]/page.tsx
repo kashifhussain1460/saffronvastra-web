@@ -1,6 +1,7 @@
 "use client";
 
 import { BRAND } from "@/lib/brand";
+import { COLOUR_VARIANTS_ENABLED } from "@/lib/features";
 import React, { useCallback, useEffect, useState, use } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -590,7 +591,7 @@ export default function AdminOrderDetailPage({ params }: OrderDetailProps) {
                       </td>
                       <td className="p-4 text-ink-secondary">
                         <p>Size: {item.size}</p>
-                        <p className="text-ink-muted">Colour: {item.colour}</p>
+                        {COLOUR_VARIANTS_ENABLED && item.colour && <p className="text-ink-muted">Colour: {item.colour}</p>}
                       </td>
                       <td className="p-4 font-medium text-ink">{money(item.unitPriceMinor)}</td>
                       <td className="p-4 text-center font-medium text-ink">{item.quantity}</td>

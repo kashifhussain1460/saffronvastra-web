@@ -26,6 +26,7 @@ import RequestDialog from "@/components/orders/RequestDialog";
 import RequestTimeline from "@/components/orders/RequestTimeline";
 import { OrderPayment, OrderRequestData, isOpenRequest, providerLabel } from "@/components/orders/shared";
 import { StatusBadge } from "@/components/account/OrdersTable";
+import { COLOUR_VARIANTS_ENABLED } from "@/lib/features";
 import {
   btnPrimary,
   btnSmall,
@@ -602,7 +603,7 @@ export default function OrderDetailPage({ params }: { params?: Promise<{ id: str
                             <p className="text-base font-medium text-ink line-clamp-2">{item.title}</p>
                           )}
                           <p className="mt-0.5 text-sm text-ink-secondary">
-                            {[item.size && `Size: ${item.size}`, item.color && `Colour: ${item.color}`, `Qty: ${item.quantity}`]
+                            {[item.size && `Size: ${item.size}`, COLOUR_VARIANTS_ENABLED && item.color && `Colour: ${item.color}`, `Qty: ${item.quantity}`]
                               .filter(Boolean)
                               .join(" • ")}
                           </p>

@@ -5,6 +5,12 @@ import Image from 'next/image';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { api } from '@/lib/adminApi';
 
+const PLATFORM_COLORS: Record<string, string> = {
+  instagram: 'bg-pink-50 text-pink-700 border-pink-200',
+  facebook:  'bg-blue-50 text-blue-700 border-blue-200',
+  pinterest: 'bg-red-50 text-red-700 border-red-200',
+};
+
 interface SocialProduct {
   id: string;
   title: string;
@@ -13,6 +19,7 @@ interface SocialProduct {
   coverImageUrl: string | null;
   mimeType: string | null;
   categoryName: string | null;
+  publishedPlatforms: string[];
 }
 
 interface Pagination {
@@ -200,7 +207,21 @@ export default function ProductSelectorTable({ selectedIds, onToggle }: Props) {
                             <div className="w-full h-full bg-line" />
                           )}
                         </div>
-                        <span className="font-serif font-medium text-ink line-clamp-2">{p.title}</span>
+                        <div>
+                          <span className="font-serif font-medium text-ink line-clamp-2">{p.title}</span>
+                          {p.publishedPlatforms?.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {p.publishedPlatforms.map((plat) => (
+                                <span
+                                  key={plat}
+                                  className={`inline-flex items-center px-1.5 py-0.5 rounded-full border text-[10px] font-semibold capitalize ${PLATFORM_COLORS[plat] ?? 'bg-canvas border-line text-ink-muted'}`}
+                                >
+                                  {plat}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className="p-3">

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import PageTitle from "@/components/checkout/PageTitle";
 import PaymentStatusPanel, { usePaymentStatus } from "@/components/checkout/PaymentStatusPanel";
+import { COLOUR_VARIANTS_ENABLED } from "@/lib/features";
 import { CheckCircle2, ArrowRight, Download, MapPin, CreditCard, ExternalLink, Check, Hash, CalendarDays, Package, Wallet, LifeBuoy } from "lucide-react";
 
 const confirmDate = (value: string | null | undefined, withYear = true) =>
@@ -334,7 +335,7 @@ function OrderConfirmationContent() {
                     <p className="text-base font-medium text-ink line-clamp-2">{item.product.title}</p>
                     <div className="mt-1.5 flex flex-wrap gap-1.5">
                       {item.size && <span className={chip}>Size {item.size}</span>}
-                      {item.color?.name && <span className={chip}>{item.color.name}</span>}
+                      {COLOUR_VARIANTS_ENABLED && item.color?.name && <span className={chip}>{item.color.name}</span>}
                       <span className={chip}>Qty {item.quantity}</span>
                     </div>
                   </div>

@@ -1,5 +1,6 @@
 import { Product } from "@/types";
 import { mapBackendProductToFrontend } from "@/lib/productMapper";
+import { COLOUR_VARIANTS_ENABLED } from "@/lib/features";
 
 /**
  * A listed product plus the raw catalogue attributes the shop filters need.
@@ -125,7 +126,8 @@ export function parseShopQuery(sp: URLSearchParams | { get(name: string): string
       collection: list(sp.get("collection")),
       availability: list(sp.get("availability")),
       size: list(sp.get("size")),
-      colour: list(sp.get("colour")),
+      // An old ?colour= link must not filter invisibly while the colour filter is hidden (lib/features.ts).
+      colour: COLOUR_VARIANTS_ENABLED ? list(sp.get("colour")) : [],
       material: list(sp.get("material")),
       embroidery: list(sp.get("embroidery")),
       sale: sp.get("sale") === "1",
