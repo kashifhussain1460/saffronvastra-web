@@ -21,6 +21,10 @@ const kumbh = Kumbh_Sans({
 
 import StorefrontShell from "@/components/layout/StorefrontShell";
 import AnalyticsTracker from "@/components/analytics/AnalyticsTracker";
+import MetaPixel from "@/components/analytics/MetaPixel";
+
+// Meta (Facebook) Pixel ID, read at runtime. Set only on the live site so staging and local traffic stay out of Meta.
+const META_PIXEL_ID = process.env.META_PIXEL_ID?.trim() || "";
 import JsonLd from "@/components/seo/JsonLd";
 import { siteGraph } from "@/lib/jsonld";
 
@@ -89,6 +93,7 @@ export default async function RootLayout({
         <SettingsProvider settings={settings}>
           <StoreProvider>
             <AnalyticsTracker />
+            {META_PIXEL_ID && <MetaPixel pixelId={META_PIXEL_ID} />}
             <StorefrontShell
               announcement={<AnnouncementBar announcement={settings.announcement} store={settings.store} />}
               navData={navData}
