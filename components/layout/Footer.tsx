@@ -7,6 +7,7 @@ import { Plus, Minus, Mail, Phone, ArrowUpRight, Check } from "lucide-react";
 import { useSiteSettings } from "@/context/SettingsContext";
 import { useCatalogNav, type CatalogNav } from "@/components/layout/useCatalogNav";
 import { subscribeToNewsletter } from "@/lib/newsletter";
+import { openConsentSettings } from "@/lib/consent";
 import { emailError } from "@/lib/validation";
 
 type FooterLink = { label: string; href: string };
@@ -272,6 +273,9 @@ export default function Footer({ initialNav }: { initialNav?: CatalogNav | null 
             <Link href="/policies/terms" className="whitespace-nowrap hover:text-primary-hover transition-colors">
               Terms &amp; Conditions
             </Link>
+            <button type="button" onClick={openConsentSettings} className="whitespace-nowrap hover:text-primary-hover transition-colors">
+              Cookie settings
+            </button>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs text-ink-muted">Accepted:</span>

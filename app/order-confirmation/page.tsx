@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 import PageTitle from "@/components/checkout/PageTitle";
 import PaymentStatusPanel, { usePaymentStatus } from "@/components/checkout/PaymentStatusPanel";
 import { COLOUR_VARIANTS_ENABLED } from "@/lib/features";
+import { gaPurchaseOnce, type GaItem } from "@/lib/gtag";
 import { CheckCircle2, ArrowRight, Download, MapPin, CreditCard, ExternalLink, Check, Hash, CalendarDays, Package, Wallet, LifeBuoy } from "lucide-react";
 
 const confirmDate = (value: string | null | undefined, withYear = true) =>
@@ -144,6 +145,30 @@ function OrderConfirmationContent() {
       setReloadKey((k) => k + 1);
     }
   }, [isOnline, pay.view]);
+
+  // GA4 purchase, from the order the server returned (never from the browser's cart): a cash-on-delivery order
+  // counts once it exists, an online order only once the server has confirmed the payment with Cashfree. Cancelled
+  // or failed orders never count. Sent once per order (lib/gtag gaPurchaseOnce); no personal data is included.
+  const closed = /cancel|fail|refund/i.test(`${order?.status || ""} ${order?.paymentMethod?.status || ""}`);
+  const purchaseReady = loadState === "ready" && order && !closed && (!order.isOnline || pay.view === "paid");
+  useEffect(() => {
+    if (!purchaseReady) return;
+    const items: GaItem[] = order.items.map((it: any) => ({
+      item_id: it.product.slug || it.product.title,
+      item_name: it.product.title,
+      price: it.unitPrice,
+      quantity: it.quantity,
+      ...(it.size ? { item_variant: it.size } : {}),
+    }));
+    // value is the goods after discount; shipping and tax are reported separately, as GA4 recommends
+    const value = Math.max(0, Math.round((order.subtotal - order.discount) * 100) / 100);
+    gaPurchaseOnce(order.orderNumber, items, {
+      value,
+      shipping: order.shipping,
+      tax: order.tax,
+      payment_type: order.isOnline ? "online" : "cash_on_delivery",
+    });
+  }, [purchaseReady, order]);
 
   if (loadState !== "ready" || !order) {
     return (

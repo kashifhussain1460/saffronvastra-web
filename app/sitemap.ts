@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 import { API_ORIGIN, SITE_URL } from "@/lib/site";
 
+// Google ignores changefreq and priority, so entries carry only the URL and, where known, lastmod.
 // Rebuilt at most every hour so new and unpublished products show up without a deploy.
 // At run time any failed API call throws, so Next keeps serving the last good sitemap instead of caching a short one.
 // During `next build` a failure must not fail the deploy (the API may be unreachable from the build machine), so the
@@ -47,7 +48,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/policies/returns",
     "/policies/privacy",
     "/policies/terms",
-  ].map((path) => ({ url: url(path), changeFrequency: path === "/" ? "daily" : "monthly", priority: path === "/" ? 1 : 0.5 }));
+  ].map((path) => ({ url: url(path) }));
 
   try {
     return [...statics, ...(await catalogueEntries(url))];
@@ -73,15 +74,15 @@ async function catalogueEntries(url: (path: string) => string): Promise<Metadata
   if (!categoryList.length) throw new Error("Sitemap: the categories API returned no categories");
 
   // Only what the public API returns: Active, not deleted, published.
-  const productEntries = products.map((p) => ({ url: url(`/products/${p.slug}`), lastModified: p.updatedAt, changeFrequency: "weekly" as const, priority: 0.8 }));
-  const categoryEntries = categoryList.map((c) => ({ url: url(`/collections?category=${encodeURIComponent(c.slug)}`), changeFrequency: "weekly" as const, priority: 0.7 }));
-  const collectionEntries = (collections?.data || []).map((c: any) => ({ url: url(`/collections/${c.slug}`), lastModified: c.updatedAt, changeFrequency: "weekly" as const, priority: 0.7 }));
+  const productEntries = products.map((p) => ({ url: url(`/products/${p.slug}`), lastModified: p.updatedAt }));
+  const categoryEntries = categoryList.map((c) => ({ url: url(`/collections?category=${encodeURIComponent(c.slug)}`), ...(c.updatedAt ? { lastModified: c.updatedAt } : {}) }));
+  const collectionEntries = (collections?.data || []).map((c: any) => ({ url: url(`/collections/${c.slug}`), lastModified: c.updatedAt }));
 
   // The journal is listed only once it has published stories.
   const journalEntries: MetadataRoute.Sitemap = journal.length
     ? [
-        { url: url("/journal"), changeFrequency: "weekly" as const, priority: 0.5 },
-        ...journal.map((a) => ({ url: url(`/journal/${a.slug}`), lastModified: a.publishedAt || undefined, changeFrequency: "monthly" as const, priority: 0.6 })),
+        { url: url("/journal") },
+        ...journal.map((a) => ({ url: url(`/journal/${a.slug}`), lastModified: a.updatedAt || a.publishedAt || undefined })),
       ]
     : [];
 

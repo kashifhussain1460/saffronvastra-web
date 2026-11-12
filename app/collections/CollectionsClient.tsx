@@ -110,6 +110,7 @@ function CollectionsContent({ categories, initialPage, perPage }: CollectionsCli
         image="/images/hero/collections_hero.jpg"
       />
       <ShopView
+        listName={heading.title}
         products={listed}
         loadState={loadState}
         onRetry={() => setReloadKey((k) => k + 1)}

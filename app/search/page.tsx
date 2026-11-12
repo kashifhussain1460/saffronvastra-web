@@ -4,6 +4,7 @@ import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Search, X } from "lucide-react";
 import ProductCard from "@/components/ui/ProductCard";
+import { ItemListScope } from "@/components/analytics/ItemList";
 import ShopPageTitle from "@/components/shop/ShopPageTitle";
 import ShopView from "@/components/shop/ShopView";
 import { ShopProduct, toShopProduct } from "@/components/shop/shopData";
@@ -100,11 +101,13 @@ function SearchContent() {
       {recommended.length > 0 && (
         <div className="mt-14 border-t border-line pt-12 text-left">
           <h3 className="mb-8 text-center text-2xl font-medium text-ink md:text-[32px]">Curated Recommendations</h3>
-          <div className="grid grid-cols-2 gap-x-[15px] gap-y-[30px] md:grid-cols-4 xl:gap-x-[30px]">
-            {recommended.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
+          <ItemListScope list={{ id: "search_recommendations", name: "Curated Recommendations" }} products={recommended}>
+            <div className="grid grid-cols-2 gap-x-[15px] gap-y-[30px] md:grid-cols-4 xl:gap-x-[30px]">
+              {recommended.map((p, i) => (
+                <ProductCard key={p.id} product={p} index={i} />
+              ))}
+            </div>
+          </ItemListScope>
         </div>
       )}
     </div>
@@ -179,6 +182,7 @@ function SearchContent() {
       </section>
 
       <ShopView
+        listName="Search results"
         products={products}
         loadState={loadState}
         onRetry={() => setReloadKey((k) => k + 1)}

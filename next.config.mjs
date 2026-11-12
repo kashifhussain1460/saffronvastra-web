@@ -7,8 +7,18 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_SITE_URL: process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || "",
   },
+  // Product photos are stored at full camera size (often 1.5 MB+), so every <Image> goes through the optimizer:
+  // resized to the rendered width and served as AVIF/WebP. Only these hosts may be optimized.
   images: {
-    unoptimized: true,
+    formats: ["image/avif", "image/webp"],
+    // optimized variants are cached for 31 days; a changed photo gets a new upload URL anyway
+    minimumCacheTTL: 2678400,
+    remotePatterns: [
+      // Vercel Blob (media library uploads)
+      { protocol: "https", hostname: "*.public.blob.vercel-storage.com", pathname: "/**" },
+      // a few products still use the Etsy listing photos
+      { protocol: "https", hostname: "i.etsystatic.com", pathname: "/**" },
+    ],
   },
   async headers() {
     const security = [

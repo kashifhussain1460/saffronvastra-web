@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { Product, CartItem, Size, ProductColor } from "@/types";
 import { analytics } from "@/lib/analytics";
+import { gaItemsEvent, productItem } from "@/lib/gtag";
 import { useSiteSettings } from "@/context/SettingsContext";
 
 export interface AppliedPromo {
@@ -361,6 +362,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         product.price * 100
       );
     } catch {}
+    gaItemsEvent("add_to_cart", [productItem(product, { item_variant: selectedSize, quantity })]);
 
     setIsCartOpen(true);
 
@@ -431,6 +433,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           itemToRemove.quantity
         );
       } catch {}
+      gaItemsEvent("remove_from_cart", [
+        productItem(itemToRemove.product, { item_variant: itemToRemove.size, quantity: itemToRemove.quantity }),
+      ]);
     }
     setCart((prev) => prev.filter((item) => item.id !== itemId));
 
@@ -445,6 +450,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateQuantity = (itemId: string, delta: number) => {
+    // GA4: a quantity step up is an add_to_cart, a step down a remove_from_cart, for the units changed
+    const changed = cart.find((i) => i.id === itemId);
+    if (changed && delta !== 0) {
+      const units = delta > 0 ? delta : Math.min(-delta, changed.quantity);
+      gaItemsEvent(delta > 0 ? "add_to_cart" : "remove_from_cart", [
+        productItem(changed.product, { item_variant: changed.size, quantity: units }),
+      ]);
+    }
     let targetNewQty = 0;
     setCart((prev) =>
       prev

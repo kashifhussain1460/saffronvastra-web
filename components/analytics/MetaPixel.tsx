@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useRef } from "react";
 import Script from "next/script";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useConsent } from "@/lib/consent";
 
 declare global {
   interface Window {
@@ -37,8 +38,10 @@ function RouteChangePageViews() {
 
 export default function MetaPixel({ pixelId }: { pixelId: string }) {
   const pathname = usePathname();
+  // The Pixel is a marketing tracker: it loads only after the visitor allows marketing cookies (ConsentBanner).
+  const consent = useConsent();
   // Pixel IDs are numeric; anything else is a misconfiguration and must not be injected into the script.
-  if (!/^\d+$/.test(pixelId)) return null;
+  if (!/^\d+$/.test(pixelId) || !consent?.marketing) return null;
 
   return (
     <>

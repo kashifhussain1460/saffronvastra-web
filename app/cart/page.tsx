@@ -12,6 +12,7 @@ import PageTitle from "@/components/checkout/PageTitle";
 import QtyStepper from "@/components/cart/QtyStepper";
 import FreeShippingProgress from "@/components/cart/FreeShippingProgress";
 import { COLOUR_VARIANTS_ENABLED } from "@/lib/features";
+import { gaItemsEvent, productItem } from "@/lib/gtag";
 import { ShoppingBag, ArrowRight, ArrowUpRight, XCircle, X, Heart, Check, AlertCircle } from "lucide-react";
 
 const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
@@ -34,6 +35,17 @@ export default function CartPage() {
     isInWishlist,
     toggleWishlist,
   } = useStore();
+
+  // GA4 view_cart, once per visit to this page, as soon as the cart has loaded with items
+  const cartViewSent = React.useRef(false);
+  React.useEffect(() => {
+    if (cartViewSent.current || !cart.length) return;
+    cartViewSent.current = true;
+    gaItemsEvent(
+      "view_cart",
+      cart.map((it) => productItem(it.product, { item_variant: it.size, quantity: it.quantity }))
+    );
+  }, [cart]);
 
   const [promoInput, setPromoInput] = useState("");
   const [promoMessage, setPromoMessage] = useState<{ text: string; isError: boolean } | null>(null);

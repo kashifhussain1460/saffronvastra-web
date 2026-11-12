@@ -3,8 +3,8 @@
 import type { Metadata } from "next";
 import { BRAND } from "@/lib/brand";
 
-// Brand part of every page title ("FAQs | SaffronVastra"). One constant so the owner's spelling choice is a one-line change.
-export const BRAND_TITLE_SUFFIX = BRAND.name;
+// Brand part of every page title ("FAQs | Saffron Vastra"): the spaced spelling, so search results show one brand name.
+export const BRAND_TITLE_SUFFIX = BRAND.displayName;
 
 // Browser chrome and manifest colours, taken from the app/globals.css tokens (keep them in step if the tokens change).
 export const THEME_COLOR = "#181818"; // --color-primary / --color-ink
@@ -12,7 +12,7 @@ export const BACKGROUND_COLOR = "#FFFFFF"; // --color-canvas
 
 // Open Graph fields shared by every page. A page's openGraph replaces the root one entirely, so pages spread this in.
 export const BASE_OG = {
-  siteName: BRAND.name,
+  siteName: BRAND.displayName,
   locale: "en_IN",
   type: "website",
 } as const;
@@ -113,6 +113,8 @@ function toPlainText(text: string): string {
     .replace(/^\s*(?:[-*+]|\d+[.)])\s+/gm, "")
     .replace(/^\s*(?:[-*_]\s*){3,}$/gm, " ")
     .replace(/\*\*|__|~~|`/g, "")
+    // emoji and pictographs (Etsy-style "✨ Details") have no place in meta descriptions or structured data
+    .replace(/[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}️‍⃣]/gu, "")
     .replace(/(^|[\s(])[*_](\S(?:[^*_\n]*\S)?)[*_](?=[\s).,;:!?]|$)/gm, "$1$2")
     .replace(/\s+/g, " ")
     .trim();

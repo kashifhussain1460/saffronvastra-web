@@ -3,6 +3,7 @@
 import { BRAND } from "@/lib/brand";
 import React, { useRef, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
+import { gaEvent } from "@/lib/gtag";
 
 const INQUIRY_LABELS: Record<string, string> = {
   sizing: "Custom Made-to-Order Sizing & Tailoring",
@@ -105,6 +106,8 @@ export default function ContactForm() {
         }
         return;
       }
+      // GA4 contact: the enquiry type only, never the message or contact details
+      gaEvent("contact", { inquiry_type: formData.inquiryType || "general" });
       setSubmitted(true);
       setErrors({});
       setFormData(EMPTY);

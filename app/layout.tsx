@@ -22,9 +22,22 @@ const kumbh = Kumbh_Sans({
 import StorefrontShell from "@/components/layout/StorefrontShell";
 import AnalyticsTracker from "@/components/analytics/AnalyticsTracker";
 import MetaPixel from "@/components/analytics/MetaPixel";
+import GoogleTag from "@/components/analytics/GoogleTag";
+import ConsentBanner from "@/components/analytics/ConsentBanner";
 
 // Meta (Facebook) Pixel ID, read at runtime. Set only on the live site so staging and local traffic stay out of Meta.
 const META_PIXEL_ID = process.env.META_PIXEL_ID?.trim() || "";
+// Google tag of the GA4 web data stream (it carries the GA4 destination GA_MEASUREMENT_ID). Loaded once, only on the
+// production deployment (ALLOW_INDEXING=true) and, in the browser, only on the live hostnames below.
+const GOOGLE_TAG_ID = INDEXING_ALLOWED ? process.env.GOOGLE_TAG_ID?.trim() || "" : "";
+// The live hostnames: the canonical one and its bare/www twin (the twin only ever redirects, but costs nothing).
+const LIVE_HOSTS = (() => {
+  const host = new URL(SITE_URL).hostname;
+  return [host, host.startsWith("www.") ? host.slice(4) : `www.${host}`];
+})();
+// Search Console HTML-tag verification token (the content value of google-site-verification). Optional when the
+// property is verified by DNS instead.
+const GOOGLE_SITE_VERIFICATION = process.env.GOOGLE_SITE_VERIFICATION?.trim() || "";
 import JsonLd from "@/components/seo/JsonLd";
 import { siteGraph } from "@/lib/jsonld";
 
@@ -33,7 +46,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   // pages set only their own part of the title; the template adds the brand suffix
   title: {
-    default: `${BRAND.name} | Luxury Embroidered Fashion & Made-to-Order Craft`,
+    default: `${BRAND.displayName} | Luxury Embroidered Fashion & Made-to-Order Craft`,
     template: `%s | ${BRAND_TITLE_SUFFIX}`,
   },
   description:
@@ -42,6 +55,7 @@ export const metadata: Metadata = {
   openGraph: { ...BASE_OG },
   // staging and preview builds must not be indexed even if a crawler ignores robots.txt
   robots: INDEXING_ALLOWED ? undefined : { index: false, follow: false },
+  ...(GOOGLE_SITE_VERIFICATION ? { verification: { google: GOOGLE_SITE_VERIFICATION } } : {}),
 };
 
 export const viewport: Viewport = {
@@ -94,6 +108,9 @@ export default async function RootLayout({
           <StoreProvider>
             <AnalyticsTracker />
             {META_PIXEL_ID && <MetaPixel pixelId={META_PIXEL_ID} />}
+            {GOOGLE_TAG_ID && <GoogleTag tagId={GOOGLE_TAG_ID} hosts={LIVE_HOSTS} />}
+            {/* cookie choices wherever an optional tracker is configured (the live site) */}
+            {(GOOGLE_TAG_ID || META_PIXEL_ID) && <ConsentBanner />}
             <StorefrontShell
               announcement={<AnnouncementBar announcement={settings.announcement} store={settings.store} />}
               navData={navData}

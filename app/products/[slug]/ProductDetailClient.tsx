@@ -16,6 +16,7 @@ import QuantitySelector from "@/components/product/QuantitySelector";
 import ProductTabs, { PdpTab, SpecRow } from "@/components/product/ProductTabs";
 import StickyAddToCart from "@/components/product/StickyAddToCart";
 import ProductRecommendations from "@/components/product/ProductRecommendations";
+import { gaItemsEvent, productItem } from "@/lib/gtag";
 import { Star, Heart, Check, ChevronRight, Truck, RotateCcw, Timer, MessageCircleQuestion, Share2 } from "lucide-react";
 
 /** Stored fields the mapped Product does not carry; all of them come straight from the API. */
@@ -77,6 +78,7 @@ export default function ProductDetailClient({ product, relatedProducts, extras }
   useEffect(() => {
     if (product) {
       analytics.trackProductView(product.id, product.title, product.slug, product.price * 100);
+      gaItemsEvent("view_item", [productItem(product)]);
     }
   }, [product]);
 

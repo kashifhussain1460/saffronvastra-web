@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import ProductCard from "@/components/ui/ProductCard";
 import { useProductsByIds } from "@/lib/useProductsByIds";
 import type { Product } from "@/types";
+import { ItemListScope, listId } from "@/components/analytics/ItemList";
 
 const RECENT_KEY = "saffron_recently_viewed";
 const RECENT_MAX = 12;
@@ -25,17 +26,19 @@ function useRecentlyViewed(currentId: string) {
   return ids;
 }
 
-function ProductRow({ products }: { products: Product[] }) {
+function ProductRow({ products, listName }: { products: Product[]; listName: string }) {
   return (
+    <ItemListScope list={{ id: listId(listName), name: listName }} products={products}>
     <div className="-mx-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:px-0">
       <ul className="flex snap-x snap-mandatory gap-4 sm:grid sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 lg:gap-[30px]">
-        {products.map((p) => (
+        {products.map((p, i) => (
           <li key={p.id} className="w-[calc(50%-0.5rem)] shrink-0 snap-start sm:w-auto">
-            <ProductCard product={p} />
+            <ProductCard product={p} index={i} />
           </li>
         ))}
       </ul>
     </div>
+    </ItemListScope>
   );
 }
 
@@ -78,7 +81,7 @@ export default function ProductRecommendations({ currentId, related }: { current
         {hasRelated && heading("related", "You May Also Like")}
         {hasRecent && heading("recent", "Recently Viewed")}
       </div>
-      <ProductRow products={current === "related" ? related : recent} />
+      <ProductRow products={current === "related" ? related : recent} listName={current === "related" ? "Related products" : "Recently viewed"} />
     </section>
   );
 }

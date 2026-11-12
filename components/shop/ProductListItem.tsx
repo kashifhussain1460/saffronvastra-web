@@ -9,9 +9,12 @@ import PriceTag from "@/components/ui/PriceTag";
 import QuickView from "./QuickView";
 import { ShopProduct } from "./shopData";
 import { COLOUR_VARIANTS_ENABLED } from "@/lib/features";
+import { useSelectItem } from "@/components/analytics/ItemList";
 
 /** Modave list-view row: photo left, title / price / description / colours / sizes / actions right. */
-export default function ProductListItem({ product }: { product: ShopProduct }) {
+export default function ProductListItem({ product, index }: { product: ShopProduct; index?: number }) {
+  const selectItem = useSelectItem();
+  const onSelect = () => selectItem(product, index);
   const { toggleWishlist, isInWishlist } = useStore();
   const [quick, setQuick] = useState<null | "view" | "add">(null);
   const isFav = isInWishlist(product.id);
@@ -22,7 +25,7 @@ export default function ProductListItem({ product }: { product: ShopProduct }) {
   return (
     <article className="group flex flex-col gap-4 border-b border-line pb-8 sm:flex-row sm:gap-6 lg:gap-10 lg:pb-10">
       <div className="relative aspect-[3/4] w-full shrink-0 overflow-hidden rounded-lg bg-surface-muted sm:w-[42%] lg:w-[336px]">
-        <Link href={`/products/${product.slug}`} className="block h-full w-full" tabIndex={-1} aria-label={product.title}>
+        <Link href={`/products/${product.slug}`} onClick={onSelect} className="block h-full w-full" tabIndex={-1} aria-label={product.title}>
           <Image
             src={product.images[0]}
             alt={product.title}
@@ -42,7 +45,7 @@ export default function ProductListItem({ product }: { product: ShopProduct }) {
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col gap-2.5 sm:pt-2">
-        <Link href={`/products/${product.slug}`} className="self-start">
+        <Link href={`/products/${product.slug}`} onClick={onSelect} className="self-start">
           <h3 className="text-lg font-medium leading-snug text-ink transition-colors hover:text-primary-hover lg:text-[22px]">{product.title}</h3>
         </Link>
         <PriceTag price={product.price} compareAtPrice={product.compareAtPrice} comparePosition="before" showDiscount={false} size="md" />

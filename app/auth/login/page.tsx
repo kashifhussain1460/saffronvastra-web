@@ -7,6 +7,7 @@ import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import AuthSplit from "@/components/auth/AuthSplit";
 import { safeRedirectPath } from "@/lib/safeRedirect";
 import { btnPrimary, inputClass, labelClass } from "@/components/auth/ui";
+import { gaEvent } from "@/lib/gtag";
 
 function LoginForm() {
   const router = useRouter();
@@ -91,6 +92,8 @@ function LoginForm() {
           window.dispatchEvent(new Event("saffron:sync-cart"));
         }
 
+        // GA4 login (customers only; admin sign-ins are internal)
+        if (!isAdmin) gaEvent("login", { method: "email" });
         setLoading(false);
         const destination = safeRedirectPath(redirectQuery, isAdmin ? "/admin/orders" : "/account");
 

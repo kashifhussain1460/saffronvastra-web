@@ -67,7 +67,10 @@ export async function generateMetadata({ searchParams }: JournalPageProps): Prom
   const requested = parseInt(String(page ?? ""), 10);
   const unknownCategory = listing !== null && cat !== "" && !listing.categories.some((c) => c.toLowerCase() === cat);
   const pastLastPage = listing !== null && requested > 1 && requested > listing.totalPages;
-  if (unknownCategory || pastLastPage) {
+  // Until the first story is published the journal has nothing to read, so it stays out of the index (the sitemap
+  // also leaves it out until then).
+  const noStories = listing !== null && listing.articles.length === 0;
+  if (unknownCategory || pastLastPage || noStories) {
     return {
       ...buildMetadata({ title: JOURNAL_TITLE, description: JOURNAL_DESCRIPTION, path: JOURNAL_PATH }),
       robots: { index: false, follow: INDEXING_ALLOWED },

@@ -13,6 +13,7 @@ import Pagination from "./Pagination";
 import AppliedFilterChips, { buildChips } from "./AppliedFilterChips";
 import MobileFilterDrawer from "./MobileFilterDrawer";
 import { useMediaQuery, useShopQuery } from "./hooks";
+import { ItemListScope, listId } from "@/components/analytics/ItemList";
 import {
   applyFilters,
   buildFacetOptions,
@@ -70,6 +71,8 @@ export interface ShopViewProps {
   emptyFiltered?: (clear: () => void) => React.ReactNode;
   /** Server-rendered page shown instead of the loading skeleton (see InitialShopPage). */
   initialPage?: InitialShopPage;
+  /** Name of this listing for GA4 view_item_list / select_item, e.g. the category name or "Search results". */
+  listName?: string;
 }
 
 const GRID_CLASS: Record<Exclude<ViewMode, "list">, string> = {
@@ -84,6 +87,7 @@ const GRID_CLASS: Record<Exclude<ViewMode, "list">, string> = {
  * pagination. All state is in the URL. Filtering and sorting run on the products the page loaded.
  */
 export default function ShopView({
+  listName = "All products",
   products,
   loadState,
   onRetry,
@@ -279,17 +283,21 @@ export default function ShopView({
               </div>
             )
           ) : effective === "list" ? (
-            <div className="space-y-8 lg:space-y-10">
-              {shownItems.map((p) => (
-                <ProductListItem key={p.id} product={p} />
-              ))}
-            </div>
+            <ItemListScope list={{ id: listId(listName), name: listName }} products={shownItems}>
+              <div className="space-y-8 lg:space-y-10">
+                {shownItems.map((p, i) => (
+                  <ProductListItem key={p.id} product={p} index={i} />
+                ))}
+              </div>
+            </ItemListScope>
           ) : (
+            <ItemListScope list={{ id: listId(listName), name: listName }} products={shownItems}>
             <div className={`grid gap-x-[15px] gap-y-[30px] xl:gap-x-[30px] xl:gap-y-10 ${GRID_CLASS[wanted === "list" ? "4" : wanted]}`}>
               {shownItems.map((p, i) => (
                 <ProductCard
                   key={p.id}
                   product={p}
+                  index={i}
                   priority={i < 4}
                   imageSizes={
                     effective === "2"
@@ -301,6 +309,7 @@ export default function ShopView({
                 />
               ))}
             </div>
+            </ItemListScope>
           )}
 
           {viewState === "ready" && (

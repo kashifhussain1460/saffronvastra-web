@@ -3,6 +3,7 @@ import { Product } from "@/types";
 import ProductCard from "@/components/ui/ProductCard";
 import Carousel from "./Carousel";
 import SectionHeading, { CONTAINER } from "./SectionHeading";
+import { ItemListScope, listId } from "@/components/analytics/ItemList";
 
 interface ProductShelfProps {
   id: string;
@@ -19,16 +20,18 @@ export default function ProductShelf({ id, title, subtitle, products, className 
     <section aria-labelledby={id} className={`bg-canvas ${className}`}>
       <div className={CONTAINER}>
         <SectionHeading id={id} title={title} subtitle={subtitle} />
+        <ItemListScope list={{ id: listId(title), name: title }} products={products}>
         <Carousel
           label={title}
           gapClassName="gap-[15px] md:gap-[30px]"
           slideClassName="basis-[calc((100%-15px)/2)] md:basis-[calc((100%-60px)/3)] lg:basis-[calc((100%-90px)/4)]"
           arrowTopClassName="top-[38%]"
         >
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
+          {products.map((product, i) => (
+            <ProductCard key={product.id} product={product} index={i} />
           ))}
         </Carousel>
+        </ItemListScope>
       </div>
     </section>
   );

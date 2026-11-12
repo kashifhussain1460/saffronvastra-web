@@ -9,6 +9,7 @@ import { Heart, Eye, ShoppingBag } from "lucide-react";
 import PriceTag from "./PriceTag";
 import QuickView from "@/components/shop/QuickView";
 import { COLOUR_VARIANTS_ENABLED } from "@/lib/features";
+import { useSelectItem } from "@/components/analytics/ItemList";
 
 interface ProductCardProps {
   product: Product;
@@ -19,6 +20,8 @@ interface ProductCardProps {
   priority?: boolean;
   /** Optional: hide the hover actions (wishlist / quick view / quick add). Default shown. */
   showActions?: boolean;
+  /** Optional: position in its list, for GA4 select_item (the list itself comes from ItemListScope). */
+  index?: number;
 }
 
 // The mapper uses "Standard" when a product has no variant colours; that is not a real colour to show.
@@ -35,8 +38,11 @@ export default function ProductCard({
   imageSizes = "(max-width: 767px) 50vw, (max-width: 1279px) 33vw, 25vw",
   priority = false,
   showActions = true,
+  index,
 }: ProductCardProps) {
   const { toggleWishlist, isInWishlist } = useStore();
+  const selectItem = useSelectItem();
+  const onSelect = () => selectItem(product, index);
   const [quick, setQuick] = useState<null | "view" | "add">(null);
   // The hover photo is only mounted after the first pointer hover or focus, so it is not downloaded for every card.
   // The hover cross-fade classes are applied once it has loaded, so the first hover never fades to an empty well.
@@ -78,7 +84,7 @@ export default function ProductCard({
     >
       {/* Image well */}
       <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg bg-surface-muted">
-        <Link href={`/products/${product.slug}`} className="block h-full w-full" aria-label={product.title} tabIndex={-1}>
+        <Link href={`/products/${product.slug}`} onClick={onSelect} className="block h-full w-full" aria-label={product.title} tabIndex={-1}>
           <Image
             src={product.images[0]}
             alt={product.title}
@@ -167,7 +173,7 @@ export default function ProductCard({
 
       {/* Info */}
       <div className="flex flex-1 flex-col gap-1 pt-3 lg:pt-4">
-        <Link href={`/products/${product.slug}`} className="block">
+        <Link href={`/products/${product.slug}`} onClick={onSelect} className="block">
           <h3 className="line-clamp-2 text-sm font-medium leading-snug text-ink transition-colors hover:text-primary-hover sm:text-base sm:leading-6">
             {product.title}
           </h3>

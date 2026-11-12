@@ -8,6 +8,7 @@ import { API_ORIGIN } from "@/lib/site";
 import { buildMetadata, notFoundMetadata, titleFor, truncateAtWord } from "@/lib/seo";
 import { absoluteUrl, breadcrumbList, graph, product as productJsonLd, type Crumb } from "@/lib/jsonld";
 import JsonLd from "@/components/seo/JsonLd";
+import { fetchSiteSettings } from "@/lib/siteSettings";
 
 // Always render from the live catalogue so published, edited and unpublished
 // products are reflected immediately.
@@ -99,6 +100,8 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const data = await loadProduct(slug);
   if (!data) notFound();
 
+  // shipping charge and free-delivery threshold for the structured data, from the same settings the checkout uses
+  const { shipping } = data.status === "Active" ? await fetchSiteSettings() : { shipping: undefined };
   const product = mapBackendProductToFrontend(data);
   const relatedProducts = (data.relatedProducts ?? []).map(mapBackendProductToFrontend);
   // stored fields the mapped product does not carry (real values only, nothing derived)
@@ -127,7 +130,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   return (
     <>
       {/* structured data for public products only, never for a Draft previewed by an administrator */}
-      {data.status === "Active" && <JsonLd data={graph(productJsonLd(data), breadcrumbList(productCrumbs(data)))} />}
+      {data.status === "Active" && <JsonLd data={graph(productJsonLd(data, shipping), breadcrumbList(productCrumbs(data)))} />}
       <ProductDetailClient product={product} relatedProducts={relatedProducts} extras={extras} />
     </>
   );

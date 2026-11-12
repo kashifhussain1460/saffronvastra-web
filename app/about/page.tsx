@@ -1,5 +1,7 @@
 import { BRAND } from "@/lib/brand";
 import { buildMetadata } from "@/lib/seo";
+import JsonLd from "@/components/seo/JsonLd";
+import { infoPage } from "@/lib/jsonld";
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -7,10 +9,12 @@ import { Sparkles, HeartHandshake, Leaf, Scissors } from "lucide-react";
 import PageTitle from "@/components/checkout/PageTitle";
 import Tabs from "@/components/content/Tabs";
 
+const ABOUT_TITLE = "Our Story & Jaipur Craftsmanship";
+const ABOUT_DESCRIPTION = `Discover the heritage, master artisans, and made-to-order slow fashion philosophy behind ${BRAND.displayName} in Jaipur, India.`;
+
 export const metadata = buildMetadata({
-  title: "Our Story & Jaipur Craftsmanship",
-  description:
-    `Discover the heritage, master artisans, and made-to-order slow fashion philosophy behind ${BRAND.name} in Jaipur, India.`,
+  title: ABOUT_TITLE,
+  description: ABOUT_DESCRIPTION,
   path: "/about",
 });
 
@@ -90,6 +94,7 @@ const btnOutline =
 export default function AboutPage() {
   return (
     <div className="bg-canvas text-ink">
+      <JsonLd data={infoPage("AboutPage", "/about", ABOUT_TITLE, ABOUT_DESCRIPTION)} />
       <PageTitle title="About Our Workshop & Craft" crumbs={[{ label: "Home", href: "/" }, { label: "Our Story" }]} />
 
       {/* Story: image + tabs */}

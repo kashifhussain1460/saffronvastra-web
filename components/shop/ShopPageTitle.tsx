@@ -15,6 +15,8 @@ export interface ShopCategory {
   slug: string;
   parentId?: string | null;
   shortDescription?: string | null;
+  // longer introduction shown under the listing of that category (owner-written in the admin)
+  detailedDescription?: string | null;
 }
 
 /**

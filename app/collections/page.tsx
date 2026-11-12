@@ -48,6 +48,7 @@ const loadCategories = cache(async (): Promise<ShopCategory[] | null> => {
       slug: String(c.slug),
       parentId: c.parentId ?? null,
       shortDescription: c.shortDescription ?? null,
+      detailedDescription: c.detailedDescription ?? null,
     }));
   } catch {
     return null;
@@ -146,10 +147,28 @@ export async function generateMetadata({ searchParams }: CollectionsPageProps): 
 }
 
 export default async function CollectionsPage({ searchParams }: CollectionsPageProps) {
-  const { categories, heading, initialPage } = await resolveListing(searchParams);
+  const { query, categories, heading, initialPage, refined } = await resolveListing(searchParams);
+  // The category's own introduction, on its landing view only (page 1, no sort or filters), so the text is not
+  // repeated across paginated or filtered views. Plain text; blank lines separate paragraphs.
+  const intro = !refined && query.page === 1 ? heading.category?.detailedDescription?.trim() : "";
+  const paragraphs = intro ? intro.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean) : [];
   return (
     <>
       <CollectionsClient categories={categories} initialPage={initialPage} perPage={PER_PAGE} />
+      {paragraphs.length > 0 && heading.category && (
+        <section aria-labelledby="category-intro" className="bg-canvas">
+          <div className="container mx-auto px-4 md:px-6 max-w-3xl py-10 md:py-14 border-t border-line">
+            <h2 id="category-intro" className="text-xl md:text-2xl font-medium text-ink mb-4">
+              About our {heading.category.name}
+            </h2>
+            <div className="space-y-4 text-base leading-7 text-ink-secondary">
+              {paragraphs.map((p, i) => (
+                <p key={i}>{p}</p>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
       {/* same trail as the visible breadcrumb */}
       <JsonLd data={breadcrumbList(heading.crumbs.map((c) => ({ name: c.label, path: c.href })))} />
     </>

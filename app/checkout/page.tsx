@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/context/StoreContext";
 import { analytics } from "@/lib/analytics";
+import { gaItemsEvent, productItem, type GaItem } from "@/lib/gtag";
 import PageTitle from "@/components/checkout/PageTitle";
 import { fieldClass, FieldLabel, FieldError } from "@/components/checkout/fields";
 import PaymentMethodPicker, { type PaymentChoice } from "@/components/checkout/PaymentMethodPicker";
@@ -39,6 +40,17 @@ export default function CheckoutPage() {
     applyPromo,
     removePromo,
   } = useStore();
+
+  // GA4 begin_checkout, once per visit to this page, as soon as the cart has loaded with items
+  const checkoutTracked = React.useRef(false);
+  const gaCartItems = (): GaItem[] =>
+    cart.map((it) => productItem(it.product, { item_variant: it.size, quantity: it.quantity }));
+  useEffect(() => {
+    if (checkoutTracked.current || !cart.length) return;
+    checkoutTracked.current = true;
+    gaItemsEvent("begin_checkout", gaCartItems(), appliedPromo?.code ? { coupon: String(appliedPromo.code) } : {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cart]);
 
   // Voucher field in the summary (same server check as the cart page)
   const [promoInput, setPromoInput] = useState("");
@@ -383,6 +395,18 @@ export default function CheckoutPage() {
     submitLock.current = true;
     setIsSubmitting(true);
     setErrors({});
+
+    // GA4: this one-page checkout takes delivery and payment details together, so both steps are reported once the
+    // form is valid. Only the delivery tier and payment type are sent, never the address or contact details.
+    {
+      const items = gaCartItems();
+      const coupon = appliedPromo?.code ? { coupon: String(appliedPromo.code) } : {};
+      gaItemsEvent("add_shipping_info", items, { shipping_tier: shippingMethod, ...coupon });
+      gaItemsEvent("add_payment_info", items, {
+        payment_type: paymentMethod === "CASHFREE" ? "online" : "cash_on_delivery",
+        ...coupon,
+      });
+    }
 
     const idempotencyKey = `idemp_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
     let finalOrderNumber = "";

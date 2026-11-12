@@ -1,3 +1,4 @@
+import { gaEvent } from "@/lib/gtag";
 export interface NewsletterResult {
   ok: boolean;
   message: string;
@@ -13,7 +14,11 @@ export async function subscribeToNewsletter(email: string, source: string): Prom
       body: JSON.stringify({ email: email.trim(), source }),
     });
     const body = await res.json().catch(() => null);
-    if (res.ok) return { ok: true, message: body?.message || "You are subscribed." };
+    if (res.ok) {
+      // GA4 generate_lead: a newsletter sign-up, with where it happened (footer, banner, register…); no email
+      gaEvent("generate_lead", { lead_source: `newsletter_${source}` });
+      return { ok: true, message: body?.message || "You are subscribed." };
+    }
     return { ok: false, message: body?.message || "We could not complete your sign-up. Please try again." };
   } catch {
     return { ok: false, message: "Network error: you were not subscribed. Please try again." };

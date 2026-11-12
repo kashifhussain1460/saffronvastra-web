@@ -9,6 +9,7 @@ import { Eye, EyeOff } from "lucide-react";
 import AuthSplit from "@/components/auth/AuthSplit";
 import { safeRedirectPath } from "@/lib/safeRedirect";
 import { btnPrimary, errorText, inputClass, labelClass } from "@/components/auth/ui";
+import { gaEvent } from "@/lib/gtag";
 
 type Field = "fullName" | "email" | "phone" | "password" | "confirmPassword" | "terms";
 
@@ -98,6 +99,7 @@ function RegisterForm() {
             body: JSON.stringify({ email: cleanEmail, source: "register" }),
           }).catch(() => undefined);
         }
+        gaEvent("sign_up", { method: "email" });
         // No session yet: the account opens once the email address is confirmed.
         const safeRedirect = safeRedirectPath(redirectQuery, "");
         const next = safeRedirect ? `&redirect=${encodeURIComponent(safeRedirect)}` : "";

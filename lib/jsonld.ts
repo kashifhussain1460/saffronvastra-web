@@ -41,14 +41,25 @@ export function graph(...nodes: JsonLdNode[]): JsonLdNode {
   };
 }
 
-// The shop itself. contactPoint, address and sameAs are left out until the owner confirms them.
+// The brand's own profiles elsewhere (Etsy shop, Instagram, Pinterest…), from BRAND_SAME_AS: comma-separated absolute
+// URLs set by the owner. Only http(s) URLs are kept; nothing is listed until the owner provides them.
+export function sameAsProfiles(): string[] {
+  return String(process.env.BRAND_SAME_AS || "")
+    .split(",")
+    .map((u) => u.trim())
+    .filter((u) => /^https?:\/\/\S+$/.test(u));
+}
+
+// The shop itself. contactPoint and address are left out until the owner confirms them.
 export function organization(): JsonLdNode {
+  const sameAs = sameAsProfiles();
   return {
     "@type": "Organization",
     "@id": ORGANIZATION_ID,
-    name: BRAND.name,
+    name: BRAND.displayName,
     url: SITE_URL,
     logo: absoluteUrl(LOGO_PATH),
+    ...(sameAs.length ? { sameAs } : {}),
   };
 }
 
@@ -58,7 +69,7 @@ export function website(): JsonLdNode {
     "@type": "WebSite",
     "@id": WEBSITE_ID,
     url: SITE_URL,
-    name: BRAND.name,
+    name: BRAND.displayName,
     inLanguage: "en-IN",
     publisher: { "@id": ORGANIZATION_ID },
     potentialAction: {
@@ -103,9 +114,75 @@ const AVAILABILITY: Record<string, string> = {
   Unavailable: "https://schema.org/OutOfStock",
 };
 
-// Product from the API product payload (GET /api/v1/products/:slug). One Offer covers every size, so no
-// product-level sku is given. The price is the same rupee amount the product page shows.
-export function product(data: any): JsonLdNode {
+// Shipping rules for structured data: the same public store settings the checkout uses (lib/siteSettings).
+export interface ShippingRules {
+  deliveryChargesEnabled?: boolean;
+  freeShippingThreshold: number; // rupees
+  flatFee: number; // rupees
+}
+
+// Delivery promises published on /policies/shipping: dispatch in 5–7 working days, then 2–5 business days in transit
+// (2–3 to metros, 3–5 elsewhere). Keep these in step with that page.
+const HANDLING_DAYS_MIN = 5;
+const HANDLING_DAYS_MAX = 7;
+const TRANSIT_DAYS_MIN = 2;
+const TRANSIT_DAYS_MAX = 5;
+
+// India-only delivery for one item at this price, with the charge the checkout would apply.
+function shippingDetails(price: number, rules: ShippingRules, leadTimeDays?: number | null): JsonLdNode {
+  const free = rules.deliveryChargesEnabled === false || !rules.flatFee || price >= rules.freeShippingThreshold;
+  return {
+    "@type": "OfferShippingDetails",
+    shippingRate: { "@type": "MonetaryAmount", value: free ? 0 : rules.flatFee, currency: "INR" },
+    shippingDestination: { "@type": "DefinedRegion", addressCountry: "IN" },
+    deliveryTime: {
+      "@type": "ShippingDeliveryTime",
+      handlingTime: {
+        "@type": "QuantitativeValue",
+        minValue: HANDLING_DAYS_MIN,
+        maxValue: Math.max(HANDLING_DAYS_MAX, Number(leadTimeDays) || 0),
+        unitCode: "DAY",
+      },
+      transitTime: { "@type": "QuantitativeValue", minValue: TRANSIT_DAYS_MIN, maxValue: TRANSIT_DAYS_MAX, unitCode: "DAY" },
+    },
+  };
+}
+
+// The returns policy published on /policies/returns: exchange within 7 days of delivery, India only.
+const RETURN_POLICY: JsonLdNode = {
+  "@type": "MerchantReturnPolicy",
+  applicableCountry: "IN",
+  returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+  merchantReturnDays: 7,
+  returnMethod: "https://schema.org/ReturnByMail",
+  refundType: "https://schema.org/ExchangeRefund",
+};
+
+// "Cotton, Fabric, Velvet" -> "Cotton, Velvet": the generic word "Fabric" from the Etsy import is not a material.
+function materialName(material: unknown): string | undefined {
+  const parts = String(material ?? "")
+    .split(",")
+    .map((p) => p.trim())
+    .filter((p) => p && !/^fabric$/i.test(p));
+  return parts.length ? parts.join(", ") : undefined;
+}
+
+// A real colour name only: "Standard" is the placeholder used while colour variants are switched off.
+function colourName(variants: any[]): string | undefined {
+  const names = [...new Set(variants.map((v) => String(v?.colourName ?? "").trim()).filter((n) => n && n !== "Standard"))];
+  return names.length === 1 ? names[0] : undefined;
+}
+
+// The product's brand: the shop's own pieces always carry the spaced spelling, so search sees one brand.
+function brandName(stored: unknown): string {
+  const name = String(stored ?? "").trim();
+  return !name || name.replace(/\s+/g, "").toLowerCase() === BRAND.name.toLowerCase() ? BRAND.displayName : name;
+}
+
+// Product from the API product payload (GET /api/v1/products/:slug). A product sold in several sizes is a
+// ProductGroup with one Product per size (sku, size, own Offer) — Google's single-page variant form. The price is the
+// same rupee amount the product page shows; a size with its own price override uses that amount.
+export function product(data: any, shipping?: ShippingRules): JsonLdNode {
   const url = `${SITE_URL}/products/${data.slug}`;
   const images = (data.images || [])
     .map((i: any) => absoluteUrl(typeof i === "string" ? i : i?.url))
@@ -113,29 +190,81 @@ export function product(data: any): JsonLdNode {
   const description = plainDescription(data.seoDescription || data.shortDescription || data.description, 300);
   const { price } = mapBackendProductToFrontend(data);
   const availability = AVAILABILITY[data.availabilityMode];
+  const variants: any[] = (data.variants || []).filter((v: any) => v?.sku && v?.size && (!v.status || v.status === "Active"));
+  const material = materialName(data.material);
+  const color = colourName(variants);
+  const brand = { "@type": "Brand", name: brandName(data.brand) };
 
-  const ld: JsonLdNode = {
-    "@context": CONTEXT,
-    "@type": "Product",
-    name: data.title,
+  const offer = (amount: number): JsonLdNode => ({
+    "@type": "Offer",
+    price: amount,
+    priceCurrency: "INR",
+    url,
+    itemCondition: "https://schema.org/NewCondition",
+    ...(availability ? { availability } : {}),
+    ...(shipping ? { shippingDetails: shippingDetails(amount, shipping, data.leadTimeDays) } : {}),
+    hasMerchantReturnPolicy: RETURN_POLICY,
+  });
+
+  const shared: JsonLdNode = {
     ...(description ? { description } : {}),
     image: images,
-    url,
-    ...(data.brand ? { brand: { "@type": "Brand", name: data.brand } } : {}),
+    brand,
     ...(data.category?.name ? { category: data.category.name } : {}),
-    offers: {
-      "@type": "Offer",
-      price,
-      priceCurrency: "INR",
-      url,
-      ...(availability ? { availability } : {}),
-    },
+    ...(material ? { material } : {}),
+    ...(color ? { color } : {}),
   };
+
+  const ld: JsonLdNode =
+    variants.length > 1
+      ? {
+          "@context": CONTEXT,
+          "@type": "ProductGroup",
+          name: data.title,
+          url,
+          productGroupID: data.id || data.slug,
+          variesBy: ["https://schema.org/size"],
+          ...shared,
+          hasVariant: variants.map((v) => ({
+            "@type": "Product",
+            name: `${data.title} – Size ${v.size}`,
+            sku: v.sku,
+            size: v.size,
+            ...shared,
+            offers: offer(typeof v.priceOverrideMinor === "number" ? v.priceOverrideMinor / 100 : price),
+          })),
+        }
+      : {
+          "@context": CONTEXT,
+          "@type": "Product",
+          name: data.title,
+          url,
+          ...(variants[0]?.sku ? { sku: variants[0].sku } : {}),
+          ...(variants[0]?.size ? { size: variants[0].size } : {}),
+          ...shared,
+          offers: offer(price),
+        };
   // Only a real rating backed by at least one review.
   if (typeof data.rating === "number" && data.reviewsCount > 0) {
     ld.aggregateRating = { "@type": "AggregateRating", ratingValue: data.rating, reviewCount: data.reviewsCount };
   }
   return ld;
+}
+
+// An information page about the shop itself (AboutPage, ContactPage), linked to the Organization and the WebSite.
+export function infoPage(type: "AboutPage" | "ContactPage", path: string, name: string, description: string): JsonLdNode {
+  const url = `${SITE_URL}${path}`;
+  return {
+    "@context": CONTEXT,
+    "@type": type,
+    "@id": `${url}#webpage`,
+    url,
+    name,
+    description,
+    inLanguage: "en-IN",
+    isPartOf: { "@id": WEBSITE_ID },
+    about: { "@id": ORGANIZATION_ID },
+  };
 }
 
 export interface StoryInput {
@@ -154,7 +283,7 @@ export function blogPosting(story: StoryInput): JsonLdNode {
   const url = `${SITE_URL}/journal/${story.slug}`;
   const description = plainDescription(story.excerpt || story.body, 155);
   const image = absoluteUrl(story.coverImage);
-  const publisher = { "@type": "Organization", "@id": ORGANIZATION_ID, name: BRAND.name, url: SITE_URL, logo: absoluteUrl(LOGO_PATH) };
+  const publisher = { "@type": "Organization", "@id": ORGANIZATION_ID, name: BRAND.displayName, url: SITE_URL, logo: absoluteUrl(LOGO_PATH) };
   return {
     "@context": CONTEXT,
     "@type": "BlogPosting",
@@ -167,7 +296,7 @@ export function blogPosting(story: StoryInput): JsonLdNode {
     ...(story.updatedAt || story.publishedAt ? { dateModified: story.updatedAt || story.publishedAt } : {}),
     ...(story.category ? { articleSection: story.category } : {}),
     inLanguage: "en-IN",
-    author: { "@type": "Organization", "@id": ORGANIZATION_ID, name: BRAND.name, url: SITE_URL },
+    author: { "@type": "Organization", "@id": ORGANIZATION_ID, name: BRAND.displayName, url: SITE_URL },
     publisher,
   };
 }

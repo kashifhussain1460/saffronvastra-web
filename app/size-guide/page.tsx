@@ -8,7 +8,7 @@ import PageTitle from "@/components/checkout/PageTitle";
 export const metadata = buildMetadata({
   title: "Unisex Size Guide & Measurement Guide",
   description:
-    `Unisex size charts in inches and centimeters, custom measurement guidance, and fit recommendations for jackets and kimonos at ${BRAND.name}.`,
+    `Unisex size charts in inches and centimeters, custom measurement guidance, and fit recommendations for jackets and kimonos at ${BRAND.displayName}.`,
   path: "/size-guide",
 });
 
