@@ -40,7 +40,7 @@ const money = (rupees: number) => `${rupees.toFixed(2)} INR`;
 async function allProducts(): Promise<any[]> {
   const items: any[] = [];
   for (let page = 1; page <= 50; page++) {
-    const res = await fetch(`${API_ORIGIN}/api/v1/products?page=${page}&limit=50`, { cache: "no-store" });
+    const res = await fetch(`${API_ORIGIN}/api/v1/products?page=${page}&limit=50`, { next: { revalidate: 600 } });
     if (!res.ok) throw new Error(`Feed: products responded with ${res.status}`);
     const body = await res.json();
     const pageItems: any[] = body?.items || [];

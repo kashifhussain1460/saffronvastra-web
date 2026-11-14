@@ -1,4 +1,6 @@
 import { BRAND } from "@/lib/brand";
+import MeasurementsTable from "@/components/product/MeasurementsTable";
+import { STANDARD_JACKET, STANDARD_LONG_KIMONO, STANDARD_NOTE, STANDARD_VEST } from "@/lib/sizeChart";
 import { buildMetadata } from "@/lib/seo";
 import React from "react";
 import Link from "next/link";
@@ -8,21 +10,11 @@ import PageTitle from "@/components/checkout/PageTitle";
 export const metadata = buildMetadata({
   title: "Unisex Size Guide & Measurement Guide",
   description:
-    `Unisex size charts in inches and centimeters, custom measurement guidance, and fit recommendations for jackets and kimonos at ${BRAND.displayName}.`,
+    `Unisex Indian size chart (S, M, L, XL, Free Size) in inches and centimetres, how to measure, and fit recommendations for jackets and kimonos at ${BRAND.displayName}.`,
   path: "/size-guide",
 });
 
 export default function SizeGuidePage() {
-  const sizeRows = [
-    { size: "XS", chestIn: "32 – 34", chestCm: "81 – 86", waistIn: "26 – 28", waistCm: "66 – 71", hipIn: "34 – 36", hipCm: "86 – 91", lengthIn: "26.5", lengthCm: "67" },
-    { size: "S", chestIn: "35 – 37", chestCm: "89 – 94", waistIn: "29 – 31", waistCm: "73 – 79", hipIn: "37 – 39", hipCm: "94 – 99", lengthIn: "27", lengthCm: "69" },
-    { size: "M", chestIn: "38 – 40", chestCm: "96 – 101", waistIn: "32 – 34", waistCm: "81 – 86", hipIn: "40 – 42", hipCm: "101 – 107", lengthIn: "27.5", lengthCm: "70" },
-    { size: "L", chestIn: "41 – 43", chestCm: "104 – 109", waistIn: "35 – 37", waistCm: "89 – 94", hipIn: "43 – 45", hipCm: "109 – 114", lengthIn: "28", lengthCm: "71" },
-    { size: "XL", chestIn: "44 – 46", chestCm: "112 – 117", waistIn: "38 – 40", waistCm: "96 – 101", hipIn: "46 – 48", hipCm: "117 – 122", lengthIn: "28.5", lengthCm: "72" },
-    { size: "XXL", chestIn: "47 – 50", chestCm: "119 – 127", waistIn: "41 – 44", waistCm: "104 – 112", hipIn: "49 – 52", hipCm: "124 – 132", lengthIn: "29", lengthCm: "74" },
-    { size: "Free Size", chestIn: "36 – 44", chestCm: "91 – 112", waistIn: "30 – 38", waistCm: "76 – 96", hipIn: "38 – 46", hipCm: "96 – 117", lengthIn: "28", lengthCm: "71" },
-  ];
-
   return (
     <div className="bg-canvas min-h-screen text-ink">
       <PageTitle
@@ -46,10 +38,10 @@ export default function SizeGuidePage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h2 className="text-2xl font-medium text-ink">
-                    Unisex Body &amp; Garment Measurements
+                    Unisex Size Chart (Indian Sizes)
                   </h2>
                   <p className="text-sm text-ink-secondary mt-1">
-                    Measurements refer to actual body and garment dimensions in inches and centimeters.
+                    &quot;Fits chest&quot; is your body measurement; the other columns are the finished garment, in inches or centimetres.
                   </p>
                 </div>
                 <span className="inline-flex shrink-0 items-center gap-1.5 px-3 py-1 bg-surface-muted text-ink text-xs font-medium rounded-full">
@@ -58,32 +50,12 @@ export default function SizeGuidePage() {
                 </span>
               </div>
 
-              {/* Focusable so the table can be scrolled sideways with the keyboard on narrow screens. */}
-              <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Size chart">
-                <table className="w-full min-w-[540px] text-left text-sm border border-line">
-                  <caption className="sr-only">Unisex Body &amp; Garment Measurements</caption>
-                  <thead className="bg-surface-muted text-ink font-medium">
-                    <tr>
-                      <th scope="col" className="p-3 border-b border-line">Size</th>
-                      <th scope="col" className="p-3 border-b border-line">Chest / Bust (In / Cm)</th>
-                      <th scope="col" className="p-3 border-b border-line">Waist (In / Cm)</th>
-                      <th scope="col" className="p-3 border-b border-line">Hips (In / Cm)</th>
-                      <th scope="col" className="p-3 border-b border-line">Length (In / Cm)</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-line">
-                    {sizeRows.map((row) => (
-                      <tr key={row.size} className="hover:bg-surface-muted transition-colors">
-                        <td className="p-3 font-medium text-ink">{row.size}</td>
-                        <td className="p-3">{row.chestIn}&quot; / {row.chestCm} cm</td>
-                        <td className="p-3">{row.waistIn}&quot; / {row.waistCm} cm</td>
-                        <td className="p-3">{row.hipIn}&quot; / {row.hipCm} cm</td>
-                        <td className="p-3">{row.lengthIn}&quot; / {row.lengthCm} cm</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <MeasurementsTable rows={STANDARD_JACKET.rows} caption="Jackets (Suzani jackets and short kimono jackets)" />
+              <MeasurementsTable rows={STANDARD_LONG_KIMONO.rows} caption="Long kimono jackets (open front, relaxed fit)" />
+              <MeasurementsTable rows={STANDARD_VEST.rows} caption="Vests and waistcoats (sleeveless)" />
+              <p className="text-xs leading-relaxed text-ink-secondary">
+                {STANDARD_NOTE} Each product page shows the measurements for that piece under &quot;Size Guide&quot;.
+              </p>
             </div>
 
             {/* Unisex Fit Guidance Card */}
@@ -120,13 +92,13 @@ export default function SizeGuidePage() {
                 </div>
 
                 <div className="p-5 bg-surface-muted rounded-xl space-y-1.5">
-                  <strong className="block text-ink font-medium text-base">2. Natural Waist</strong>
-                  <p>Wrap the tape around your natural waistline, approximately 1 inch above your navel. Breathe naturally without pulling the tape too tight.</p>
+                  <strong className="block text-ink font-medium text-base">2. Shoulder</strong>
+                  <p>Measure across your back from the edge of one shoulder to the other, where a shirt&apos;s shoulder seam would sit.</p>
                 </div>
 
                 <div className="p-5 bg-surface-muted rounded-xl space-y-1.5">
-                  <strong className="block text-ink font-medium text-base">3. Fullest Hips</strong>
-                  <p>Stand with feet together and measure around the widest point of your hips and seat, keeping the tape level all around.</p>
+                  <strong className="block text-ink font-medium text-base">3. Sleeve</strong>
+                  <p>Measure from the shoulder edge, over a slightly bent elbow, down to where you want the cuff to end.</p>
                 </div>
 
                 <div className="p-5 bg-surface-muted rounded-xl space-y-1.5">
@@ -151,7 +123,7 @@ export default function SizeGuidePage() {
                 Custom Tailored Fit
               </h4>
               <p className="text-sm text-on-inverse-muted leading-relaxed">
-                Need extra sleeve length, broader shoulders, or custom dimensions? Enter your exact chest, waist, and length in the order notes during checkout. Our master tailors will customize your pattern at no extra cost.
+                Need extra sleeve length, broader shoulders, or custom dimensions? Enter your exact chest, shoulder, sleeve and length in the order notes during checkout. Our master tailors will customize your pattern at no extra cost.
               </p>
               <div className="pt-2">
                 <a

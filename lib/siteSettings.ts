@@ -25,7 +25,7 @@ export async function fetchSiteSettings(): Promise<SiteSettings> {
   const envToggle = process.env.NEXT_PUBLIC_ENABLE_DELIVERY_CHARGES || process.env.ENABLE_DELIVERY_CHARGES;
   const isEnvDisabled = envToggle === "false" || envToggle === "0";
   try {
-    const res = await fetch(`${origin}/api/v1/settings`, { cache: "no-store", signal: AbortSignal.timeout(3000) });
+    const res = await fetch(`${origin}/api/v1/settings`, { next: { revalidate: 120 }, signal: AbortSignal.timeout(3000) });
     if (!res.ok) {
       if (isEnvDisabled) {
         return {

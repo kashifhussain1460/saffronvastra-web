@@ -10,6 +10,7 @@ import { truncateAtWord } from "@/lib/seo";
 import { COLOUR_VARIANTS_ENABLED } from "@/lib/features";
 import PriceTag from "@/components/ui/PriceTag";
 import SizeGuideModal from "@/components/product/SizeGuideModal";
+import type { ProductMeasurements } from "@/lib/sizeChart";
 import ProductGallery from "@/components/product/ProductGallery";
 import VariantSelector, { PdpVariant, sizeAvailable, colorAvailable } from "@/components/product/VariantSelector";
 import QuantitySelector from "@/components/product/QuantitySelector";
@@ -34,6 +35,8 @@ export interface ProductExtras {
   categoryParentName?: string | null;
   categoryParentSlug?: string | null;
   collectionName?: string | null;
+  /** Garment measurements per size, entered in the admin (or the standard chart they were seeded from). */
+  measurements?: ProductMeasurements | null;
 }
 
 interface ProductDetailClientProps {
@@ -465,13 +468,15 @@ export default function ProductDetailClient({ product, relatedProducts, extras }
           shippingInfo={product.shippingInfo}
           activeTab={activeTab}
           onTabChange={setActiveTab}
+          measurements={extras?.measurements}
+          selectedSize={selectedSize}
         />
       </section>
 
       {/* Related + recently viewed */}
       <ProductRecommendations currentId={product.id} related={relatedProducts} />
 
-      <SizeGuideModal isOpen={isSizeGuideOpen} onClose={closeSizeGuide} />
+      <SizeGuideModal isOpen={isSizeGuideOpen} onClose={closeSizeGuide} measurements={extras?.measurements} selectedSize={selectedSize} />
 
       <StickyAddToCart
         watchRef={ctaRowRef}

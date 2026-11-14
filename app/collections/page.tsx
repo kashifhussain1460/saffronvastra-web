@@ -38,7 +38,7 @@ function toSearchParams(sp: SearchParams): URLSearchParams {
 // Published categories (one call per request, shared by the metadata and the page). null when the API fails.
 const loadCategories = cache(async (): Promise<ShopCategory[] | null> => {
   try {
-    const res = await fetch(`${API_ORIGIN}/api/v1/categories`, { cache: "no-store" });
+    const res = await fetch(`${API_ORIGIN}/api/v1/categories`, { next: { revalidate: 300 } });
     if (!res.ok) return null;
     const body = await res.json();
     if (!Array.isArray(body?.data)) return null;
@@ -61,7 +61,7 @@ const loadListingPage = cache(async (categorySlug: string | null, page: number) 
   try {
     const qs = new URLSearchParams({ limit: String(PER_PAGE), page: String(page) });
     if (categorySlug) qs.set("category", categorySlug);
-    const res = await fetch(`${API_ORIGIN}/api/v1/products?${qs}`, { cache: "no-store" });
+    const res = await fetch(`${API_ORIGIN}/api/v1/products?${qs}`, { next: { revalidate: 60 } });
     if (!res.ok) return null;
     const body = await res.json();
     return { items: (body.items || []) as any[], total: Number(body.pagination?.total) || 0 };
@@ -74,7 +74,7 @@ const loadListingPage = cache(async (categorySlug: string | null, page: number) 
 // price slider rendered with the server's page already spans the whole catalogue. null when the API fails.
 const loadDearestProduct = cache(async () => {
   try {
-    const res = await fetch(`${API_ORIGIN}/api/v1/products?sort=price-desc&limit=1`, { cache: "no-store" });
+    const res = await fetch(`${API_ORIGIN}/api/v1/products?sort=price-desc&limit=1`, { next: { revalidate: 300 } });
     if (!res.ok) return null;
     const first = (await res.json())?.items?.[0];
     return first ? toShopProduct(first) : null;

@@ -29,10 +29,12 @@ interface CollectionPageProps {
 // The session is forwarded so an administrator can preview a Draft collection; visitors only get Active ones.
 const loadCollection = cache(async (slug: string) => {
   const session = (await cookies()).get(SESSION_COOKIE_NAME)?.value;
-  const res = await fetch(`${API_ORIGIN}/api/v1/collections/${encodeURIComponent(slug)}`, {
-    cache: "no-store",
-    headers: session ? { Cookie: `${SESSION_COOKIE_NAME}=${session}` } : undefined,
-  });
+  const res = await fetch(
+    `${API_ORIGIN}/api/v1/collections/${encodeURIComponent(slug)}`,
+    session
+      ? { cache: "no-store", headers: { Cookie: `${SESSION_COOKIE_NAME}=${session}` } }
+      : { next: { revalidate: 60 } }
+  );
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`Collection service responded with ${res.status}`);
   return (await res.json()).data;

@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL } from "@/lib/uploadLimits";
 import { COLOUR_VARIANTS_ENABLED, DEFAULT_COLOUR } from "@/lib/features";
+import { STANDARD_JACKET, STANDARD_LONG_KIMONO, STANDARD_VEST, type ProductMeasurements } from "@/lib/sizeChart";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ChevronRight,
@@ -82,6 +83,28 @@ const slugify = (value: string) =>
     .slice(0, 120);
 
 const priceKey = (colourName: string, size: string) => `${colourName.trim().toLowerCase()}|${size}`;
+
+// Garment measurements in the form: one row of text inputs per size (inches), sent as numbers.
+const MEASURE_FIELDS = [
+  { key: "fitsChestMin", label: "Fits chest from" },
+  { key: "fitsChestMax", label: "Fits chest to" },
+  { key: "chest", label: "Garment chest" },
+  { key: "shoulder", label: "Shoulder" },
+  { key: "sleeve", label: "Sleeve" },
+  { key: "length", label: "Length" },
+] as const;
+type MeasureKey = (typeof MEASURE_FIELDS)[number]["key"];
+type MeasureForm = Record<string, Partial<Record<MeasureKey, string>>>;
+
+const measureFormFrom = (m: ProductMeasurements | null | undefined): MeasureForm => {
+  const out: MeasureForm = {};
+  for (const r of m?.rows || []) {
+    out[r.size] = Object.fromEntries(
+      MEASURE_FIELDS.map(({ key }) => [key, r[key] === undefined || r[key] === null ? "" : String(r[key])])
+    );
+  }
+  return out;
+};
 
 const leadTimeLabelForDays = (days: number) => {
   if (days <= 5) return "5 - 7 business days";
@@ -165,6 +188,9 @@ function AdminNewProductWizard() {
   const [compareAtPrice, setCompareAtPrice] = useState("");
   // Per-variant price overrides, keyed by priceKey(colour, size); blank means "use the base price".
   const [variantPrices, setVariantPrices] = useState<Record<string, string>>({});
+  // Garment measurements per size (inches), shown on the product page; "" = not set
+  const [measureForm, setMeasureForm] = useState<MeasureForm>({});
+  const [measureNote, setMeasureNote] = useState("");
 
   // STEP 4 STATE: Images (uploaded through the media API)
   const [uploadedImages, setUploadedImages] = useState<{ id: string; src: string }[]>([]);
@@ -254,6 +280,8 @@ function AdminNewProductWizard() {
             sizes[v.size] = true;
           });
           setSizeOptions(sizes);
+          setMeasureForm(measureFormFrom(p.measurements));
+          setMeasureNote(p.measurements?.note || "");
           const overrides: Record<string, string> = {};
           activeVariants.forEach((v: any) => {
             if (v.priceOverrideMinor) overrides[priceKey(v.colourName, v.size)] = String(v.priceOverrideMinor / 100);
@@ -369,6 +397,27 @@ function AdminNewProductWizard() {
   // Variants
   // ---------------------------------------------------------------------
   const selectedSizes = SIZE_KEYS.filter((s) => sizeOptions[s]);
+
+  // Rows for the sizes being sold that have at least a chest and a length; none = no measurements.
+  const measurementsPayload = () => {
+    const rows = selectedSizes
+      .map((size) => {
+        const f = measureForm[size] || {};
+        const row: Record<string, string | number> = { size };
+        for (const { key } of MEASURE_FIELDS) {
+          const v = (f[key] || "").trim();
+          if (v !== "") row[key] = Number(v);
+        }
+        return row;
+      })
+      .filter((r) => r.chest !== undefined && r.length !== undefined);
+    return rows.length ? { rows, ...(measureNote.trim() ? { note: measureNote.trim() } : {}) } : null;
+  };
+  const fillStandardMeasurements = (chart: ProductMeasurements) => {
+    const filled = measureFormFrom(chart);
+    setMeasureForm((prev) => ({ ...prev, ...Object.fromEntries(selectedSizes.map((sz) => [sz, filled[sz] || prev[sz] || {}])) }));
+    if (!measureNote.trim()) setMeasureNote(chart.note || "");
+  };
   // With colours off the preview is per size only, unless an older product being edited still has several
   // colours: then the colour column stays so its rows (and per-variant prices) can be told apart.
   const showColourColumn = COLOUR_VARIANTS_ENABLED || colourVariants.length > 1;
@@ -603,6 +652,7 @@ function AdminNewProductWizard() {
       productType,
       seoTitle: metaTitle.trim() || null,
       seoDescription: metaDescription.trim() || null,
+      measurements: measurementsPayload(),
       focusKeywords,
       displayOrder: displayOrder.trim() === "" ? 0 : Number(displayOrder),
       price: Number(basePrice),
@@ -1818,6 +1868,105 @@ function AdminNewProductWizard() {
                     : "Select at least one size to see the variants that will be created."}
                 </p>
               )}
+            </div>
+          </div>
+
+          {/* Garment measurements per size */}
+          <div className="space-y-3 rounded-lg border border-line p-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="font-semibold text-xs text-ink">Size &amp; Measurements (inches)</p>
+                <p className="text-[11px] text-ink-muted">
+                  Shown on the product page under Additional Information and in the Size Guide. Rows need at least the garment chest and length.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => fillStandardMeasurements(STANDARD_JACKET)}
+                  disabled={selectedSizes.length === 0}
+                  className="px-3 py-1.5 bg-surface border border-line rounded-md text-[11px] font-semibold text-ink hover:bg-ink/5 disabled:opacity-50"
+                >
+                  Fill standard jacket chart
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fillStandardMeasurements(STANDARD_LONG_KIMONO)}
+                  disabled={selectedSizes.length === 0}
+                  className="px-3 py-1.5 bg-surface border border-line rounded-md text-[11px] font-semibold text-ink hover:bg-ink/5 disabled:opacity-50"
+                >
+                  Fill long kimono chart
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fillStandardMeasurements(STANDARD_VEST)}
+                  disabled={selectedSizes.length === 0}
+                  className="px-3 py-1.5 bg-surface border border-line rounded-md text-[11px] font-semibold text-ink hover:bg-ink/5 disabled:opacity-50"
+                >
+                  Fill vest chart
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMeasureForm({});
+                    setMeasureNote("");
+                  }}
+                  className="px-3 py-1.5 bg-surface border border-line rounded-md text-[11px] font-semibold text-ink hover:bg-ink/5"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+            {selectedSizes.length === 0 ? (
+              <p className="text-[11px] text-ink-muted">Select sizes above to enter their measurements.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[640px] text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-line text-ink">
+                      <th scope="col" className="py-2 pr-2 font-semibold">Size</th>
+                      {MEASURE_FIELDS.map((f) => (
+                        <th key={f.key} scope="col" className="py-2 pr-2 font-semibold">
+                          {f.label}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-line">
+                    {selectedSizes.map((sz) => (
+                      <tr key={sz}>
+                        <th scope="row" className="py-2 pr-2 font-semibold text-ink text-left">{sz}</th>
+                        {MEASURE_FIELDS.map((f) => (
+                          <td key={f.key} className="py-2 pr-2">
+                            <input
+                              type="text"
+                              inputMode="decimal"
+                              aria-label={`${f.label} for size ${sz} (inches)`}
+                              value={measureForm[sz]?.[f.key] ?? ""}
+                              onChange={(e) =>
+                                setMeasureForm((prev) => ({ ...prev, [sz]: { ...(prev[sz] || {}), [f.key]: e.target.value } }))
+                              }
+                              className="w-20 px-2 py-1 bg-canvas border border-line rounded-md"
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            <div>
+              <label htmlFor="measure-note" className="font-semibold text-[11px] text-ink">Note under the table (optional)</label>
+              <input
+                id="measure-note"
+                type="text"
+                maxLength={300}
+                value={measureNote}
+                onChange={(e) => setMeasureNote(e.target.value)}
+                placeholder="e.g. Measured flat on the finished piece."
+                className="mt-1 w-full px-3 py-2 bg-canvas border border-line rounded-md text-xs focus:outline-none focus:border-primary"
+              />
             </div>
           </div>
 

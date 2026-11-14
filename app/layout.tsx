@@ -73,7 +73,7 @@ const pick = (row: any, fields: string[]) =>
 
 async function getNavList(path: string): Promise<any[] | null> {
   try {
-    const res = await fetch(`${API_ORIGIN}${path}`, { cache: "no-store", signal: AbortSignal.timeout(1500) });
+    const res = await fetch(`${API_ORIGIN}${path}`, { next: { revalidate: 300 }, signal: AbortSignal.timeout(1500) });
     if (!res.ok) return null;
     const body = await res.json();
     return Array.isArray(body?.data) ? body.data : null;

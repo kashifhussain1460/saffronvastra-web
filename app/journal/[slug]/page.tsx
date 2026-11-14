@@ -1,7 +1,9 @@
 import { cache } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
+import StoryBody from "@/components/content/StoryBody";
 import { ArrowLeft, Calendar, Clock } from "lucide-react";
 import JournalCard, { formatJournalDate, type JournalSummary } from "@/components/content/JournalCard";
 import { API_ORIGIN } from "@/lib/site";
@@ -18,7 +20,7 @@ interface Props {
 
 // null means the story does not exist or is not published. Any other failure is thrown.
 const loadStory = cache(async (slug: string) => {
-  const res = await fetch(`${API_ORIGIN}/api/v1/journal/${encodeURIComponent(slug)}`, { cache: "no-store" });
+  const res = await fetch(`${API_ORIGIN}/api/v1/journal/${encodeURIComponent(slug)}`, { next: { revalidate: 300 } });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`Journal service responded with ${res.status}`);
   return (await res.json()).data as {
@@ -37,7 +39,7 @@ const loadStory = cache(async (slug: string) => {
 async function loadRelated(slug: string, category: string | null): Promise<JournalSummary[]> {
   const get = async (q: URLSearchParams) => {
     try {
-      const res = await fetch(`${API_ORIGIN}/api/v1/journal?${q}`, { cache: "no-store" });
+      const res = await fetch(`${API_ORIGIN}/api/v1/journal?${q}`, { next: { revalidate: 300 } });
       if (!res.ok) return [];
       return ((await res.json()).items ?? []) as JournalSummary[];
     } catch {
@@ -77,8 +79,6 @@ export default async function JournalStoryPage({ params }: Props) {
   if (!story) notFound();
   const related = await loadRelated(story.slug, story.category);
 
-  // Plain text: a blank line starts a new paragraph. React escapes everything, so the text is never treated as markup.
-  const paragraphs = story.body.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
   const date = formatJournalDate(story.publishedAt);
 
   return (
@@ -86,8 +86,8 @@ export default async function JournalStoryPage({ params }: Props) {
       <JsonLd data={blogPosting(story)} />
       {story.coverImage ? (
         <div className="relative h-[260px] sm:h-[380px] lg:h-[568px] bg-surface-muted overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={story.coverImage} alt={story.title} className="absolute inset-0 w-full h-full object-cover" />
+          {/* the cover is the largest element on the page: optimised and loaded first */}
+          <Image src={story.coverImage} alt={story.title} fill priority sizes="100vw" className="object-cover" />
         </div>
       ) : (
         <div className="h-10 md:h-16 bg-surface-muted" aria-hidden="true" />
@@ -127,9 +127,8 @@ export default async function JournalStoryPage({ params }: Props) {
         )}
 
         <div className="mt-6 space-y-4 text-base leading-[26px] text-ink-secondary" data-testid="story-body">
-          {paragraphs.map((p, i) => (
-            <p key={i} className="whitespace-pre-line">{p}</p>
-          ))}
+          {/* plain text with headings, lists, bold and links (StoryBody); React escapes everything, never HTML */}
+          <StoryBody body={story.body} />
         </div>
 
         <div className="mt-10 pt-6 border-t border-line flex flex-wrap items-center justify-between gap-4">

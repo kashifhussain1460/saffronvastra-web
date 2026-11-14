@@ -28,10 +28,14 @@ interface ProductPageProps {
 // decides visibility, and anonymous visitors only ever get Active products.
 const loadProduct = cache(async (slug: string) => {
   const session = (await cookies()).get(SESSION_COOKIE_NAME)?.value;
-  const res = await fetch(`${API_ORIGIN}/api/v1/products/${encodeURIComponent(slug)}`, {
-    cache: "no-store",
-    headers: session ? { Cookie: `${SESSION_COOKIE_NAME}=${session}` } : undefined,
-  });
+  // Anonymous visitors share a 60 s data cache (one API call per product per minute, not per view); a session
+  // (an administrator previewing a Draft) is always read live.
+  const res = await fetch(
+    `${API_ORIGIN}/api/v1/products/${encodeURIComponent(slug)}`,
+    session
+      ? { cache: "no-store", headers: { Cookie: `${SESSION_COOKIE_NAME}=${session}` } }
+      : { next: { revalidate: 60 } }
+  );
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`Product service responded with ${res.status}`);
   return (await res.json()).data;
@@ -125,6 +129,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     categoryParentName: data.category?.parent?.name ?? null,
     categoryParentSlug: data.category?.parent?.slug ?? null,
     collectionName: data.collections?.[0]?.collection?.name ?? null,
+    measurements: data.measurements ?? null,
   };
 
   return (

@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import ProductReviews from "./ProductReviews";
+import MeasurementsTable from "./MeasurementsTable";
+import { measurementRows, type ProductMeasurements } from "@/lib/sizeChart";
 
 export type PdpTab = "description" | "info" | "reviews" | "shipping";
 
@@ -22,6 +24,9 @@ interface ProductTabsProps {
   shippingInfo?: string;
   activeTab: PdpTab;
   onTabChange: (t: PdpTab) => void;
+  // garment measurements per size (from the admin), shown under Additional Information
+  measurements?: ProductMeasurements | null;
+  selectedSize?: string | null;
 }
 
 const paragraphs = (text: string) =>
@@ -45,7 +50,10 @@ export default function ProductTabs({
   shippingInfo,
   activeTab,
   onTabChange,
+  measurements,
+  selectedSize,
 }: ProductTabsProps) {
+  const measured = measurementRows(measurements);
   // the reviews panel loads its data on first open and then stays mounted
   const [reviewsMounted, setReviewsMounted] = useState(activeTab === "reviews");
   useEffect(() => {
@@ -151,6 +159,17 @@ export default function ProductTabs({
               </tbody>
             </table>
           </div>
+          {measured.length > 0 && (
+            <div className="mt-8 border-t border-line pt-6">
+              <h3 className="mb-3 text-lg font-medium text-ink">Size &amp; measurements</h3>
+              <MeasurementsTable
+                rows={measured}
+                caption="Garment measurements by size"
+                note={measurements?.note}
+                highlightSize={selectedSize}
+              />
+            </div>
+          )}
         </div>
 
         {/* Reviews */}

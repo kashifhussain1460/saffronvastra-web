@@ -42,7 +42,7 @@ const loadJournal = cache(async (category: string, page: string): Promise<Journa
   if (category) query.set("category", category);
   if (page) query.set("page", page);
   try {
-    const res = await fetch(`${API_ORIGIN}/api/v1/journal?${query}`, { cache: "no-store" });
+    const res = await fetch(`${API_ORIGIN}/api/v1/journal?${query}`, { next: { revalidate: 300 } });
     if (!res.ok) return null;
     const body = await res.json();
     return {

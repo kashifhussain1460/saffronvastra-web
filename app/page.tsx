@@ -30,7 +30,7 @@ export const metadata = buildMetadata({
 // Any failure returns null and the component loads its data in the browser instead, as it did before.
 async function getApiJson(path: string): Promise<any | null> {
   try {
-    const res = await fetch(`${API_ORIGIN}${path}`, { cache: "no-store", signal: AbortSignal.timeout(3000) });
+    const res = await fetch(`${API_ORIGIN}${path}`, { next: { revalidate: 120 }, signal: AbortSignal.timeout(3000) });
     if (!res.ok) return null;
     return await res.json();
   } catch {

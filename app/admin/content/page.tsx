@@ -344,8 +344,12 @@ export default function AdminContentPage() {
               <label htmlFor="a-body" className="text-xs font-semibold block mb-1">
                 Story
               </label>
-              <textarea id="a-body" rows={12} className={input} value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} />
-              <p className="text-[11px] text-ink-muted mt-1">Plain text. Leave a blank line between paragraphs. Markup is shown as typed, never run.</p>
+              <textarea id="a-body" rows={18} className={input} value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} />
+              <p className="text-[11px] text-ink-muted mt-1">
+                Plain text. Leave a blank line between paragraphs. Formatting: <code>## Heading</code>, <code>### Subheading</code>,{" "}
+                <code>- bullet</code>, <code>1. numbered</code>, <code>**bold**</code>, links <code>[shop the jacket](/products/slug)</code>.
+                HTML is shown as typed, never run.
+              </p>
               {fieldError("body")}
             </div>
 
