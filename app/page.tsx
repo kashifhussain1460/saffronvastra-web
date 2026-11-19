@@ -17,11 +17,13 @@ import {
   type HomeCatalogueData,
 } from "@/components/home/homeData";
 
-// The home title is used as written (no template suffix). No images: buildMetadata adds the landscape default share
+// The home title is used as written (no template suffix). It leads with the brand and aims at "suzani embroidery jacket"
+// and "jaipur jacket" (100–1K searches a month each in India); the head term "suzani jacket" belongs to the Suzani
+// Jackets category page, so the two pages do not compete. No images: buildMetadata adds the landscape default share
 // image, which social apps show uncropped (the old 1200×1500 portrait photo was cut to a strip).
 export const metadata = buildMetadata({
-  title: `${BRAND.displayName} | Suzani Embroidered Jackets & Kimonos`,
-  description: `Shop ${BRAND.displayName}'s hand-embroidered Suzani jackets, kimonos and waistcoats in velvet and cotton: unisex pieces made to order by artisans in Jaipur.`,
+  title: `${BRAND.displayName} | Suzani Embroidery Jackets from Jaipur`,
+  description: `Shop ${BRAND.displayName}'s hand embroidered Suzani jackets, kimonos and waistcoats for men and women, in velvet and cotton. Made to order in Jaipur.`,
   path: "/",
   absoluteTitle: true,
 });

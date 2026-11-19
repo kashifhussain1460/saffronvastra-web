@@ -15,9 +15,12 @@ import CollectionsClient from "./CollectionsClient";
 export const dynamic = "force-dynamic";
 
 const COLLECTIONS_PATH = "/collections";
-const COLLECTIONS_TITLE = "Shop the Collection";
+// Search title and description of the whole catalogue, aimed at "embroidered jacket for men" and "embroidered jacket
+// for women" (1K–10K searches a month each in India, Keyword Planner Nov 2025 – Oct 2026); see lib/catalogue for the
+// category titles. The visible heading stays "Our Collections".
+const COLLECTIONS_TITLE = "Hand Embroidered Jackets for Men & Women";
 const COLLECTIONS_DESCRIPTION =
-  "Hand-embroidered velvet and cotton jackets, made to order by artisans in Jaipur. Browse every piece and filter by category, size and price.";
+  "Shop hand embroidered Suzani jackets, kimonos and waistcoats for men and women in velvet and cotton. Made to order in Jaipur, delivered across India.";
 
 // Products per page: the server asks the API for exactly the page the listing shows (ShopView's page size).
 const PER_PAGE = 12;
@@ -144,7 +147,7 @@ export async function generateMetadata({ searchParams }: CollectionsPageProps): 
 
   // A category's stored short description is its meta description; the catalogue text is the fallback.
   const category = heading.category;
-  let title = category ? categoryPageTitle(category.name) : COLLECTIONS_TITLE;
+  let title = category ? categoryPageTitle(category.name, category.slug) : COLLECTIONS_TITLE;
   let description = category?.shortDescription?.trim() || COLLECTIONS_DESCRIPTION;
   // Page N of an unrefined view is canonical to itself; sort, price, size and other filters fold into the bare view.
   const paged = !refined && query.page > 1 && pageExists;

@@ -30,8 +30,21 @@ export function catalogueRoot<T extends CategoryNode>(categories: T[] | null | u
   return list.every((c) => c.id === root.id || underRoot(c)) ? root : undefined;
 }
 
-// Document title of a category landing page: the plain category name plus how the pieces are made, which is what
-// shoppers search for ("hand embroidered suzani jacket"). Names that already say it are used as they are.
-export function categoryPageTitle(name: string): string {
+// Document titles of the category landing pages, written around what people in India search for (Google Ads Keyword
+// Planner, India, Nov 2025 – Oct 2026; Google autocomplete; the pages Google ranks for each term are category pages):
+//   suzani jacket 1K–10K a month (+ "for men" / "for women"); kimono jacket for women / for men 100–1K each;
+//   embroidered waistcoat for men 100–1K, for women 100–1K. The brand suffix is added by the root title template.
+// Keyed by slug, so renaming a category in the admin does not change its search title.
+const CATEGORY_PAGE_TITLES: Record<string, string> = {
+  "suzani-jackets": "Suzani Jackets for Men & Women",
+  "suzani-kimonos": "Embroidered Kimono Jackets for Women & Men",
+  "suzani-waists": "Embroidered Waistcoats for Men & Women",
+};
+
+// Document title of a category landing page: the researched title above, otherwise the category name plus how the
+// pieces are made ("Hand Embroidered …"). Names that already say "embroidered" are used as they are.
+export function categoryPageTitle(name: string, slug?: string): string {
+  const researched = slug ? CATEGORY_PAGE_TITLES[slug] : undefined;
+  if (researched) return researched;
   return /embroider/i.test(name) ? name : `Hand Embroidered ${name}`;
 }
