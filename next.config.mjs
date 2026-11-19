@@ -2,6 +2,10 @@
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Cached (ISR) pages such as product pages are rebuilt in the background at most once a minute. A CDN may hand a
+  // stale copy to the first visitor after that while it rebuilds; this caps how old that copy can be at one hour
+  // (Next's default is a year), so a price or availability change never lingers for a rarely visited product.
+  expireTime: 3600,
   // Client components (for example the breadcrumb structured data in PageTitle) read lib/site's SITE_URL in the
   // browser, where only NEXT_PUBLIC_* values exist; give them the same origin the server uses.
   env: {

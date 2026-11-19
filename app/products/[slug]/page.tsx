@@ -1,22 +1,31 @@
 import { cache } from "react";
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
+import { cookies, draftMode } from "next/headers";
 import { notFound } from "next/navigation";
 import { mapBackendProductToFrontend } from "@/lib/productMapper";
 import ProductDetailClient, { type ProductExtras } from "./ProductDetailClient";
 import { API_ORIGIN } from "@/lib/site";
+import { SESSION_COOKIE_NAME } from "@/lib/session";
 import { buildMetadata, notFoundMetadata, titleFor, truncateAtWord } from "@/lib/seo";
 import { absoluteUrl, breadcrumbList, graph, product as productJsonLd, type Crumb } from "@/lib/jsonld";
 import JsonLd from "@/components/seo/JsonLd";
+import PreviewBanner from "@/components/layout/PreviewBanner";
 import { fetchSiteSettings } from "@/lib/siteSettings";
 
-// Always render from the live catalogue so published, edited and unpublished
-// products are reflected immediately.
+// Incremental static regeneration: each product page is rendered on its first visit, served from Vercel's edge cache,
+// and rebuilt in the background at most once a minute, so published, edited and unpublished products show up within
+// about a minute. If the API fails during a rebuild, the last good page keeps being served.
+// Administrators preview Draft products, or edits before the cache refreshes, through preview mode (app/api/preview):
+// the page then renders live on every request with their session.
 // There is deliberately no loading.tsx for this route: a loading boundary lets the response start (status 200) before
 // the product is fetched, so a missing product would be a soft 404 and the metadata would stream into <body>.
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
-const SESSION_COOKIE_NAME = "saffron_session";
+// No product is rendered at build time (the API may be unreachable from the build machine); each one is rendered on
+// its first visit and cached from then on.
+export async function generateStaticParams(): Promise<{ slug: string }[]> {
+  return [];
+}
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
@@ -24,12 +33,11 @@ interface ProductPageProps {
 
 // One API call per request, shared by the page and its metadata. null means the product does not exist or is not
 // public (a real 404); any other failure is thrown so the error page answers with a 500 instead of a "not found".
-// The session is forwarded so an administrator can preview a Draft product; the API alone
-// decides visibility, and anonymous visitors only ever get Active products.
+// The API alone decides visibility: anonymous requests (every cached render) only ever get Active products. Only in
+// preview mode is the administrator's session forwarded, so a Draft can be shown to them.
 const loadProduct = cache(async (slug: string) => {
-  const session = (await cookies()).get(SESSION_COOKIE_NAME)?.value;
-  // Anonymous visitors share a 60 s data cache (one API call per product per minute, not per view); a session
-  // (an administrator previewing a Draft) is always read live.
+  const { isEnabled: preview } = await draftMode();
+  const session = preview ? (await cookies()).get(SESSION_COOKIE_NAME)?.value : undefined;
   const res = await fetch(
     `${API_ORIGIN}/api/v1/products/${encodeURIComponent(slug)}`,
     session
@@ -38,8 +46,20 @@ const loadProduct = cache(async (slug: string) => {
   );
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`Product service responded with ${res.status}`);
-  return (await res.json()).data;
+  return { data: (await res.json()).data, preview };
 });
+
+// A product shoppers and search engines may see. Outside preview mode the API only returns public products, so this is
+// always true there; in preview mode it depends on the stored status (a Draft must never be indexed).
+const isPublic = (data: any, preview: boolean) => !preview || data.status === "Active";
+
+// The image to show when the page is shared: the cover, unless it is a PNG (some uploads are 2 MB+ PNGs, which
+// WhatsApp and other apps skip), in which case the first JPEG/WebP photo of the product.
+function shareImage(images: any[]): any | undefined {
+  const cover = images.find((i) => i.isCover) || images[0];
+  const isPng = (img: any) => /\.png(?:$|\?)/i.test(String(img?.url || ""));
+  return cover && isPng(cover) ? images.find((i) => !isPng(i)) || cover : cover;
+}
 
 const TITLE_MAX = 60;
 
@@ -59,12 +79,13 @@ function productTitle(data: any): { title: string; absoluteTitle: boolean } {
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const data = await loadProduct(slug);
+  const loaded = await loadProduct(slug);
   // No canonical, so a missing product never claims a URL; the same title as the 404 page itself (see notFoundMetadata).
-  if (!data) return notFoundMetadata();
+  if (!loaded) return notFoundMetadata();
+  const { data, preview } = loaded;
   const { title, absoluteTitle } = productTitle(data);
   const description = data.seoDescription || data.shortDescription || truncateAtWord(String(data.description || ""), 155);
-  const cover = (data.images || []).find((i: any) => i.isCover) || data.images?.[0];
+  const image = shareImage(data.images || []);
   // the same rupee amount the product page shows
   const { price } = mapBackendProductToFrontend(data);
   const metadata = buildMetadata({
@@ -72,9 +93,9 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     absoluteTitle,
     description,
     path: `/products/${data.slug}`,
-    ...(cover ? { images: [{ url: absoluteUrl(cover.url)!, alt: cover.altText || data.title }] } : {}),
+    ...(image ? { images: [{ url: absoluteUrl(image.url)!, alt: image.altText || data.title }] } : {}),
     // a Draft product previewed by an administrator must never be indexed
-    noindex: data.status !== "Active",
+    noindex: !isPublic(data, preview),
   });
   return {
     ...metadata,
@@ -101,11 +122,13 @@ function productCrumbs(data: any): Crumb[] {
 
 export default async function ProductDetailPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const data = await loadProduct(slug);
-  if (!data) notFound();
+  const loaded = await loadProduct(slug);
+  if (!loaded) notFound();
+  const { data, preview } = loaded;
+  const publicProduct = isPublic(data, preview);
 
   // shipping charge and free-delivery threshold for the structured data, from the same settings the checkout uses
-  const { shipping } = data.status === "Active" ? await fetchSiteSettings() : { shipping: undefined };
+  const { shipping } = publicProduct ? await fetchSiteSettings() : { shipping: undefined };
   const product = mapBackendProductToFrontend(data);
   const relatedProducts = (data.relatedProducts ?? []).map(mapBackendProductToFrontend);
   // stored fields the mapped product does not carry (real values only, nothing derived)
@@ -134,8 +157,9 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
   return (
     <>
+      {preview && <PreviewBanner path={`/products/${data.slug}`} status={data.status} />}
       {/* structured data for public products only, never for a Draft previewed by an administrator */}
-      {data.status === "Active" && <JsonLd data={graph(productJsonLd(data, shipping), breadcrumbList(productCrumbs(data)))} />}
+      {publicProduct && <JsonLd data={graph(productJsonLd(data, shipping), breadcrumbList(productCrumbs(data)))} />}
       <ProductDetailClient product={product} relatedProducts={relatedProducts} extras={extras} />
     </>
   );

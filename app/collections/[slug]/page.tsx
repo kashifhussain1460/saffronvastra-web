@@ -1,23 +1,29 @@
 import React, { cache } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { cookies } from "next/headers";
+import { cookies, draftMode } from "next/headers";
 import { notFound } from "next/navigation";
 import { COLLECTIONS } from "@/data/collections";
 import ShopPageTitle from "@/components/shop/ShopPageTitle";
 import CollectionShop from "@/components/shop/CollectionShop";
+import PreviewBanner from "@/components/layout/PreviewBanner";
 import { API_ORIGIN } from "@/lib/site";
+import { SESSION_COOKIE_NAME } from "@/lib/session";
 import { buildMetadata, notFoundMetadata, truncateAtWord } from "@/lib/seo";
 import { breadcrumbList } from "@/lib/jsonld";
 import JsonLd from "@/components/seo/JsonLd";
 
-// Collections and their products come from the live catalogue on every request.
+// Incremental static regeneration, as for product pages: rendered on the first visit, served from the edge cache and
+// rebuilt at most once a minute. Administrators see Draft collections through preview mode (app/api/preview).
 // There is deliberately no loading.tsx for this route or for /collections: a loading boundary lets the response start
 // (status 200) before the collection is fetched, so a missing collection would be a soft 404 and the metadata would
 // stream into <body>.
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
-const SESSION_COOKIE_NAME = "saffron_session";
+export async function generateStaticParams(): Promise<{ slug: string }[]> {
+  return [];
+}
+
 const DEFAULT_HERO_IMAGE = "/images/hero/collections_hero.jpg";
 
 interface CollectionPageProps {
@@ -26,9 +32,11 @@ interface CollectionPageProps {
 
 // One API call per request, shared by the page and its metadata. null means the collection does not exist
 // or is not public; any other failure is thrown.
-// The session is forwarded so an administrator can preview a Draft collection; visitors only get Active ones.
+// Only in preview mode is the administrator's session forwarded, so a Draft collection can be shown to them;
+// every cached render is anonymous and gets Active collections only.
 const loadCollection = cache(async (slug: string) => {
-  const session = (await cookies()).get(SESSION_COOKIE_NAME)?.value;
+  const { isEnabled: preview } = await draftMode();
+  const session = preview ? (await cookies()).get(SESSION_COOKIE_NAME)?.value : undefined;
   const res = await fetch(
     `${API_ORIGIN}/api/v1/collections/${encodeURIComponent(slug)}`,
     session
@@ -37,8 +45,11 @@ const loadCollection = cache(async (slug: string) => {
   );
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`Collection service responded with ${res.status}`);
-  return (await res.json()).data;
+  return { data: (await res.json()).data, preview };
 });
+
+// Outside preview mode the API only returns public collections; in preview mode a Draft must never be indexed.
+const isPublic = (data: any, preview: boolean) => !preview || data.status === "Active";
 
 // The hero image the page shows: the stored banner, then the editorial image, then the shared collections hero.
 const heroImageFor = (slug: string, data: any) =>
@@ -47,10 +58,11 @@ const heroImageFor = (slug: string, data: any) =>
 export async function generateMetadata({ params }: CollectionPageProps): Promise<Metadata> {
   const { slug } = await params;
   // a failed request is thrown (the page answers with the error page), never reported as "not found"
-  const data = await loadCollection(slug);
+  const loaded = await loadCollection(slug);
   // explicit values so the /collections canonical and Open Graph from the parent layouts are not inherited, with the
   // same title as the 404 page itself so the server HTML and the browser agree (see notFoundMetadata).
-  if (!data) return notFoundMetadata();
+  if (!loaded) return notFoundMetadata();
+  const { data, preview } = loaded;
   const title = data.title as string;
   const description = truncateAtWord(
     data.tagline || data.description || `Explore the ${title} collection: hand-embroidered pieces made to order in Jaipur.`,
@@ -62,15 +74,16 @@ export async function generateMetadata({ params }: CollectionPageProps): Promise
     path: `/collections/${data.slug}`,
     images: [{ url: heroImageFor(slug, data), alt: title }],
     // a Draft collection previewed by an administrator must never be indexed
-    noindex: data.status !== "Active",
+    noindex: !isPublic(data, preview),
   });
 }
 
 export default async function CollectionDetailPage({ params }: CollectionPageProps) {
   const { slug } = await params;
 
-  const data = await loadCollection(slug);
-  if (!data) notFound();
+  const loaded = await loadCollection(slug);
+  if (!loaded) notFound();
+  const { data, preview } = loaded;
 
   // Editorial extras exist for the launch collections only; every other collection renders from its
   // stored title, tagline and image.
@@ -82,8 +95,9 @@ export default async function CollectionDetailPage({ params }: CollectionPagePro
 
   return (
     <>
+      {preview && <PreviewBanner path={`/collections/${data.slug}`} status={data.status} />}
       {/* structured data for public collections only, never for a Draft previewed by an administrator */}
-      {data.status === "Active" && <JsonLd data={breadcrumbList(crumbs.map((c) => ({ name: c.label, path: c.href })))} />}
+      {isPublic(data, preview) && <JsonLd data={breadcrumbList(crumbs.map((c) => ({ name: c.label, path: c.href })))} />}
       <div className="min-h-screen bg-canvas">
         <ShopPageTitle title={title} subtitle={subtitle || undefined} image={heroImage} crumbs={crumbs} />
 

@@ -3,7 +3,7 @@
 import { BRAND } from "@/lib/brand";
 import { mapBackendProductToFrontend } from "@/lib/productMapper";
 import { truncateAtWord } from "@/lib/seo";
-import { SITE_URL } from "@/lib/site";
+import { brandProfiles, SITE_URL } from "@/lib/site";
 
 export type JsonLdNode = Record<string, unknown>;
 
@@ -41,24 +41,37 @@ export function graph(...nodes: JsonLdNode[]): JsonLdNode {
   };
 }
 
-// The brand's own profiles elsewhere (Etsy shop, Instagram, Pinterest…), from BRAND_SAME_AS: comma-separated absolute
-// URLs set by the owner. Only http(s) URLs are kept; nothing is listed until the owner provides them.
-export function sameAsProfiles(): string[] {
-  return String(process.env.BRAND_SAME_AS || "")
-    .split(",")
-    .map((u) => u.trim())
-    .filter((u) => /^https?:\/\/\S+$/.test(u));
+// The brand's own profiles elsewhere (BRAND_SAME_AS, see lib/site).
+export const sameAsProfiles = brandProfiles;
+
+// Customer support contact as the site publishes it (footer and contact page): the store settings the root layout
+// already reads, with the brand defaults as the fallback.
+export interface StoreContact {
+  supportEmail?: string | null;
+  supportPhone?: string | null;
 }
 
-// The shop itself. contactPoint and address are left out until the owner confirms them.
-export function organization(): JsonLdNode {
+// The shop itself, with the support email and phone the site shows. The postal address is left out until the owner
+// confirms it should be published as the business address.
+export function organization(contact?: StoreContact): JsonLdNode {
   const sameAs = sameAsProfiles();
+  const email = String(contact?.supportEmail || BRAND.supportEmail).trim();
+  const telephone = String(contact?.supportPhone || BRAND.phone).replace(/[^\d+]/g, "");
   return {
     "@type": "Organization",
     "@id": ORGANIZATION_ID,
     name: BRAND.displayName,
     url: SITE_URL,
     logo: absoluteUrl(LOGO_PATH),
+    contactPoint: [
+      {
+        "@type": "ContactPoint",
+        contactType: "customer support",
+        ...(email ? { email } : {}),
+        ...(telephone ? { telephone } : {}),
+        areaServed: "IN",
+      },
+    ],
     ...(sameAs.length ? { sameAs } : {}),
   };
 }
@@ -81,8 +94,8 @@ export function website(): JsonLdNode {
 }
 
 // Organization and WebSite for every page (root layout).
-export function siteGraph(): JsonLdNode {
-  return graph(organization(), website());
+export function siteGraph(contact?: StoreContact): JsonLdNode {
+  return graph(organization(contact), website());
 }
 
 export interface Crumb {
@@ -108,9 +121,12 @@ export function breadcrumbList(crumbs: Crumb[]): JsonLdNode {
   };
 }
 
+// Every piece is made to order and can be bought now, so it is InStock: Google rejects MadeToOrder as an availability
+// value (Search Console: "Invalid enum value in field availability"), and the Merchant Center feed already says
+// in_stock (app/feeds/google.xml). The making time is in shippingDetails.handlingTime instead.
 const AVAILABILITY: Record<string, string> = {
-  "Made to Order": "https://schema.org/MadeToOrder",
-  "Available to Order": "https://schema.org/MadeToOrder",
+  "Made to Order": "https://schema.org/InStock",
+  "Available to Order": "https://schema.org/InStock",
   Unavailable: "https://schema.org/OutOfStock",
 };
 
@@ -148,13 +164,15 @@ function shippingDetails(price: number, rules: ShippingRules, leadTimeDays?: num
   };
 }
 
-// The returns policy published on /policies/returns: exchange within 7 days of delivery, India only.
+// The returns policy published on /policies/returns: exchange within 7 days of delivery, India only, with a free
+// reverse pickup (owner decision, 2026-11-18). Keep in step with that page and with the Merchant Center return policy.
 const RETURN_POLICY: JsonLdNode = {
   "@type": "MerchantReturnPolicy",
   applicableCountry: "IN",
   returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
   merchantReturnDays: 7,
   returnMethod: "https://schema.org/ReturnByMail",
+  returnFees: "https://schema.org/FreeReturn",
   refundType: "https://schema.org/ExchangeRefund",
 };
 
@@ -188,17 +206,29 @@ export function product(data: any, shipping?: ShippingRules): JsonLdNode {
     .map((i: any) => absoluteUrl(typeof i === "string" ? i : i?.url))
     .filter(Boolean);
   const description = plainDescription(data.seoDescription || data.shortDescription || data.description, 300);
-  const { price } = mapBackendProductToFrontend(data);
+  const { price, compareAtPrice } = mapBackendProductToFrontend(data);
   const availability = AVAILABILITY[data.availabilityMode];
   const variants: any[] = (data.variants || []).filter((v: any) => v?.sku && v?.size && (!v.status || v.status === "Active"));
   const material = materialName(data.material);
   const color = colourName(variants);
   const brand = { "@type": "Brand", name: brandName(data.brand) };
 
+  // The struck-through "compare at" price the product page shows next to a lower price (the same pair the Merchant
+  // Center feed sends as price and sale_price).
   const offer = (amount: number): JsonLdNode => ({
     "@type": "Offer",
     price: amount,
     priceCurrency: "INR",
+    ...(compareAtPrice && compareAtPrice > amount
+      ? {
+          priceSpecification: {
+            "@type": "UnitPriceSpecification",
+            priceType: "https://schema.org/StrikethroughPrice",
+            price: compareAtPrice,
+            priceCurrency: "INR",
+          },
+        }
+      : {}),
     url,
     itemCondition: "https://schema.org/NewCondition",
     ...(availability ? { availability } : {}),

@@ -32,7 +32,7 @@ export default function ReturnsPolicyPage() {
         title: "Policy Summary",
         items: [
           "7-Day Return Eligibility: begins from the date of delivery",
-          "Exchange Only: standard returns are resolved via size or product exchange",
+          "Exchange Only: standard returns are resolved via size or product exchange, with a free reverse pickup",
           "No Change-of-Mind Cash Refunds: standard returns eligible for exchange",
           "Damaged/Incorrect: free replacement or full refund to original payment method",
           "Cancellation: eligible within 24 hours of placing order (prior to dispatch)",
@@ -62,7 +62,7 @@ export default function ReturnsPolicyPage() {
         </p>
         <div className={policyNote}>
           <p><strong className={strong}>Exchange Only:</strong> Eligible standard returns are handled through exchange for an alternative size or product. We do not provide automatic monetary or cash refunds for ordinary change-of-mind returns.</p>
-          <p><strong className={strong}>Reverse Pickup:</strong> We arrange doorstep reverse pickup across serviceable Indian PIN codes for approved exchange requests.</p>
+          <p><strong className={strong}>Free Reverse Pickup:</strong> We arrange a doorstep reverse pickup across serviceable Indian PIN codes for approved exchange requests, free of charge, so there is no return shipping cost to you.</p>
         </div>
       </PolicySection>
 

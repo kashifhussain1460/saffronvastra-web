@@ -3,9 +3,10 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import PageTitle from "@/components/checkout/PageTitle";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import JournalCard, { type JournalSummary } from "@/components/content/JournalCard";
 import { API_ORIGIN, INDEXING_ALLOWED } from "@/lib/site";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, notFoundMetadata, truncateAtWord } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -56,28 +57,41 @@ const loadJournal = cache(async (category: string, page: string): Promise<Journa
   }
 });
 
+// The same rule as /collections: an unknown category, or a page past the last one, does not exist and answers with a
+// real 404. When the API fails nothing is known, so the page is shown as usual.
+function journalMissing(listing: JournalListing | null, category?: string, page?: string): boolean {
+  if (listing === null) return false;
+  const cat = typeof category === "string" ? category.trim().toLowerCase() : "";
+  const requested = parseInt(String(page ?? ""), 10);
+  const unknownCategory = cat !== "" && !listing.categories.some((c) => c.toLowerCase() === cat);
+  const pastLastPage = requested > 1 && requested > listing.totalPages;
+  // With no stories at all there are no categories either; that is the empty journal below, not a missing page.
+  return listing.articles.length > 0 && (unknownCategory || pastLastPage);
+}
+
 export async function generateMetadata({ searchParams }: JournalPageProps): Promise<Metadata> {
   const { category, page } = await searchParams;
   const listing = await loadJournal(String(category ?? ""), String(page ?? ""));
+  if (journalMissing(listing, category, page)) return notFoundMetadata();
 
-  // The same rule as /collections: an unknown category, or a page past the last one, is not a page of its own.
-  // It is kept out of the index (links still followed where indexing is allowed) and is canonical to /journal.
-  // When the API fails nothing is known, so the self-canonical below is kept.
-  const cat = typeof category === "string" ? category.trim().toLowerCase() : "";
-  const requested = parseInt(String(page ?? ""), 10);
-  const unknownCategory = listing !== null && cat !== "" && !listing.categories.some((c) => c.toLowerCase() === cat);
-  const pastLastPage = listing !== null && requested > 1 && requested > listing.totalPages;
   // Until the first story is published the journal has nothing to read, so it stays out of the index (the sitemap
   // also leaves it out until then).
   const noStories = listing !== null && listing.articles.length === 0;
-  if (unknownCategory || pastLastPage || noStories) {
+  if (noStories) {
     return {
       ...buildMetadata({ title: JOURNAL_TITLE, description: JOURNAL_DESCRIPTION, path: JOURNAL_PATH }),
       robots: { index: false, follow: INDEXING_ALLOWED },
     };
   }
 
-  return buildMetadata({ title: JOURNAL_TITLE, description: JOURNAL_DESCRIPTION, path: journalPath(category, page) });
+  // Later pages get their own title and description, so search results never show several identical entries.
+  const n = parseInt(String(page ?? ""), 10);
+  const paged = n > 1;
+  return buildMetadata({
+    title: paged ? `${JOURNAL_TITLE} – Page ${n}` : JOURNAL_TITLE,
+    description: paged ? truncateAtWord(`Page ${n} of the Saffron Journal. ${JOURNAL_DESCRIPTION}`, 155) : JOURNAL_DESCRIPTION,
+    path: journalPath(category, page),
+  });
 }
 
 // Page numbers to show: first, last, current and its neighbours, with gaps marked as null.
@@ -95,6 +109,7 @@ function pageList(current: number, total: number): (number | null)[] {
 export default async function JournalPage({ searchParams }: JournalPageProps) {
   const { category, page } = await searchParams;
   const listing = await loadJournal(String(category ?? ""), String(page ?? ""));
+  if (journalMissing(listing, category, page)) notFound();
   const loadFailed = listing === null;
   const articles: JournalSummary[] = listing?.articles ?? [];
   const categories: string[] = listing?.categories ?? [];

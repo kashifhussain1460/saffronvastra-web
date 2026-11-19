@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
+import { previewHref } from "@/lib/preview";
 import {
   BookOpen,
   Plus,
@@ -212,7 +213,8 @@ export default function AdminCollectionsPage() {
     return (
       <div className="flex items-center gap-1">
         <Link
-          href={`/collections/${col.slug}`}
+          href={previewHref(`/collections/${col.slug}`)}
+          prefetch={false}
           target="_blank"
           className="p-1.5 rounded-md hover:bg-ink/5 text-ink-secondary transition-colors"
           title="View on Storefront"

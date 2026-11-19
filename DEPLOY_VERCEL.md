@@ -22,6 +22,23 @@ pages read the catalogue from it while they are built.
 - A product image added in Admin > Media shows on the product page.
 - `/robots.txt` says `Disallow: /` on previews and allows the site on production.
 - `/sitemap.xml` lists products.
+- Run the SEO smoke check: `cd D:\saff\qa && node scripts/seo-smoke-check.cjs`. It exits with an error if robots.txt
+  blocks the site, a page that must be indexed has noindex or a wrong canonical, product structured data is broken,
+  or the bare domain / http / `saffronvastra-web.vercel.app` do not redirect permanently to `https://www.`.
+
+## Indexing, caching and preview
+
+- **Indexing:** `ALLOW_INDEXING` decides when set. When it is missing, the Production deployment is indexable and
+  previews are not (`VERCEL_ENV`), so losing the variable no longer takes the shop out of Google.
+- **`*.vercel.app`:** on the Production deployment the middleware sends every page on a `.vercel.app` address to the
+  same path on `SITE_URL` (308). Unique deployment URLs of production builds redirect too; use Preview deployments for
+  testing.
+- **Product and collection pages are cached (ISR):** rendered on the first visit, served from the edge, rebuilt at most
+  once a minute (and never served more than an hour old, `expireTime` in `next.config.mjs`). Edits show within about a
+  minute.
+- **Preview mode for admins:** the admin "View on storefront" buttons open `/api/preview?path=…`, which checks the
+  admin session and turns on Next.js draft mode for that browser: product and collection pages then render live with
+  the admin session (Draft products included) and show a "Preview mode" bar with an Exit link.
 
 ## Known notes
 

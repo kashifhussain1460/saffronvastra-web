@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 import { API_ORIGIN, SITE_URL } from "@/lib/site";
+import { catalogueRoot } from "@/lib/catalogue";
 
 // Google ignores changefreq and priority, so entries carry only the URL and, where known, lastmod.
 // Rebuilt at most every hour so new and unpublished products show up without a deploy.
@@ -75,7 +76,11 @@ async function catalogueEntries(url: (path: string) => string): Promise<Metadata
 
   // Only what the public API returns: Active, not deleted, published.
   const productEntries = products.map((p) => ({ url: url(`/products/${p.slug}`), lastModified: p.updatedAt }));
-  const categoryEntries = categoryList.map((c) => ({ url: url(`/collections?category=${encodeURIComponent(c.slug)}`), ...(c.updatedAt ? { lastModified: c.updatedAt } : {}) }));
+  // The category that holds the whole catalogue is canonical to /collections (listed above), so it is not listed itself.
+  const root = catalogueRoot(categoryList);
+  const categoryEntries = categoryList
+    .filter((c) => c.id !== root?.id)
+    .map((c) => ({ url: url(`/collections?category=${encodeURIComponent(c.slug)}`), ...(c.updatedAt ? { lastModified: c.updatedAt } : {}) }));
   const collectionEntries = (collections?.data || []).map((c: any) => ({ url: url(`/collections/${c.slug}`), lastModified: c.updatedAt }));
 
   // The journal is listed only once it has published stories.

@@ -12,8 +12,12 @@ import { fetchSiteSettings } from "@/lib/siteSettings";
 export const dynamic = "force-dynamic";
 const CDN_CACHE = "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400";
 
-// Apparel & Accessories > Clothing > Outerwear > Coats & Jackets
+// Google product taxonomy (taxonomy-with-ids.en-US.txt): Apparel & Accessories > Clothing > Outerwear > Coats & Jackets,
+// and > Vests for the sleeveless waistcoats and vests. Kimono jackets stay jackets (Google's "Kimono Outerwear" is the
+// traditional Japanese garment).
 const GOOGLE_PRODUCT_CATEGORY = "5598";
+const GOOGLE_PRODUCT_CATEGORY_VESTS = "1831";
+const isVestCategory = (category: any) => /\b(vests?|waistcoats?|waists?)\b/i.test(`${category?.name ?? ""} ${category?.slug ?? ""}`.replace(/-/g, " "));
 // Dispatch in 5–7 working days and 2–5 days in transit, as published on /policies/shipping.
 const HANDLING_DAYS = { min: 5, max: 7 };
 const TRANSIT_DAYS = { min: 2, max: 5 };
@@ -110,7 +114,7 @@ export async function GET(): Promise<Response> {
           `<g:brand>${xml(BRAND.displayName)}</g:brand>`,
           "<g:identifier_exists>no</g:identifier_exists>",
           "<g:condition>new</g:condition>",
-          `<g:google_product_category>${GOOGLE_PRODUCT_CATEGORY}</g:google_product_category>`,
+          `<g:google_product_category>${isVestCategory(p.category) ? GOOGLE_PRODUCT_CATEGORY_VESTS : GOOGLE_PRODUCT_CATEGORY}</g:google_product_category>`,
           p.category?.name ? `<g:product_type>${xml(p.category.name)}</g:product_type>` : "",
           // the size guide is unisex
           "<g:gender>unisex</g:gender>",

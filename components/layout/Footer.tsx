@@ -191,11 +191,11 @@ export default function Footer({ initialNav }: { initialNav?: CatalogNav | null 
         
         {/* Prominent Center-Aligned Brand Header / Visual Anchor */}
         <div className="flex flex-col items-center justify-center text-center pb-10 md:pb-12 border-b border-line">
-          <Link href="/" aria-label="SaffronVastra home" className="inline-flex items-center justify-center group transition-opacity hover:opacity-85">
+          <Link href="/" aria-label={`${BRAND.displayName} home`} className="inline-flex items-center justify-center group transition-opacity hover:opacity-85">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/images/brand/saffronvastra-footer-642.webp"
-              alt="SaffronVastra"
+              alt={BRAND.displayName}
               width={1086}
               height={362}
               loading="lazy"

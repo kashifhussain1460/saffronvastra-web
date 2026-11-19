@@ -10,7 +10,7 @@ import PageTitle from "@/components/checkout/PageTitle";
 export const metadata = buildMetadata({
   title: "Unisex Size Guide & Measurement Guide",
   description:
-    `Unisex Indian size chart (S, M, L, XL, Free Size) in inches and centimetres, how to measure, and fit recommendations for jackets and kimonos at ${BRAND.displayName}.`,
+    `Unisex Indian size chart (S, M, L, XL, Free Size) in inches and centimetres, how to measure, and fit tips for ${BRAND.displayName} jackets and kimonos.`,
   path: "/size-guide",
 });
 

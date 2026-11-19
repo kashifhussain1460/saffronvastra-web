@@ -5,6 +5,8 @@ import React, { Suspense, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL } from "@/lib/uploadLimits";
+import { SITE_URL } from "@/lib/site";
+import { slugify } from "@/lib/slug";
 import { COLOUR_VARIANTS_ENABLED, DEFAULT_COLOUR } from "@/lib/features";
 import { STANDARD_JACKET, STANDARD_LONG_KIMONO, STANDARD_VEST, type ProductMeasurements } from "@/lib/sizeChart";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -74,13 +76,8 @@ const FIELD_STEP: Record<string, number> = {
   displayOrder: 2,
 };
 
-const slugify = (value: string) =>
-  value
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 120);
+// Public host shown in the URL previews (www, the canonical origin), without the protocol.
+const SITE_HOST = SITE_URL.replace(/^https?:\/\//, "");
 
 const priceKey = (colourName: string, size: string) => `${colourName.trim().toLowerCase()}|${size}`;
 
@@ -968,7 +965,7 @@ function AdminNewProductWizard() {
                   />
                   <FieldError id="product-slug-error" message={errors.slug} />
                   <p className="text-[10px] text-ink-muted mt-1 font-mono truncate">
-                    https://{BRAND.domain}/products/{slug}
+                    https://{SITE_HOST}/products/{slug}
                   </p>
                 </div>
               </div>
@@ -2250,6 +2247,35 @@ function AdminNewProductWizard() {
                 />
               </div>
 
+              {/* Search-result text check: a reminder, not a blocker (the product still saves and publishes). Without these
+                  fields Google shows the full product name and the first lines of the description instead. */}
+              {(() => {
+                const missing = [
+                  !metaTitle.trim() && "Meta Title",
+                  !metaDescription.trim() && "Meta Description",
+                  !shortDescription.trim() && "Short Description (step 1)",
+                ].filter(Boolean) as string[];
+                const longName = productName.trim().length > 70 || productName.includes("|");
+                if (!missing.length && !longName) return null;
+                return (
+                  <div role="note" className="rounded-md border border-warning-line bg-warning-bg px-3 py-2.5 text-[11px] leading-relaxed text-ink">
+                    <p className="font-semibold text-warning">Recommended before publishing</p>
+                    {missing.length > 0 && (
+                      <p className="mt-0.5">
+                        Fill in {missing.join(", ")}. Without them search results show the full product name and the first
+                        lines of the description.
+                      </p>
+                    )}
+                    {longName && (
+                      <p className="mt-0.5">
+                        Shorten the product name to one clear phrase (70 characters or fewer, no &quot;|&quot; keyword lists): it is
+                        the page heading, the photo description and the name Google shows.
+                      </p>
+                    )}
+                  </div>
+                );
+              })()}
+
               {/* Focus Keywords & Tags */}
               <div>
                 <div className="flex items-center justify-between mb-1">
@@ -2297,7 +2323,7 @@ function AdminNewProductWizard() {
               <div className="bg-canvas p-4 rounded-xl border border-line space-y-2">
                 <span className="font-semibold text-ink block">URL Preview</span>
                 <p className="text-info underline break-all font-mono text-[11px]">
-                  https://{BRAND.domain}/products/{slug}
+                  https://{SITE_HOST}/products/{slug}
                 </p>
               </div>
 

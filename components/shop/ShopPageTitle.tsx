@@ -17,6 +17,9 @@ export interface ShopCategory {
   shortDescription?: string | null;
   // longer introduction shown under the listing of that category (owner-written in the admin)
   detailedDescription?: string | null;
+  // owner-set pictures (Admin > Categories), used as the page's share image when present
+  image?: string | null;
+  bannerImage?: string | null;
 }
 
 /**

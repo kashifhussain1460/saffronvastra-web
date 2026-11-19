@@ -1,7 +1,7 @@
 import { BRAND } from "@/lib/brand";
 import type { Metadata, Viewport } from "next";
 import { API_ORIGIN, INDEXING_ALLOWED, SITE_URL } from "@/lib/site";
-import { BASE_OG, BRAND_TITLE_SUFFIX, THEME_COLOR } from "@/lib/seo";
+import { BASE_OG, BRAND_TITLE_SUFFIX, DEFAULT_OG_IMAGE, THEME_COLOR } from "@/lib/seo";
 import { Kumbh_Sans } from "next/font/google";
 import { preconnect } from "react-dom";
 import "./globals.css";
@@ -49,10 +49,11 @@ export const metadata: Metadata = {
     default: `${BRAND.displayName} | Luxury Embroidered Fashion & Made-to-Order Craft`,
     template: `%s | ${BRAND_TITLE_SUFFIX}`,
   },
+  // inherited only by pages without a description of their own (today the noindex cart, checkout, auth and search pages)
   description:
-    "Handcrafted luxury velvet jackets, artisanal kimonos, and timeless embroidered co-ords. Made to order with heritage craftsmanship for the modern wardrobe.",
+    "Hand-embroidered Suzani jackets, kimonos and waistcoats in velvet and cotton, made to order by artisans in Jaipur and delivered across India.",
   // no url here: each page sets its own og:url, so a route without one never claims the home URL
-  openGraph: { ...BASE_OG },
+  openGraph: { ...BASE_OG, images: [DEFAULT_OG_IMAGE] },
   // staging and preview builds must not be indexed even if a crawler ignores robots.txt
   robots: INDEXING_ALLOWED ? undefined : { index: false, follow: false },
   ...(GOOGLE_SITE_VERIFICATION ? { verification: { google: GOOGLE_SITE_VERIFICATION } } : {}),
@@ -102,8 +103,8 @@ export default async function RootLayout({
   return (
     <html lang="en-IN" className={kumbh.variable}>
       <body className="min-h-screen flex flex-col bg-canvas text-ink selection:bg-surface-muted selection:text-secondary">
-        {/* Organization and WebSite, once per page */}
-        <JsonLd data={siteGraph()} />
+        {/* Organization (with the support contact the footer shows) and WebSite, once per page */}
+        <JsonLd data={siteGraph(settings.store)} />
         <SettingsProvider settings={settings}>
           <StoreProvider>
             <AnalyticsTracker />

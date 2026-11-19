@@ -205,7 +205,7 @@ After reviewing the issue, we will arrange an appropriate remedy, which may incl
 
 ### 6.5 Who pays the return shipping cost?
 
-For a change-of-mind or customer-selected size return, the customer ordinarily pays return shipping where this policy was properly disclosed before purchase.
+Nothing, for an approved exchange (for example a different size): we arrange a free doorstep reverse pickup across serviceable Indian PIN codes.
 
 For a defective, damaged, incorrect or materially misdescribed product, Saffron Vastra will bear reasonable return shipping costs or arrange an appropriate return method.
 

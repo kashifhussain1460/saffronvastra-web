@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { previewHref } from "@/lib/preview";
 import {
   Package,
   Plus,
@@ -601,7 +602,8 @@ export default function AdminProductsPage() {
                           </div>
                           <div className="min-w-0">
                             <Link
-                              href={`/products/${p.slug}`}
+                              href={previewHref(`/products/${p.slug}`)}
+                              prefetch={false}
                               className="font-serif font-medium text-sm text-ink hover:text-primary-hover transition-colors line-clamp-1"
                             >
                               {p.title}
@@ -737,7 +739,8 @@ export default function AdminProductsPage() {
                           {/* View on Storefront */}
                           {selectedStatus !== "deleted" && (
                           <Link
-                            href={`/products/${p.slug}`}
+                            href={previewHref(`/products/${p.slug}`)}
+                            prefetch={false}
                             target="_blank"
                             className="p-1.5 rounded-md hover:bg-ink/5 text-ink-secondary transition-colors"
                             aria-label={`View ${p.title} on storefront`}

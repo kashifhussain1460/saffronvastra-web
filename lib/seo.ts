@@ -2,6 +2,7 @@
 // Relative paths (canonical, og:url, images) resolve against metadataBase (SITE_URL) set in app/layout.tsx.
 import type { Metadata } from "next";
 import { BRAND } from "@/lib/brand";
+import { xHandle } from "@/lib/site";
 
 // Brand part of every page title ("FAQs | Saffron Vastra"): the spaced spelling, so search results show one brand name.
 export const BRAND_TITLE_SUFFIX = BRAND.displayName;
@@ -18,6 +19,15 @@ export const BASE_OG = {
 } as const;
 
 type OgImages = NonNullable<NonNullable<Metadata["openGraph"]>["images"]>;
+
+// Share image for every page that has no picture of its own: a landscape 1200×630 JPEG (the size Facebook, WhatsApp,
+// LinkedIn and X crop to), small enough for messaging-app previews. Made from public/images/hero/suzani_hero_poster.jpg.
+export const DEFAULT_OG_IMAGE = {
+  url: "/images/og/saffron-vastra-share.jpg",
+  width: 1200,
+  height: 630,
+  alt: `${BRAND.displayName} hand-embroidered Suzani jacket`,
+} as const;
 
 export interface BuildMetadataInput {
   // Page part of the title only ("FAQs"); the root template adds the brand suffix.
@@ -58,6 +68,7 @@ const hasImages = (images: OgImages | undefined): images is OgImages =>
   Array.isArray(images) ? images.length > 0 : Boolean(images);
 
 // Metadata for one route: title, description, self-canonical, Open Graph and Twitter card.
+// A page without images of its own gets the default share image, so every shared link shows a picture.
 // Robots is only set for noindex pages, so everything else inherits the root (environment-aware) value.
 export function buildMetadata({
   title,
@@ -69,7 +80,8 @@ export function buildMetadata({
   absoluteTitle = false,
 }: BuildMetadataInput): Metadata {
   const fullTitle = absoluteTitle ? title : titleFor(title);
-  const withImages = hasImages(images);
+  const shareImages: OgImages = hasImages(images) ? images : [DEFAULT_OG_IMAGE];
+  const site = xHandle();
 
   return {
     title: absoluteTitle ? { absolute: title } : title,
@@ -81,11 +93,9 @@ export function buildMetadata({
       url: path,
       title: fullTitle,
       description,
-      ...(withImages ? { images } : {}),
+      images: shareImages,
     },
-    twitter: withImages
-      ? { card: "summary_large_image", title: fullTitle, description, images }
-      : { card: "summary", title: fullTitle, description },
+    twitter: { card: "summary_large_image", title: fullTitle, description, images: shareImages, ...(site ? { site } : {}) },
     ...(noindex ? { robots: { index: false, follow: false } } : {}),
   };
 }

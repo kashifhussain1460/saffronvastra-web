@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { BRAND } from "@/lib/brand";
 
 // The owner's primary logo (public/SaffronVastra.png), prepared as transparent web assets in public/images/brand/:
 // "full" is the complete lockup (SV monogram over the SaffronVastra wordmark), "wordmark" is the name line alone
@@ -38,11 +39,11 @@ export default function Logo({ variant = "dark", kind = "wordmark", className = 
     <Link
       href="/"
       className={`inline-flex items-center group transition-opacity hover:opacity-80 ${className}`}
-      aria-label="SaffronVastra home"
+      aria-label={`${BRAND.displayName} home`}
     >
       <Image
         src={asset.src}
-        alt="SaffronVastra"
+        alt={BRAND.displayName}
         width={asset.width}
         height={asset.height}
         priority={priority}

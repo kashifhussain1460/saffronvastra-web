@@ -2,11 +2,10 @@ import { BRAND } from "@/lib/brand";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { safeRedirectPath } from "@/lib/safeRedirect";
+import { SITE_URL } from "@/lib/site";
+import { ADMIN_ROLES, checkSession, SESSION_COOKIE_NAME } from "@/lib/session";
 
-export const SESSION_COOKIE_NAME = "saffron_session";
-
-const API_ORIGIN = process.env.API_ORIGIN || "http://127.0.0.1:4000";
-const ADMIN_ROLES = ["ADMIN"];
+export { SESSION_COOKIE_NAME };
 
 // Branded, self-contained page for when the API cannot confirm the session (it has no app chrome to rely on).
 function serviceUnavailable() {
@@ -20,32 +19,9 @@ function serviceUnavailable() {
   return new NextResponse(html, { status: 503, headers: { "Content-Type": "text/html; charset=utf-8", "Retry-After": "30" } });
 }
 
-type SessionCheck = { state: "valid" | "invalid-session" | "unavailable"; roles: string[] };
-
-// The API owns sessions and roles, so the edge asks it instead of trusting the cookie's presence
-// (a cookie can outlive its session: expiry, sign-out elsewhere, a reset database).
-async function checkSession(sessionToken: string): Promise<SessionCheck> {
-  try {
-    const res = await fetch(`${API_ORIGIN}/api/v1/me`, {
-      headers: { cookie: `${SESSION_COOKIE_NAME}=${sessionToken}` },
-      cache: "no-store",
-    });
-    if (res.status === 401) return { state: "invalid-session", roles: [] };
-    if (!res.ok) return { state: "unavailable", roles: [] };
-    const body = await res.json();
-    const roles: string[] = Array.isArray(body.data?.roles)
-      ? body.data.roles
-      : Array.isArray(body.data?.user?.roles)
-      ? body.data.user.roles
-      : [];
-    return { state: "valid", roles };
-  } catch {
-    return { state: "unavailable", roles: [] };
-  }
-}
-
 /**
  * Next.js Edge Routing Middleware
+ * 0. Production on a *.vercel.app address: permanent redirect to the same path on the public origin (SITE_URL).
  * Guards authenticated vs guest routes at the network edge:
  * 1. Authenticated routes (/account/*, /admin/*): Unauthenticated requests are redirected to /auth/login with a redirect query param.
  * 2. Guest-only routes (/auth/login, /auth/register): Authenticated requests are redirected to /account or intended destination.
@@ -53,6 +29,17 @@ async function checkSession(sessionToken: string): Promise<SessionCheck> {
  */
 export async function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+
+  // 0. The production deployment also answers on its *.vercel.app addresses. Those copies of the shop would be crawled
+  // and split links with www, so every page there moves permanently to the same path on the public origin.
+  // Previews (VERCEL_ENV=preview) keep their own address.
+  const host = (request.headers.get("host") || request.nextUrl.host).toLowerCase();
+  // Only towards a real public origin: never to localhost (SITE_URL unset) or back to another vercel.app address.
+  const publicOrigin = SITE_URL.startsWith("https://") && !SITE_URL.includes(".vercel.app");
+  if (process.env.VERCEL_ENV === "production" && host.endsWith(".vercel.app") && publicOrigin) {
+    return NextResponse.redirect(new URL(`${pathname}${search}`, SITE_URL), 308);
+  }
+
   const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value;
 
   const isAccountRoute = pathname === "/account" || pathname.startsWith("/account/");

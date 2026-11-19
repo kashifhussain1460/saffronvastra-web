@@ -6,9 +6,9 @@ export const TERMS_MARKDOWN = `# Terms & Conditions
 **Saffron Vastra**
 
 **Effective Date:** 25 October 2026\\
-**Last Updated:** 25 October 2026
+**Last Updated:** 18 November 2026
 
-Welcome to Saffron Vastra. These Terms & Conditions govern your access to and use of [https://saffronvastra.com](https://saffronvastra.com), including the purchase of products offered through our website.
+Welcome to Saffron Vastra. These Terms & Conditions govern your access to and use of [https://www.saffronvastra.com](https://www.saffronvastra.com), including the purchase of products offered through our website.
 
 Saffron Vastra is a clothing brand based in Jaipur, Rajasthan, India. We offer clothing products, including cotton TNT, cotton duck and cotton velvet jackets.
 
@@ -24,7 +24,7 @@ The website and products are operated by:
 - **Legal Business Name:** Saffron Vastra
 - **Business Structure:** Sole Proprietorship
 - **Business Address:** 125, Abdul Hameed Nagar, Panch Batti, M.I. Road, Jaipur, Rajasthan 302001, India
-- **Website:** https://saffronvastra.com
+- **Website:** https://www.saffronvastra.com
 - **Customer Support Email:** support@saffronvastra.com
 - **Customer Support Phone:** +91 82093 43979
 - **Grievance Officer:** Arshad Hussain Naqvi
@@ -251,7 +251,7 @@ Made-to-order products are subject to the same basic policy. Their made-to-order
 
 Our recommended allocation of return shipping costs is:
 
-- **Change of mind or customer-selected size:** The customer ordinarily pays the return shipping cost, provided the original listing and checkout clearly disclosed this policy.
+- **Change of mind or customer-selected size:** Standard returns are resolved by exchange. For an approved exchange we arrange a doorstep reverse pickup across serviceable Indian PIN codes free of charge, so the customer does not pay return shipping.
 - **Defective, damaged, incorrect or materially misdescribed product:** Saffron Vastra will bear reasonable return shipping costs or arrange an appropriate collection or return method.
 - **Other circumstances:** Costs will be assessed fairly, with applicable legal requirements taking priority.
 
@@ -428,7 +428,7 @@ For questions about these Terms & Conditions, orders, products, payments, shippi
 
 **Email:** support@saffronvastra.com\\
 **Phone:** +91 82093 43979\\
-**Website:** https://saffronvastra.com
+**Website:** https://www.saffronvastra.com
 
 Thank you for choosing Saffron Vastra. We appreciate your trust and are committed to providing clear product information, reliable customer support and a fair shopping experience.
 `;

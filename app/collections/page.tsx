@@ -1,12 +1,14 @@
 import { cache } from "react";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import JsonLd from "@/components/seo/JsonLd";
 import { collectionsHeading, ShopCategory } from "@/components/shop/ShopPageTitle";
 import type { InitialShopPage } from "@/components/shop/ShopView";
 import { LIST_FACETS, parseShopQuery, priceBounds, ShopQuery, toShopProduct } from "@/components/shop/shopData";
+import { catalogueRoot, categoryPageTitle } from "@/lib/catalogue";
 import { breadcrumbList } from "@/lib/jsonld";
-import { buildMetadata } from "@/lib/seo";
-import { API_ORIGIN, INDEXING_ALLOWED } from "@/lib/site";
+import { buildMetadata, notFoundMetadata, truncateAtWord } from "@/lib/seo";
+import { API_ORIGIN } from "@/lib/site";
 import CollectionsClient from "./CollectionsClient";
 
 // The listing comes from the live catalogue on every request.
@@ -49,6 +51,8 @@ const loadCategories = cache(async (): Promise<ShopCategory[] | null> => {
       parentId: c.parentId ?? null,
       shortDescription: c.shortDescription ?? null,
       detailedDescription: c.detailedDescription ?? null,
+      image: c.image ?? null,
+      bannerImage: c.bannerImage ?? null,
     }));
   } catch {
     return null;
@@ -100,7 +104,11 @@ async function resolveListing(searchParams: Promise<SearchParams>) {
   const unknownCategory = categories !== null && selected.some((slug) => !categories.some((c) => c.slug === slug));
   const refined = isRefined(query);
   const categorySlug = heading.category?.slug ?? null;
-  const basePath = categorySlug ? `${COLLECTIONS_PATH}?category=${encodeURIComponent(categorySlug)}` : COLLECTIONS_PATH;
+  // The top-level category that holds every product lists the same pieces as /collections, so /collections is its
+  // canonical page (see lib/catalogue) and carries its introduction.
+  const root = catalogueRoot(categories);
+  const isCatalogueView = !heading.category || heading.category.id === root?.id;
+  const basePath = isCatalogueView ? COLLECTIONS_PATH : `${COLLECTIONS_PATH}?category=${encodeURIComponent(categorySlug!)}`;
 
   // The server renders the views the API lists in the browser's order: the whole catalogue or one known category.
   let initialPage: InitialShopPage | undefined;
@@ -122,44 +130,52 @@ async function resolveListing(searchParams: Promise<SearchParams>) {
     }
   }
 
-  return { query, categories, heading, unknownCategory, refined, basePath, pageExists, initialPage };
+  // An unknown category, or a page past the last one, does not exist: a real 404 (not a 200 page with noindex).
+  const missing = unknownCategory || (!refined && pageExists === false);
+
+  return { query, categories, heading, refined, basePath, pageExists, initialPage, root, isCatalogueView, missing };
 }
 
 export async function generateMetadata({ searchParams }: CollectionsPageProps): Promise<Metadata> {
-  const { query, heading, unknownCategory, refined, basePath, pageExists } = await resolveListing(searchParams);
-  const notListed = { index: false, follow: INDEXING_ALLOWED };
+  const { query, heading, refined, basePath, pageExists, missing } = await resolveListing(searchParams);
 
-  // An unknown category, or a page past the last one, is not a page of its own.
-  if (unknownCategory || (!refined && pageExists === false)) {
-    return {
-      ...buildMetadata({ title: COLLECTIONS_TITLE, description: COLLECTIONS_DESCRIPTION, path: COLLECTIONS_PATH }),
-      robots: notListed,
-    };
-  }
+  // The same title as the 404 page itself and no canonical, as for a missing product (see notFoundMetadata).
+  if (missing) return notFoundMetadata();
 
   // A category's stored short description is its meta description; the catalogue text is the fallback.
-  const title = heading.category?.name ?? COLLECTIONS_TITLE;
-  const description = heading.category?.shortDescription?.trim() || COLLECTIONS_DESCRIPTION;
+  const category = heading.category;
+  let title = category ? categoryPageTitle(category.name) : COLLECTIONS_TITLE;
+  let description = category?.shortDescription?.trim() || COLLECTIONS_DESCRIPTION;
   // Page N of an unrefined view is canonical to itself; sort, price, size and other filters fold into the bare view.
-  const path =
-    !refined && query.page > 1 && pageExists ? `${basePath}${basePath.includes("?") ? "&" : "?"}page=${query.page}` : basePath;
-  return buildMetadata({ title, description, path });
+  const paged = !refined && query.page > 1 && pageExists;
+  const path = paged ? `${basePath}${basePath.includes("?") ? "&" : "?"}page=${query.page}` : basePath;
+  // Later pages get their own title and description, so search results never show several identical entries.
+  if (paged) {
+    title = `${title} – Page ${query.page}`;
+    description = truncateAtWord(`Page ${query.page} of ${category ? category.name : "the collection"}. ${description}`, 155);
+  }
+  // The category's own picture when the owner has set one; otherwise buildMetadata adds the default share image.
+  const picture = category?.bannerImage || category?.image;
+  return buildMetadata({ title, description, path, ...(picture ? { images: [{ url: picture, alt: category!.name }] } : {}) });
 }
 
 export default async function CollectionsPage({ searchParams }: CollectionsPageProps) {
-  const { query, categories, heading, initialPage, refined } = await resolveListing(searchParams);
-  // The category's own introduction, on its landing view only (page 1, no sort or filters), so the text is not
-  // repeated across paginated or filtered views. Plain text; blank lines separate paragraphs.
-  const intro = !refined && query.page === 1 ? heading.category?.detailedDescription?.trim() : "";
+  const { query, categories, heading, initialPage, refined, root, isCatalogueView, missing } = await resolveListing(searchParams);
+  if (missing) notFound();
+  // The introduction, on the landing view only (page 1, no sort or filters), so the text is not repeated across
+  // paginated or filtered views: the category's own, or on /collections the one of the category that holds the whole
+  // catalogue. Plain text; blank lines separate paragraphs.
+  const introCategory = heading.category ?? (isCatalogueView ? root : undefined);
+  const intro = !refined && query.page === 1 ? introCategory?.detailedDescription?.trim() : "";
   const paragraphs = intro ? intro.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean) : [];
   return (
     <>
       <CollectionsClient categories={categories} initialPage={initialPage} perPage={PER_PAGE} />
-      {paragraphs.length > 0 && heading.category && (
+      {paragraphs.length > 0 && introCategory && (
         <section aria-labelledby="category-intro" className="bg-canvas">
           <div className="container mx-auto px-4 md:px-6 max-w-3xl py-10 md:py-14 border-t border-line">
             <h2 id="category-intro" className="text-xl md:text-2xl font-medium text-ink mb-4">
-              About our {heading.category.name}
+              About our {introCategory.name}
             </h2>
             <div className="space-y-4 text-base leading-7 text-ink-secondary">
               {paragraphs.map((p, i) => (

@@ -24,4 +24,27 @@ export const SITE_URL = canonicalOrigin(process.env.SITE_URL || process.env.NEXT
 export const API_ORIGIN = process.env.API_ORIGIN || "http://127.0.0.1:4000";
 
 // Only a production deployment may be indexed; staging and previews must not appear in search results.
-export const INDEXING_ALLOWED = process.env.ALLOW_INDEXING === "true";
+// ALLOW_INDEXING decides when it is set ("true" or anything else). When it is missing, Vercel's own VERCEL_ENV decides,
+// so a production redeploy that lost the variable is still indexable instead of silently telling Google to drop the
+// whole site. Local builds have no VERCEL_ENV and stay out of the index.
+const ALLOW_INDEXING = process.env.ALLOW_INDEXING?.trim();
+export const INDEXING_ALLOWED = ALLOW_INDEXING ? ALLOW_INDEXING === "true" : process.env.VERCEL_ENV === "production";
+
+// The brand's own profiles elsewhere (Instagram, Facebook, Pinterest, Etsy shop, X…), from BRAND_SAME_AS: comma-separated
+// absolute URLs set by the owner. Only http(s) URLs are kept; nothing is listed until the owner provides them.
+// Used for Organization.sameAs (lib/jsonld) and the X card's site handle (lib/seo).
+export function brandProfiles(): string[] {
+  return String(process.env.BRAND_SAME_AS || "")
+    .split(",")
+    .map((u) => u.trim())
+    .filter((u) => /^https?:\/\/\S+$/.test(u));
+}
+
+// "@handle" of the brand's X (Twitter) account when BRAND_SAME_AS lists one, otherwise undefined.
+export function xHandle(): string | undefined {
+  for (const profile of brandProfiles()) {
+    const match = profile.match(/^https?:\/\/(?:www\.)?(?:x|twitter)\.com\/([A-Za-z0-9_]{1,15})\/?$/i);
+    if (match) return `@${match[1]}`;
+  }
+  return undefined;
+}

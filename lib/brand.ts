@@ -5,7 +5,8 @@ export const BRAND = {
   // Legal identity and contact details, as published in the Privacy Policy.
   displayName: "Saffron Vastra",
   legalName: "Saffron Vastra",
-  url: "https://saffronvastra.com",
+  // the canonical origin (the bare domain only redirects here); lib/site's SITE_URL is the per-environment value
+  url: "https://www.saffronvastra.com",
   supportEmail: "support@saffronvastra.com",
   phone: "+91 82093 43979",
   address: "125, Abdul Hameed Nagar, Panch Batti, M.I. Road, Jaipur, Rajasthan 302001, India",

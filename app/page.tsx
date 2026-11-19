@@ -17,12 +17,12 @@ import {
   type HomeCatalogueData,
 } from "@/components/home/homeData";
 
-// The home title is used as written (no template suffix); the image size is the file's real size.
+// The home title is used as written (no template suffix). No images: buildMetadata adds the landscape default share
+// image, which social apps show uncropped (the old 1200×1500 portrait photo was cut to a strip).
 export const metadata = buildMetadata({
   title: `${BRAND.displayName} | Suzani Embroidered Jackets & Kimonos`,
-  description: `Explore ${BRAND.displayName}'s curated collection of Suzani embroidered jackets and kimonos, bringing distinctive traditional needlework into contemporary fashion.`,
+  description: `Shop ${BRAND.displayName}'s hand-embroidered Suzani jackets, kimonos and waistcoats in velvet and cotton: unisex pieces made to order by artisans in Jaipur.`,
   path: "/",
-  images: [{ url: "/images/categories/suzani-stitchwork.jpg", width: 1200, height: 1500 }],
   absoluteTitle: true,
 });
 
