@@ -38,6 +38,8 @@ const LIVE_HOSTS = (() => {
 // Search Console HTML-tag verification token (the content value of google-site-verification). Optional when the
 // property is verified by DNS instead.
 const GOOGLE_SITE_VERIFICATION = process.env.GOOGLE_SITE_VERIFICATION?.trim() || "";
+// Pinterest's HTML-tag website verification code (Settings > Claimed accounts > Websites).
+const PINTEREST_DOMAIN_VERIFY = "c19ec23cfda5297dfcc0d37d983e1dba";
 import JsonLd from "@/components/seo/JsonLd";
 import { siteGraph } from "@/lib/jsonld";
 
@@ -56,7 +58,12 @@ export const metadata: Metadata = {
   openGraph: { ...BASE_OG, images: [DEFAULT_OG_IMAGE] },
   // staging and preview builds must not be indexed even if a crawler ignores robots.txt
   robots: INDEXING_ALLOWED ? undefined : { index: false, follow: false },
-  ...(GOOGLE_SITE_VERIFICATION ? { verification: { google: GOOGLE_SITE_VERIFICATION } } : {}),
+  verification: {
+    ...(GOOGLE_SITE_VERIFICATION ? { google: GOOGLE_SITE_VERIFICATION } : {}),
+    // Pinterest website claim for the business account SaffronVastra (@kashifhussain146): needed for its product
+    // catalog and for attribution on Pins that link here. Public by design (it is read from the page head).
+    other: { "p:domain_verify": PINTEREST_DOMAIN_VERIFY },
+  },
 };
 
 export const viewport: Viewport = {
