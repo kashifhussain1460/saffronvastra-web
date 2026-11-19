@@ -279,7 +279,7 @@ If your question is not answered here, our team can assist you.
 **Customer Support Hours:** 10:00 AM–7:00 PM IST (Monday to Saturday).
 
 **Business Name:** Saffron Vastra
-**Business Address:** 125, Abdul Hameed Nagar, Panch Batti, M.I. Road, Jaipur, Rajasthan 302001, India
+**Business Address:** S-34 / M-27, Noor Building, Mirza Ismail (M.I.) Road, Jaipur, Rajasthan 302001, India
 
 Thank you for choosing Saffron Vastra. We appreciate your trust and look forward to providing you with a pleasant shopping experience.
 `;

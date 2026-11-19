@@ -23,7 +23,7 @@ The website and products are operated by:
 - **Brand Name:** Saffron Vastra
 - **Legal Business Name:** Saffron Vastra
 - **Business Structure:** Sole Proprietorship
-- **Business Address:** 125, Abdul Hameed Nagar, Panch Batti, M.I. Road, Jaipur, Rajasthan 302001, India
+- **Business Address:** S-34 / M-27, Noor Building, Mirza Ismail (M.I.) Road, Jaipur, Rajasthan 302001, India
 - **Website:** https://www.saffronvastra.com
 - **Customer Support Email:** support@saffronvastra.com
 - **Customer Support Phone:** +91 82093 43979
@@ -371,7 +371,7 @@ For questions about an order, product, payment, delivery, return or refund, plea
 
 **Grievance Officer:** Arshad Hussain Naqvi\\
 **Business:** Saffron Vastra\\
-**Address:** 125, Abdul Hameed Nagar, Panch Batti, M.I. Road, Jaipur, Rajasthan 302001, India\\
+**Address:** S-34 / M-27, Noor Building, Mirza Ismail (M.I.) Road, Jaipur, Rajasthan 302001, India\\
 **Email:** support@saffronvastra.com\\
 **Phone:** +91 82093 43979
 
@@ -424,7 +424,7 @@ If any policy conflicts with mandatory applicable law, the law will prevail. For
 For questions about these Terms & Conditions, orders, products, payments, shipping, returns or refunds, please contact us:
 
 **Saffron Vastra**\\
-125, Abdul Hameed Nagar, Panch Batti, M.I. Road, Jaipur, Rajasthan 302001, India
+S-34 / M-27, Noor Building, Mirza Ismail (M.I.) Road, Jaipur, Rajasthan 302001, India
 
 **Email:** support@saffronvastra.com\\
 **Phone:** +91 82093 43979\\

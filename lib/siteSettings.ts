@@ -13,7 +13,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
     name: `${BRAND.displayName}`,
     supportEmail: `${BRAND.supportEmail}`,
     supportPhone: "+91 82093 43979",
-    address: "125, Abdul Hameed Nagar, Panch Batti, M.I. Road, Jaipur, Rajasthan 302001, India",
+    address: "S-34 / M-27, Noor Building, Mirza Ismail (M.I.) Road, Jaipur, Rajasthan 302001, India",
   },
   announcement: { enabled: true, text: "Complimentary shipping across India on orders above ₹5,000", link: "" },
   shipping: { freeShippingThreshold: 5000, flatFee: 499, deliveryChargesEnabled: true },

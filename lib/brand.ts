@@ -9,7 +9,7 @@ export const BRAND = {
   url: "https://www.saffronvastra.com",
   supportEmail: "support@saffronvastra.com",
   phone: "+91 82093 43979",
-  address: "125, Abdul Hameed Nagar, Panch Batti, M.I. Road, Jaipur, Rajasthan 302001, India",
+  address: "S-34 / M-27, Noor Building, Mirza Ismail (M.I.) Road, Jaipur, Rajasthan 302001, India",
   grievanceContact: "Arshad Hussain Naqvi",
 } as const;
 

@@ -794,7 +794,7 @@ export default function OrderDetailPage({ params }: { params?: Promise<{ id: str
             <div>
               <p className="font-heading text-xl font-semibold tracking-wide text-ink">{BRAND_NAME_UPPER}</p>
               <p className="text-xs text-ink-muted tracking-widest uppercase mt-0.5">Handcrafted Clothing &amp; Traditional Embroidery</p>
-              <p className="text-sm text-ink-muted mt-2">125, Abdul Hameed Nagar, Panch Batti, M.I. Road, Jaipur, Rajasthan 302001, India</p>
+              <p className="text-sm text-ink-muted mt-2">S-34 / M-27, Noor Building, Mirza Ismail (M.I.) Road, Jaipur, Rajasthan 302001, India</p>
               <p className="text-sm text-ink-muted font-mono">GSTIN: 08AAECS9281M1ZK</p>
             </div>
             <div className="sm:text-right">
