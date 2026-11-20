@@ -204,7 +204,9 @@ function reviewNode(r: PublicReview): JsonLdNode {
   const body = plainDescription(r.body, 1000);
   return {
     "@type": "Review",
-    author: { "@type": "Person", name: r.author },
+    // customer-written fields go through plainDescription (tags and control characters removed); the JsonLd component
+    // also escapes "<", so review text can never close the script element
+    author: { "@type": "Person", name: plainDescription(r.author, 60) || "Verified customer" },
     datePublished: String(r.createdAt).slice(0, 10),
     reviewRating: { "@type": "Rating", ratingValue: r.rating, bestRating: 5, worstRating: 1 },
     ...(r.title ? { name: plainDescription(r.title, 100) } : {}),
