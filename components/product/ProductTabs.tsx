@@ -5,6 +5,7 @@ import Link from "next/link";
 import ProductReviews from "./ProductReviews";
 import MeasurementsTable from "./MeasurementsTable";
 import { measurementRows, type ProductMeasurements } from "@/lib/sizeChart";
+import type { InitialReviews } from "@/lib/reviews";
 
 export type PdpTab = "description" | "info" | "reviews" | "shipping";
 
@@ -27,6 +28,8 @@ interface ProductTabsProps {
   // garment measurements per size (from the admin), shown under Additional Information
   measurements?: ProductMeasurements | null;
   selectedSize?: string | null;
+  // approved reviews loaded on the server: the Reviews panel is then rendered in the page HTML from the start
+  initialReviews?: InitialReviews | null;
 }
 
 const paragraphs = (text: string) =>
@@ -52,10 +55,13 @@ export default function ProductTabs({
   onTabChange,
   measurements,
   selectedSize,
+  initialReviews,
 }: ProductTabsProps) {
   const measured = measurementRows(measurements);
-  // the reviews panel loads its data on first open and then stays mounted
-  const [reviewsMounted, setReviewsMounted] = useState(activeTab === "reviews");
+  // The reviews panel is in the server HTML when the product has approved reviews (search engines must be able to see
+  // the reviews its structured data describes; the panel is only visually hidden until its tab is opened). Otherwise
+  // it loads its data on first open and then stays mounted.
+  const [reviewsMounted, setReviewsMounted] = useState(activeTab === "reviews" || Boolean(initialReviews?.items?.length));
   useEffect(() => {
     if (activeTab === "reviews") setReviewsMounted(true);
   }, [activeTab]);
@@ -174,7 +180,7 @@ export default function ProductTabs({
 
         {/* Reviews */}
         <div id="pdp-panel-reviews" role="region" aria-labelledby="pdp-tab-reviews" hidden={activeTab !== "reviews"}>
-          {reviewsMounted && <ProductReviews slug={slug} />}
+          {reviewsMounted && <ProductReviews slug={slug} initial={initialReviews} />}
         </div>
 
         {/* Shipping and returns (existing store copy) */}

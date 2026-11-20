@@ -5,22 +5,9 @@ import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Star } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
+import type { InitialReviews, PublicReview, ReviewsSummary } from "@/lib/reviews";
 
-interface PublicReview {
-  id: string;
-  rating: number;
-  title: string | null;
-  body: string;
-  reply: string | null;
-  author: string;
-  createdAt: string;
-}
-
-interface Summary {
-  count: number;
-  average: number | null;
-  distribution: Record<string, number>;
-}
+type Summary = ReviewsSummary;
 
 type Eligibility =
   | { kind: "loading" }
@@ -30,7 +17,9 @@ type Eligibility =
   | { kind: "can-review" }
   | { kind: "unknown" };
 
-const formatDay = (v: string) => new Date(v).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+// UTC, so the date rendered on the server and in the browser is the same (no hydration mismatch near midnight).
+const formatDay = (v: string) =>
+  new Date(v).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" });
 
 function Stars({ value, size = "w-3.5 h-3.5" }: { value: number; size?: string }) {
   return (
@@ -42,10 +31,12 @@ function Stars({ value, size = "w-3.5 h-3.5" }: { value: number; size?: string }
   );
 }
 
-export default function ProductReviews({ slug }: { slug: string }) {
-  const [summary, setSummary] = useState<Summary | null>(null);
-  const [reviews, setReviews] = useState<PublicReview[]>([]);
-  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+// `initial`: approved reviews the server already loaded, rendered straight away (they are also in the structured data);
+// the list is refreshed in the browser after mounting.
+export default function ProductReviews({ slug, initial }: { slug: string; initial?: InitialReviews | null }) {
+  const [summary, setSummary] = useState<Summary | null>(initial?.summary ?? null);
+  const [reviews, setReviews] = useState<PublicReview[]>(initial?.items ?? []);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">(initial ? "ready" : "loading");
   const [eligibility, setEligibility] = useState<Eligibility>({ kind: "loading" });
   const { isAuthenticated, authLoading } = useStore();
 
@@ -66,7 +57,8 @@ export default function ProductReviews({ slug }: { slug: string }) {
       setReviews(json.items);
       setLoadState("ready");
     } catch {
-      setLoadState("error");
+      // keep the reviews the server rendered when only the refresh failed
+      setLoadState((state) => (state === "ready" ? "ready" : "error"));
     }
   }, [slug]);
 

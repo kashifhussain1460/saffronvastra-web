@@ -11,6 +11,7 @@ import { absoluteUrl, breadcrumbList, graph, product as productJsonLd, type Crum
 import JsonLd from "@/components/seo/JsonLd";
 import PreviewBanner from "@/components/layout/PreviewBanner";
 import { fetchSiteSettings } from "@/lib/siteSettings";
+import type { InitialReviews } from "@/lib/reviews";
 
 // Incremental static regeneration: each product page is rendered on its first visit, served from Vercel's edge cache,
 // and rebuilt in the background at most once a minute, so published, edited and unpublished products show up within
@@ -48,6 +49,25 @@ const loadProduct = cache(async (slug: string) => {
   if (!res.ok) throw new Error(`Product service responded with ${res.status}`);
   return { data: (await res.json()).data, preview };
 });
+
+// The latest approved reviews of a public product, for the page HTML (Reviews tab) and its structured data, so Google
+// sees the same reviews in both. Only fetched when the product has approved reviews; any failure gives null and the
+// tab then loads them in the browser as before (the page itself never fails because of reviews).
+async function loadApprovedReviews(slug: string, reviewsCount: number): Promise<InitialReviews | null> {
+  if (!(reviewsCount > 0)) return null;
+  try {
+    const res = await fetch(`${API_ORIGIN}/api/v1/reviews/product/${encodeURIComponent(slug)}?limit=10`, {
+      next: { revalidate: 60 },
+      signal: AbortSignal.timeout(3000),
+    });
+    if (!res.ok) return null;
+    const body = await res.json();
+    if (!body?.data || !Array.isArray(body.items)) return null;
+    return { summary: body.data, items: body.items };
+  } catch {
+    return null;
+  }
+}
 
 // A product shoppers and search engines may see. Outside preview mode the API only returns public products, so this is
 // always true there; in preview mode it depends on the stored status (a Draft must never be indexed).
@@ -128,7 +148,9 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const publicProduct = isPublic(data, preview);
 
   // shipping charge and free-delivery threshold for the structured data, from the same settings the checkout uses
-  const { shipping } = publicProduct ? await fetchSiteSettings() : { shipping: undefined };
+  const [{ shipping }, reviews] = publicProduct
+    ? await Promise.all([fetchSiteSettings(), loadApprovedReviews(data.slug, data.reviewsCount)])
+    : [{ shipping: undefined }, null];
   const product = mapBackendProductToFrontend(data);
   const relatedProducts = (data.relatedProducts ?? []).map(mapBackendProductToFrontend);
   // stored fields the mapped product does not carry (real values only, nothing derived)
@@ -153,13 +175,14 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     categoryParentSlug: data.category?.parent?.slug ?? null,
     collectionName: data.collections?.[0]?.collection?.name ?? null,
     measurements: data.measurements ?? null,
+    initialReviews: reviews,
   };
 
   return (
     <>
       {preview && <PreviewBanner path={`/products/${data.slug}`} status={data.status} />}
       {/* structured data for public products only, never for a Draft previewed by an administrator */}
-      {publicProduct && <JsonLd data={graph(productJsonLd(data, shipping), breadcrumbList(productCrumbs(data)))} />}
+      {publicProduct && <JsonLd data={graph(productJsonLd(data, shipping, reviews?.items ?? []), breadcrumbList(productCrumbs(data)))} />}
       <ProductDetailClient product={product} relatedProducts={relatedProducts} extras={extras} />
     </>
   );

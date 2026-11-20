@@ -4,6 +4,7 @@ import { BRAND } from "@/lib/brand";
 import { mapBackendProductToFrontend } from "@/lib/productMapper";
 import { truncateAtWord } from "@/lib/seo";
 import { brandProfiles, SITE_URL } from "@/lib/site";
+import type { PublicReview } from "@/lib/reviews";
 
 export type JsonLdNode = Record<string, unknown>;
 
@@ -197,10 +198,27 @@ function brandName(stored: unknown): string {
   return !name || name.replace(/\s+/g, "").toLowerCase() === BRAND.name.toLowerCase() ? BRAND.displayName : name;
 }
 
+// One approved customer review as a schema.org Review (Google review snippets): author, star rating on a 1–5 scale,
+// date and text. Only real, approved reviews that the product page also shows are passed in.
+function reviewNode(r: PublicReview): JsonLdNode {
+  const body = plainDescription(r.body, 1000);
+  return {
+    "@type": "Review",
+    author: { "@type": "Person", name: r.author },
+    datePublished: String(r.createdAt).slice(0, 10),
+    reviewRating: { "@type": "Rating", ratingValue: r.rating, bestRating: 5, worstRating: 1 },
+    ...(r.title ? { name: plainDescription(r.title, 100) } : {}),
+    ...(body ? { reviewBody: body } : {}),
+  };
+}
+
+// How many of the latest approved reviews go into the structured data (the page shows them all in the Reviews tab).
+export const STRUCTURED_REVIEWS_LIMIT = 5;
+
 // Product from the API product payload (GET /api/v1/products/:slug). A product sold in several sizes is a
 // ProductGroup with one Product per size (sku, size, own Offer) — Google's single-page variant form. The price is the
 // same rupee amount the product page shows; a size with its own price override uses that amount.
-export function product(data: any, shipping?: ShippingRules): JsonLdNode {
+export function product(data: any, shipping?: ShippingRules, reviews: PublicReview[] = []): JsonLdNode {
   const url = `${SITE_URL}/products/${data.slug}`;
   const images = (data.images || [])
     .map((i: any) => absoluteUrl(typeof i === "string" ? i : i?.url))
@@ -274,9 +292,19 @@ export function product(data: any, shipping?: ShippingRules): JsonLdNode {
           ...shared,
           offers: offer(price),
         };
-  // Only a real rating backed by at least one review.
+  // Only a real rating backed by at least one approved review (the API computes both from approved reviews), and the
+  // latest approved reviews themselves. On a ProductGroup they sit on the group, which Google applies to every size.
+  // Nothing is ever invented: a product without reviews carries neither field.
   if (typeof data.rating === "number" && data.reviewsCount > 0) {
-    ld.aggregateRating = { "@type": "AggregateRating", ratingValue: data.rating, reviewCount: data.reviewsCount };
+    ld.aggregateRating = {
+      "@type": "AggregateRating",
+      ratingValue: data.rating,
+      reviewCount: data.reviewsCount,
+      bestRating: 5,
+      worstRating: 1,
+    };
+    const shown = reviews.filter((r) => r && r.rating >= 1 && r.rating <= 5 && String(r.body || "").trim()).slice(0, STRUCTURED_REVIEWS_LIMIT);
+    if (shown.length) ld.review = shown.map(reviewNode);
   }
   return ld;
 }

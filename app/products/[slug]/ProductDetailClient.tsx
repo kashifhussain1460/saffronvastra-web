@@ -18,6 +18,7 @@ import ProductTabs, { PdpTab, SpecRow } from "@/components/product/ProductTabs";
 import StickyAddToCart from "@/components/product/StickyAddToCart";
 import ProductRecommendations from "@/components/product/ProductRecommendations";
 import { gaItemsEvent, productItem } from "@/lib/gtag";
+import type { InitialReviews } from "@/lib/reviews";
 import { Star, Heart, Check, ChevronRight, Truck, RotateCcw, Timer, MessageCircleQuestion, Share2 } from "lucide-react";
 
 /** Stored fields the mapped Product does not carry; all of them come straight from the API. */
@@ -37,6 +38,8 @@ export interface ProductExtras {
   collectionName?: string | null;
   /** Garment measurements per size, entered in the admin (or the standard chart they were seeded from). */
   measurements?: ProductMeasurements | null;
+  /** Approved reviews loaded on the server, so they are in the page HTML (and match the structured data). */
+  initialReviews?: InitialReviews | null;
 }
 
 interface ProductDetailClientProps {
@@ -470,6 +473,7 @@ export default function ProductDetailClient({ product, relatedProducts, extras }
           onTabChange={setActiveTab}
           measurements={extras?.measurements}
           selectedSize={selectedSize}
+          initialReviews={extras?.initialReviews}
         />
       </section>
 
