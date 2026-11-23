@@ -116,6 +116,11 @@ export default function ProductCard({
             {hasCompare && discount > 0 && (
               <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold text-on-primary">-{discount}%</span>
             )}
+            {product.promotion?.badgeText && (
+              <span className="rounded-full bg-accent px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-on-primary">
+                {product.promotion.badgeText}
+              </span>
+            )}
             {product.badges?.[0] && (
               <span className="rounded-full bg-primary px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-on-primary">
                 {product.badges[0] === "BESTSELLER" ? "Best seller" : product.badges[0] === "NEW" ? "New" : "Limited"}

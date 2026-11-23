@@ -95,7 +95,14 @@ export async function GET(): Promise<Response> {
 
     for (const v of rows) {
       const price = typeof v.priceOverrideMinor === "number" ? v.priceOverrideMinor / 100 : basePrice;
-      const onSale = comparePrice > price;
+      // a variant on sale carries its own regular price; otherwise the product compare price is the regular price
+      const regular = typeof v.originalPriceOverrideMinor === "number" ? v.originalPriceOverrideMinor / 100 : comparePrice;
+      const onSale = regular > price;
+      // a time-boxed sale tells Google when the sale price stops, so the feed is never ahead of the shop
+      const saleWindow =
+        onSale && p.promotion?.startsAt && p.promotion?.endsAt
+          ? `<g:sale_price_effective_date>${xml(`${p.promotion.startsAt}/${p.promotion.endsAt}`)}</g:sale_price_effective_date>`
+          : "";
       const free = shipping.deliveryChargesEnabled === false || !shipping.flatFee || price >= shipping.freeShippingThreshold;
       const colour = v.colourName && v.colourName !== "Standard" ? v.colourName : "";
       entries.push(
@@ -110,7 +117,7 @@ export async function GET(): Promise<Response> {
           ...images.slice(1, 11).map((u) => `<g:additional_image_link>${xml(u)}</g:additional_image_link>`),
           `<g:availability>${unavailable ? "out_of_stock" : "in_stock"}</g:availability>`,
           // the higher "compare at" price is the regular price; the shop price is then the sale price
-          onSale ? `<g:price>${money(comparePrice)}</g:price><g:sale_price>${money(price)}</g:sale_price>` : `<g:price>${money(price)}</g:price>`,
+          onSale ? `<g:price>${money(regular)}</g:price><g:sale_price>${money(price)}</g:sale_price>${saleWindow}` : `<g:price>${money(price)}</g:price>`,
           `<g:brand>${xml(BRAND.displayName)}</g:brand>`,
           "<g:identifier_exists>no</g:identifier_exists>",
           "<g:condition>new</g:condition>",

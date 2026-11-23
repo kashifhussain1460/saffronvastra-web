@@ -16,6 +16,8 @@ export interface Product {
   createdAt?: string;
   price: number;
   compareAtPrice?: number;
+  /** a live sale on this piece (the sale price is already in `price`, the regular price in `compareAtPrice`) */
+  promotion?: { name: string; badgeText: string | null; endsAt: string };
   description: string;
   details: string[];
   fabricCare?: string[];

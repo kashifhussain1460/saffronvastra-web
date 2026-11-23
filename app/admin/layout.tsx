@@ -169,11 +169,15 @@ export default function AdminLayout({
       label: "Marketing",
       href: "/admin/marketing",
       icon: Megaphone,
-      ...(process.env.NEXT_PUBLIC_SOCIAL_PUBLISHING_ENABLED === 'true' ? {
-        children: [
-          { label: "Social Media Publishing", href: "/admin/marketing/social" },
-        ],
-      } : {}),
+      children: [
+        { label: "Sales Dashboard", href: "/admin/marketing/sales" },
+        { label: "Discounts", href: "/admin/marketing/discounts" },
+        { label: "Email Campaigns", href: "/admin/marketing/email-campaigns" },
+        { label: "Promo Codes", href: "/admin/marketing" },
+        ...(process.env.NEXT_PUBLIC_SOCIAL_PUBLISHING_ENABLED === 'true'
+          ? [{ label: "Social Media Publishing", href: "/admin/marketing/social" }]
+          : []),
+      ],
     },
     { label: "Content", href: "/admin/content", icon: FileText },
     { label: "Media Library", href: "/admin/media", icon: ImageIcon },
@@ -250,6 +254,8 @@ export default function AdminLayout({
                       const isChildActive =
                         child.href === "/admin/products"
                           ? pathname === "/admin/products" || pathname === "/admin/products/new"
+                          : child.href === "/admin/marketing"
+                          ? pathname === "/admin/marketing"
                           : pathname?.startsWith(child.href);
                       return (
                         <Link
@@ -411,6 +417,8 @@ export default function AdminLayout({
                           const isChildActive =
                             child.href === "/admin/products"
                               ? pathname === "/admin/products" || pathname === "/admin/products/new"
+                              : child.href === "/admin/marketing"
+                              ? pathname === "/admin/marketing"
                               : pathname?.startsWith(child.href);
                           return (
                             <Link

@@ -39,6 +39,7 @@ export default function CheckoutPage() {
     user,
     applyPromo,
     removePromo,
+    syncCartWithBackend,
   } = useStore();
 
   // GA4 begin_checkout, once per visit to this page, as soon as the cart has loaded with items
@@ -78,10 +79,16 @@ export default function CheckoutPage() {
     shipping: number;
     codFee: number;
     total: number;
+    /** the exact total in paise, sent back with the order so a price change in between is caught */
+    totalMinor: number;
+    /** sale savings already included in the item prices */
+    savings: number;
     codEnabled: boolean;
     onlineEnabled: boolean;
     deliveryChargesEnabled?: boolean;
   } | null>(null);
+  // bumped to fetch a fresh quote (e.g. after the server reports that a price changed)
+  const [quoteNonce, setQuoteNonce] = useState(0);
   // Payment method. Cash on Delivery is the default; the quote says which methods the shop currently offers.
   const [paymentMethod, setPaymentMethod] = useState<PaymentChoice>("COD");
   // True while a quote request is running, so the button cannot place an order at a stale total.
@@ -116,6 +123,8 @@ export default function CheckoutPage() {
               shipping: data.data.shippingMinor / 100,
               codFee: (data.data.codFeeMinor || 0) / 100,
               total: data.data.totalMinor / 100,
+              totalMinor: data.data.totalMinor,
+              savings: (data.data.promotionSavingsMinor || 0) / 100,
               codEnabled: data.data.codEnabled !== false,
               onlineEnabled: data.data.onlineEnabled === true,
               deliveryChargesEnabled: data.data.deliveryChargesEnabled,
@@ -132,7 +141,7 @@ export default function CheckoutPage() {
     return () => {
       isCancelled = true;
     };
-  }, [appliedPromo, shippingMethod, cart, paymentMethod]);
+  }, [appliedPromo, shippingMethod, cart, paymentMethod, quoteNonce]);
 
   // Without a quote (offline fallback) Cash on Delivery stays available, as it always was.
   const codEnabled = liveQuote ? liveQuote.codEnabled : true;
@@ -435,6 +444,8 @@ export default function CheckoutPage() {
         shippingMethod,
         bespokeNotes: formData.bespokeNotes || undefined,
         items: itemsPayload.length > 0 ? itemsPayload : undefined,
+        // only compared with the server total: if a sale started or ended meanwhile the order is not placed
+        expectedTotalMinor: liveQuote ? liveQuote.totalMinor : undefined,
       };
 
       const res = await fetch("/api/v1/checkout", {
@@ -496,6 +507,11 @@ export default function CheckoutPage() {
         const errData = await res.json().catch(() => null);
         const errMsg = errData?.message || "Failed to process your order. Please check your details.";
         setErrors({ general: errMsg });
+        if (errData?.code === "PRICE_CHANGED") {
+          // show the new total; the customer places the order again after checking it
+          setQuoteNonce((n) => n + 1);
+          void syncCartWithBackend();
+        }
         setIsSubmitting(false);
         submitLock.current = false;
         window.scrollTo({ top: 120, behavior: "smooth" });
@@ -927,6 +943,12 @@ export default function CheckoutPage() {
                 <div className="flex justify-between items-center py-2.5">
                   <dt className="font-semibold text-ink">Cash on Delivery fee</dt>
                   <dd className="text-ink">{inr(codFee)}</dd>
+                </div>
+              )}
+              {liveQuote && liveQuote.savings > 0 && (
+                <div className="flex justify-between items-center py-2.5" data-testid="sale-savings">
+                  <dt className="font-semibold text-ink">Sale savings (included)</dt>
+                  <dd className="text-success font-semibold">{inr(liveQuote.savings)}</dd>
                 </div>
               )}
               {appliedPromo && (

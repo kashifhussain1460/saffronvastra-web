@@ -8,6 +8,7 @@ import { useStore } from "@/context/StoreContext";
 import { useProductsByIds } from "@/lib/useProductsByIds";
 import PriceTag from "@/components/ui/PriceTag";
 import AccountShell, { DASHBOARD_TABS, type AccountSection } from "@/components/account/AccountShell";
+import MarketingConsent from "@/components/account/MarketingConsent";
 import OrdersTable from "@/components/account/OrdersTable";
 import {
   btnPrimary,
@@ -701,6 +702,7 @@ export default function AccountDashboardPage() {
                 {profileSaving ? "Saving..." : "Save Changes"}
               </button>
             </form>
+            <MarketingConsent />
           </div>
         )}
 

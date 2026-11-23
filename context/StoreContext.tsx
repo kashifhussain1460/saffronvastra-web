@@ -59,6 +59,9 @@ interface StoreContextType {
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
+// product ids from the catalogue API; anything else (old local ids) stays in this browser only
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const siteSettings = useSiteSettings();
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -207,6 +210,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
                 slug,
                 title: it.product?.title || "",
                 price: (it.unitPriceMinor || 0) / 100,
+                // the regular price when the item is on sale (shown struck through)
+                compareAtPrice:
+                  typeof it.originalUnitPriceMinor === "number" && it.originalUnitPriceMinor > it.unitPriceMinor
+                    ? it.originalUnitPriceMinor / 100
+                    : undefined,
                 description: "",
                 details: [],
                 leadTime: it.product?.leadTimeDays ? `${it.product.leadTimeDays} business days` : "",
@@ -306,6 +314,32 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       window.removeEventListener("saffron:auth-change", handleAuthEvent);
     };
   }, []);
+
+  // After signing in, favourites saved in this browser are merged into the account and the account list is used.
+  const wishlistMergedFor = useRef<boolean>(false);
+  useEffect(() => {
+    if (!mounted || authLoading) return;
+    if (!isAuthenticated) {
+      wishlistMergedFor.current = false;
+      return;
+    }
+    if (wishlistMergedFor.current) return;
+    wishlistMergedFor.current = true;
+    const local = wishlist.filter((id) => UUID_PATTERN.test(id)).slice(0, 200);
+    fetch("/api/v1/me/wishlist/merge", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productIds: local }),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        const ids = json?.data?.productIds;
+        if (Array.isArray(ids)) setWishlist(ids);
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted, authLoading, isAuthenticated]);
 
   // Save changes to localStorage for offline persistence
   useEffect(() => {
@@ -492,9 +526,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   };
 
   const toggleWishlist = (productId: string) => {
+    const adding = !wishlist.includes(productId);
     setWishlist((prev) =>
       prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]
     );
+    // Signed-in customers keep favourites on their account too (other devices; sale alerts if they opted in).
+    if (isAuthenticated && UUID_PATTERN.test(productId)) {
+      fetch(`/api/v1/me/wishlist/${productId}`, { method: adding ? "PUT" : "DELETE", credentials: "include" }).catch(() => {});
+    }
   };
 
   const isInWishlist = (productId: string) => wishlist.includes(productId);

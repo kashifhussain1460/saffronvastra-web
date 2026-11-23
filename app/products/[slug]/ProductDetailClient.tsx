@@ -317,6 +317,12 @@ export default function ProductDetailClient({ product, relatedProducts, extras }
                   <span className="rounded-full bg-accent px-2.5 py-0.5 text-sm font-semibold text-on-primary">-{discount}%</span>
                 )}
               </div>
+              {product.promotion && (
+                <p className="text-sm font-semibold text-secondary" data-testid="sale-ends">
+                  {product.promotion.badgeText || product.promotion.name}: sale price until{" "}
+                  {new Date(product.promotion.endsAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", timeZone: "Asia/Kolkata" })}
+                </p>
+              )}
 
               {summaryText && <p className="line-clamp-4 text-base leading-relaxed text-ink-secondary">{summaryText}</p>}
             </div>

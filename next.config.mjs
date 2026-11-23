@@ -40,7 +40,7 @@ const nextConfig = {
       { source: "/:path*", headers: security },
       { source: "/images/:path*", headers: staticMedia },
       { source: "/videos/:path*", headers: staticMedia },
-      ...["/admin/:path*", "/admin", "/account/:path*", "/account", "/auth/:path*", "/checkout", "/cart", "/order-confirmation", "/wishlist"].map(
+      ...["/admin/:path*", "/admin", "/account/:path*", "/account", "/auth/:path*", "/checkout", "/cart", "/order-confirmation", "/wishlist", "/email/:path*"].map(
         (source) => ({ source, headers: noindex })
       ),
     ];

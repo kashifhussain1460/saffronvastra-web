@@ -120,6 +120,8 @@ export default function AdminProductsPage() {
       const params = new URLSearchParams();
       params.set("page", currentPage.toString());
       params.set("limit", "10");
+      // the catalogue prices as stored, not today's sale prices
+      params.set("pricing", "stored");
       if (searchQuery.trim()) params.set("search", searchQuery.trim());
       if (selectedCategory !== "all") params.set("category", selectedCategory);
       if (selectedCollection !== "all") params.set("collection", selectedCollection);

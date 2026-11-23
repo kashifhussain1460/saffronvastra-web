@@ -117,6 +117,10 @@ export function mapBackendProductToFrontend(raw: any): Product {
     createdAt: raw.createdAt || undefined,
     price,
     compareAtPrice,
+    promotion:
+      raw.promotion && typeof raw.promotion.endsAt === "string"
+        ? { name: String(raw.promotion.name || "Sale"), badgeText: raw.promotion.badgeText ? String(raw.promotion.badgeText) : null, endsAt: raw.promotion.endsAt }
+        : undefined,
     description: raw.description || "Handcrafted made-to-order garment crafted by master artisans in Rajasthan.",
     details: [
       raw.material ? `${raw.material}` : (isKimono ? "Pure natural cotton fabric with breathable lining" : "Premium cotton velvet fabric with soft satin lining"),

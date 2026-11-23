@@ -2,6 +2,8 @@
 // tag is not loaded (localhost, staging, previews, admin), and Consent Mode decides what Google may store.
 // Amounts are rupees; the currency is always INR. Never put personal data (name, email, phone, address, payment
 // details) in these parameters.
+import { metaItemsEvent, metaPurchaseOnce } from "@/lib/metaPixel";
+
 declare global {
   interface Window {
     gtag?: (...args: unknown[]) => void;
@@ -51,12 +53,15 @@ export function productItem(
 // Sends an event that describes the whole cart or order (value = sum of the items).
 export function gaItemsEvent(name: string, items: GaItem[], extra: Record<string, unknown> = {}): void {
   if (!items.length) return;
+  metaItemsEvent(name, items); // the Meta Pixel twin of the same event (no-op without marketing consent)
   gaEvent(name, { currency: "INR", value: itemsValue(items), items, ...extra });
 }
 
 // purchase is sent once per order per browser, however often the confirmation page is reloaded or revisited.
 // GA4 also ignores a repeated purchase with the same transaction_id, as a second safety net.
 export function gaPurchaseOnce(orderNumber: string, items: GaItem[], extra: Record<string, unknown> = {}): void {
+  // goods value after discount, same as GA4
+  metaPurchaseOnce(orderNumber, items, typeof extra.value === "number" ? extra.value : itemsValue(items));
   if (typeof window === "undefined" || typeof window.gtag !== "function" || !orderNumber || !items.length) return;
   const key = `ga4_purchase_${orderNumber}`;
   try {
