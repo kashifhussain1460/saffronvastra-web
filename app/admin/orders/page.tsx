@@ -55,6 +55,10 @@ export default function AdminOrdersPage() {
   const [selectedPaymentStatus, setSelectedPaymentStatus] = useState<string>("all");
   const [selectedAmountRange, setSelectedAmountRange] = useState<string>("all");
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
+  // soft delete: "Deleted" view lists hidden orders so they can be restored
+  const [showDeleted, setShowDeleted] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [actionNotice, setActionNotice] = useState<{ text: string; isError: boolean } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [exportNotice, setExportNotice] = useState(false);
@@ -80,7 +84,7 @@ export default function AdminOrdersPage() {
       try {
         const all: AdminOrder[] = [];
         for (let page = 1; page <= 50; page++) {
-          const res = await fetch(`/api/v1/admin/orders?limit=100&page=${page}`, { credentials: "include" });
+          const res = await fetch(`/api/v1/admin/orders?limit=100&page=${page}${showDeleted ? "&deleted=only" : ""}`, { credentials: "include" });
           if (!res.ok) throw new Error("orders");
           const body = await res.json();
           if (page === 1 && body.stats) {
@@ -129,7 +133,7 @@ export default function AdminOrdersPage() {
     return () => {
       cancelled = true;
     };
-  }, [reloadKey]);
+  }, [reloadKey, showDeleted]);
 
   // Filtered Orders
   const filteredOrders = useMemo(() => {
@@ -203,6 +207,36 @@ export default function AdminOrdersPage() {
       setSelectedOrders(selectedOrders.filter((item) => item !== id));
     } else {
       setSelectedOrders([...selectedOrders, id]);
+    }
+  };
+
+  // Soft delete / restore the ticked orders. Nothing is erased: a deleted order is hidden everywhere and can be restored.
+  const changeSelected = async (action: "delete" | "restore") => {
+    if (busy || selectedOrders.length === 0) return;
+    const n = selectedOrders.length;
+    const question =
+      action === "delete"
+        ? `Delete ${n} order${n === 1 ? "" : "s"}? They are hidden from the order list, reports and customers' accounts. Payments and history are kept, nothing is refunded, and you can restore them from the Deleted view.`
+        : `Restore ${n} order${n === 1 ? "" : "s"}?`;
+    if (!window.confirm(question)) return;
+    setBusy(true);
+    setActionNotice(null);
+    try {
+      const res = await fetch(`/api/v1/admin/orders/${action === "delete" ? "delete" : "restore"}`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderNumbers: selectedOrders.map((id) => id.replace(/^#/, "")), ...(action === "delete" ? { reason: "Deleted by admin (test or fake order)" } : {}) }),
+      });
+      const body = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(body?.message || "The request could not be completed.");
+      setActionNotice({ text: body?.message || "Done.", isError: false });
+      setSelectedOrders([]);
+      setReloadKey((k) => k + 1);
+    } catch (error: any) {
+      setActionNotice({ text: error?.message || "The request could not be completed.", isError: true });
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -482,8 +516,47 @@ export default function AdminOrdersPage() {
             <RotateCcw className="w-3 h-3" />
             <span>Reset</span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setShowDeleted((v) => !v);
+              setSelectedOrders([]);
+              setActionNotice(null);
+            }}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md border font-medium ${showDeleted ? "border-primary text-primary" : "border-line text-ink-secondary hover:text-ink"}`}
+            aria-pressed={showDeleted}
+          >
+            {showDeleted ? "Showing deleted orders" : "Deleted orders"}
+          </button>
         </div>
       </div>
+
+      {actionNotice && (
+        <div role={actionNotice.isError ? "alert" : "status"} className={`p-3 rounded-md text-xs border ${actionNotice.isError ? "bg-error-bg border-error-line text-error" : "bg-success-bg border-success-line text-success"}`}>
+          {actionNotice.text}
+        </div>
+      )}
+
+      {selectedOrders.length > 0 && (
+        <div className="flex items-center justify-between gap-3 p-3 bg-surface border border-line rounded-xl text-xs" data-testid="orders-bulk-bar">
+          <span className="font-semibold">{selectedOrders.length} selected</span>
+          <span className="flex items-center gap-2">
+            <button type="button" onClick={() => setSelectedOrders([])} className="px-3 py-1.5 border border-line rounded-md hover:bg-ink/5">
+              Clear
+            </button>
+            {showDeleted ? (
+              <button type="button" disabled={busy} onClick={() => void changeSelected("restore")} className="px-3 py-1.5 bg-primary text-on-primary rounded-md font-semibold disabled:opacity-50">
+                Restore selected
+              </button>
+            ) : (
+              <button type="button" disabled={busy} onClick={() => void changeSelected("delete")} className="px-3 py-1.5 border border-error-line text-error rounded-md font-semibold hover:bg-error-bg disabled:opacity-50">
+                Delete selected
+              </button>
+            )}
+          </span>
+        </div>
+      )}
 
       {/* 5. ORDERS DATA TABLE */}
       <div className="bg-surface rounded-xl border border-line shadow-2xs overflow-hidden">
