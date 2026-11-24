@@ -69,7 +69,7 @@ export function mapBackendProductToFrontend(raw: any): Product {
   let sizes: Size[] = [];
   if (Array.isArray(raw.variants) && raw.variants.length > 0) {
     const rawSizes = raw.variants.map((v: any) => v.size);
-    const validSizes: string[] = ["S", "M", "L", "XL", "Free Size"];
+    const validSizes: string[] = ["S", "M", "L", "XL", "XXL", "Free Size"];
     sizes = Array.from(new Set(rawSizes)).filter((s): s is Size =>
       typeof s === "string" && validSizes.includes(s)
     );

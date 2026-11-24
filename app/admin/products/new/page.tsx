@@ -53,7 +53,7 @@ interface ApiCollection {
 
 type FieldErrors = Record<string, string>;
 
-const SIZE_KEYS = ["S", "M", "L", "XL", "Free Size"] as const;
+const SIZE_KEYS = ["S", "M", "L", "XL", "XXL", "Free Size"] as const;
 const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp", "image/avif"];
 const MAX_IMAGE_BYTES = MAX_UPLOAD_BYTES;
 const MAX_IMAGES = 20;
@@ -178,6 +178,7 @@ function AdminNewProductWizard() {
     M: false,
     L: false,
     XL: false,
+    XXL: false,
     "Free Size": false,
   });
   const [priceType, setPriceType] = useState<"same" | "different">("same");
@@ -272,7 +273,7 @@ function AdminNewProductWizard() {
             if (!colours.has(v.colourName)) colours.set(v.colourName, { id: `c${colours.size + 1}`, name: v.colourName, hex: v.colourHex });
           });
           if (colours.size > 0) setColourVariants(Array.from(colours.values()));
-          const sizes: Record<string, boolean> = { S: false, M: false, L: false, XL: false, "Free Size": false };
+          const sizes: Record<string, boolean> = { S: false, M: false, L: false, XL: false, XXL: false, "Free Size": false };
           activeVariants.forEach((v: any) => {
             sizes[v.size] = true;
           });
@@ -1696,7 +1697,7 @@ function AdminNewProductWizard() {
                 </p>
                 <FieldError id="sizes-error" message={errors.sizes} />
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
-                  {(["S", "M", "L", "XL", "Free Size"] as const).map((sz) => {
+                  {SIZE_KEYS.map((sz) => {
                     const isChecked = sizeOptions[sz];
                     return (
                       <button
